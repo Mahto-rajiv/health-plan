@@ -1,37 +1,41 @@
-'use client';
-
 import { cn } from '@/lib/utils';
 
-interface CardProps {
-  children: React.ReactNode;
-  className?: string;
-  padding?: 'none' | 'sm' | 'md' | 'lg';
-}
-
-export function Card({ children, className, padding = 'md' }: CardProps) {
-  const paddingClass = {
-    none: '',
-    sm: 'p-3',
-    md: 'p-5',
-    lg: 'p-6',
-  }[padding];
-
+export function Card({
+  children,
+  className,
+  as: Tag = 'section',
+  ...rest
+}: { children: React.ReactNode; className?: string; as?: 'section' | 'div' | 'article' } & React.HTMLAttributes<HTMLElement>) {
   return (
-    <div className={cn(
-      'bg-white rounded-xl border border-slate-200 shadow-sm',
-      paddingClass,
-      className
-    )}>
+    <Tag className={cn('min-w-0 rounded-2xl border border-line bg-surface p-4 sm:p-5', className)} {...rest}>
       {children}
-    </div>
+    </Tag>
   );
 }
 
-export function CardHeader({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn('mb-4', className)}>{children}</div>;
+export function CardHeader({
+  title,
+  description,
+  action,
+  className,
+  icon,
+}: {
+  title: React.ReactNode;
+  description?: React.ReactNode;
+  action?: React.ReactNode;
+  className?: string;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <div className={cn('mb-4 flex flex-wrap items-start justify-between gap-x-3 gap-y-2', className)}>
+      <div className="flex min-w-0 items-start gap-2.5">
+        {icon && <span className="mt-0.5 shrink-0 text-muted">{icon}</span>}
+        <div className="min-w-0">
+          <h2 className="text-[15px] font-semibold leading-snug text-ink">{title}</h2>
+          {description && <p className="mt-0.5 text-sm text-muted">{description}</p>}
+        </div>
+      </div>
+      {action && <div className="shrink-0">{action}</div>}
+    </div>
+  );
 }
-
-export function CardTitle({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <h3 className={cn('font-semibold text-slate-800 text-sm tracking-tight', className)}>{children}</h3>;
-}
-

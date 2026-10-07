@@ -1,0 +1,237 @@
+'use client';
+
+import { useCallback, useSyncExternalStore } from 'react';
+import type { PlanId } from './data/meal-plans';
+import type { SessionId } from './data/training';
+
+// ─── Persisted data shapes ────────────────────────────────────────────────────
+// Everything lives in localStorage under versioned keys. The shapes are plain
+// JSON so they can later be sent to a backend unchanged.
+
+export interface Settings {
+  planId: PlanId;
+  trainingTime: 'evening' | 'morning';
+  /** ISO date (YYYY-MM-DD) the program started — drives the week number. */
+  programStart: string;
+  startWeightKg: number;
+  targetWeightKg: number;
+  heightCm: number;
+  /** Monday (YYYY-MM-DD) of a week the user marked as a deload week. */
+  deloadWeek?: string | null;
+}
+
+export interface BodyEntry {
+  date: string; // YYYY-MM-DD
+  weightKg?: number;
+  waistCm?: number;
+}
+
+export interface LoggedSet {
+  kg: number | null;
+  reps: number | null;
+  done: boolean;
+}
+
+export interface WorkoutRecord {
+  id: string;
+  date: string;
+  sessionId: SessionId;
+  sets: Record<string, LoggedSet[]>;
+  short?: boolean;
+  completedAt: string;
+}
+
+export interface WorkoutDraft {
+  sessionId: SessionId;
+  date: string;
+  sets: Record<string, LoggedSet[]>;
+}
+
+/** Four booleans per date: did you eat Meal 1–4 as planned? */
+export type MealLog = Record<string, [boolean, boolean, boolean, boolean]>;
+
+export interface CheckIn {
+  sleepHours?: number;
+  energy?: 1 | 2 | 3 | 4 | 5;
+  soreness?: 1 | 2 | 3 | 4 | 5;
+  cardioMin?: number;
+  steps?: number;
+}
+export type CheckInLog = Record<string, CheckIn>;
+
+export const DEFAULT_SETTINGS: Settings = {
+  planId: 'preferred',
+  trainingTime: 'evening',
+  programStart: '2026-10-06',
+  startWeightKg: 66,
+  targetWeightKg: 75,
+  heightCm: 180,
+  deloadWeek: null,
+};
+
+const PREFIX = 'hp:v2:';
+export const KEYS = {
+  settings: `${PREFIX}settings`,
+  body: `${PREFIX}body`,
+  workouts: `${PREFIX}workouts`,
+  draft: `${PREFIX}draft`,
+  meals: `${PREFIX}meals`,
+  checkins: `${PREFIX}checkins`,
+} as const;
+export type StoreKey = (typeof KEYS)[keyof typeof KEYS];
+
+// ─── Tiny external store over localStorage ────────────────────────────────────
+
+const listeners = new Set<() => void>();
+const cache = new Map<string, { raw: string | null; value: unknown }>();
+
+function emit() {
+  for (const l of listeners) l();
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === null || e.key.startsWith(PREFIX)) {
+      cache.clear();
+      listener();
+    }
+  };
+  window.addEventListener('storage', onStorage);
+  return () => {
+    listeners.delete(listener);
+    window.removeEventListener('storage', onStorage);
+  };
+}
+
+function readRaw(key: string): string | null {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function read<T>(key: string, fallback: T): T {
+  const raw = readRaw(key);
+  const hit = cache.get(key);
+  if (hit && hit.raw === raw) return hit.value as T;
+  let value: T = fallback;
+  if (raw !== null) {
+    try {
+      const parsed = JSON.parse(raw);
+      // Merge objects with the fallback so new settings fields get defaults.
+      value =
+        fallback && typeof fallback === 'object' && !Array.isArray(fallback) && parsed && typeof parsed === 'object'
+          ? ({ ...fallback, ...parsed } as T)
+          : (parsed as T);
+    } catch {
+      value = fallback;
+    }
+  }
+  cache.set(key, { raw, value });
+  return value;
+}
+
+/** Direct read for client-only code paths (event handlers, lazy initialisers). */
+export function readStore<T>(key: StoreKey, fallback: T): T {
+  if (typeof window === 'undefined') return fallback;
+  return read(key, fallback);
+}
+
+export function writeStore<T>(key: StoreKey, value: T) {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Storage full or blocked (private mode): the UI keeps working in memory.
+    cache.set(key, { raw: JSON.stringify(value), value });
+  }
+  emit();
+}
+
+export function removeStore(key: StoreKey) {
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    /* ignore */
+  }
+  cache.delete(key);
+  emit();
+}
+
+/**
+ * Persistent state. The server render and the first client render use the
+ * fallback (no hydration mismatch); the stored value appears right after.
+ * `hydrated` tells components when the stored value is available.
+ */
+export function useStore<T>(key: StoreKey, fallback: T) {
+  const value = useSyncExternalStore(
+    subscribe,
+    () => read(key, fallback),
+    () => fallback,
+  );
+  const set = useCallback(
+    (next: T | ((prev: T) => T)) => {
+      const prev = read(key, fallback);
+      const resolved = typeof next === 'function' ? (next as (p: T) => T)(prev) : next;
+      writeStore(key, resolved);
+    },
+    // fallback objects are module constants at every call site
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [key],
+  );
+  return [value, set] as const;
+}
+
+const noopSubscribe = () => () => {};
+/** False during SSR and hydration, true afterwards. */
+export function useHydrated() {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
+}
+
+// Convenience hooks with stable fallbacks
+const EMPTY_ARRAY: never[] = [];
+const EMPTY_OBJECT = {};
+
+export const useSettings = () => useStore<Settings>(KEYS.settings, DEFAULT_SETTINGS);
+export const useBodyLog = () => useStore<BodyEntry[]>(KEYS.body, EMPTY_ARRAY);
+export const useWorkoutLog = () => useStore<WorkoutRecord[]>(KEYS.workouts, EMPTY_ARRAY);
+export const useMealLog = () => useStore<MealLog>(KEYS.meals, EMPTY_OBJECT as MealLog);
+export const useCheckIns = () => useStore<CheckInLog>(KEYS.checkins, EMPTY_OBJECT as CheckInLog);
+export const useWorkoutDraft = () => useStore<WorkoutDraft | null>(KEYS.draft, null);
+
+export function exportAll(): string {
+  const out: Record<string, unknown> = {};
+  for (const k of Object.values(KEYS)) {
+    const raw = readRaw(k);
+    if (raw !== null) out[k] = JSON.parse(raw);
+  }
+  return JSON.stringify({ app: 'health-plan', version: 2, exportedAt: new Date().toISOString(), data: out }, null, 2);
+}
+
+export function importAll(json: string) {
+  const parsed = JSON.parse(json) as { data?: Record<string, unknown> };
+  if (!parsed?.data || typeof parsed.data !== 'object') throw new Error('Not a Health Plan export file');
+  const allowed = new Set<string>(Object.values(KEYS));
+  for (const [k, v] of Object.entries(parsed.data)) {
+    if (allowed.has(k)) window.localStorage.setItem(k, JSON.stringify(v));
+  }
+  cache.clear();
+  emit();
+}
+
+export function clearAll() {
+  for (const k of Object.values(KEYS)) {
+    try {
+      window.localStorage.removeItem(k);
+    } catch {
+      /* ignore */
+    }
+  }
+  cache.clear();
+  emit();
+}

@@ -1,135 +1,161 @@
-'use client';
+import type { Metadata } from 'next';
+import { ClipboardList, FlaskConical, Pill, Scissors, Stethoscope } from 'lucide-react';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Card, CardHeader } from '@/components/ui/Card';
+import { Badge, type BadgeTone } from '@/components/ui/Badge';
+import { Callout } from '@/components/ui/Callout';
+import { References } from '@/components/References';
+import { BLOOD_DATE, BLOOD_RESULTS, HAIR, HEALTH_DISCLAIMER, SUPPLEMENTS, type ResultStatus, type Supplement } from '@/lib/data/health';
+import type { RefId } from '@/lib/data/references';
 
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { BLOOD_RESULTS, HAIR_HEALTH_CONTEXT } from '@/lib/healthData';
-import { getStatusColor, getStatusLabel } from '@/lib/utils';
-import { Activity, AlertTriangle, FileText, Info, Stethoscope, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+export const metadata: Metadata = { title: 'Health' };
+
+const STATUS: Record<ResultStatus, { label: string; tone: BadgeTone }> = {
+  normal: { label: 'Normal', tone: 'good' },
+  'low-normal': { label: 'Low-normal', tone: 'caution' },
+  discuss: { label: 'Borderline', tone: 'caution' },
+};
+
+const VERDICT: Record<Supplement['verdict'], BadgeTone> = {
+  Recommended: 'good',
+  'Discuss first': 'caution',
+  Optional: 'neutral',
+  'Not recommended': 'alert',
+};
+
+const LEVEL: Record<string, BadgeTone> = { Reasonable: 'good', Mixed: 'caution', Weak: 'neutral', Avoid: 'alert' };
 
 export default function HealthPage() {
-  const [selectedResult, setSelectedResult] = useState<string | null>(null);
-
-  const needsDiscussion = BLOOD_RESULTS.filter(r => r.discussWithDoctor).length;
-
+  const groups = [...new Set(BLOOD_RESULTS.map((r) => r.group))];
+  const flagged = BLOOD_RESULTS.filter((r) => r.status !== 'normal');
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-slate-800">Health Profile</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Blood work analysis and relevant considerations</p>
-        </div>
-        {needsDiscussion > 0 && (
-          <Badge variant="warning">
-            <Stethoscope size={14} className="mr-1 inline" /> {needsDiscussion} item(s) to discuss with doctor
-          </Badge>
-        )}
-      </div>
+    <>
+      <PageHeader
+        title="Health"
+        description={`Blood work from ${BLOOD_DATE}, your hair concern, and supplements. Explained in plain language, without diagnosing anything.`}
+      />
+      <div className="space-y-5">
+        <Callout tone="medical">{HEALTH_DISCLAIMER}</Callout>
 
-      <Card className="!p-4 bg-sky-50 border-sky-200">
-        <div className="flex gap-3">
-          <Info size={20} className="text-sky-600 flex-shrink-0" />
-          <div className="text-xs text-sky-800 space-y-2">
-            <p className="font-semibold">Medical Disclaimer</p>
-            <p>
-              This section provides educational context regarding your blood test from <strong>3 October 2026</strong>. 
-              It highlights relevant physiological connections to your training and nutrition goals.
-              <strong> This is not a medical diagnosis.</strong> Do not begin high-dose supplementation or alter medications without consulting a healthcare professional.
-            </p>
+        <Card>
+          <CardHeader title="Summary" icon={<ClipboardList size={18} />} />
+          <div className="grid gap-4 text-sm md:grid-cols-3">
+            <div className="rounded-xl bg-emerald-50/60 p-3">
+              <div className="font-medium text-emerald-900">Reassuring</div>
+              <p className="mt-1 text-emerald-950/80">
+                Blood count, iron markers, thyroid, blood sugar, kidney, liver, lipids and inflammation are all within range.
+                Nothing here stops you training hard or eating ~125 g of protein a day.
+              </p>
+            </div>
+            <div className="rounded-xl bg-amber-50/70 p-3">
+              <div className="font-medium text-amber-900">Worth acting on</div>
+              <ul className="mt-1 space-y-1 text-amber-950/80">
+                {flagged.map((r) => (
+                  <li key={r.name}>
+                    {r.name}: {r.value} {r.unit}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-xl bg-violet-50/60 p-3">
+              <div className="font-medium text-violet-900">Discuss with a doctor</div>
+              <p className="mt-1 text-violet-950/80">
+                Hair thinning for 6 months (dermatologist), plus ferritin, zinc, folate and possibly MMA to complete the picture.
+              </p>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Blood Results List */}
-        <div className="lg:col-span-2 space-y-3">
-          <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-2">Blood Biomarkers</h2>
-          
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-            {BLOOD_RESULTS.map((result, idx) => (
-              <div 
-                key={result.name}
-                className={`border-b border-slate-100 last:border-0 ${selectedResult === result.name ? 'bg-slate-50' : 'hover:bg-slate-50/50'} transition-colors cursor-pointer`}
-                onClick={() => setSelectedResult(selectedResult === result.name ? null : result.name)}
-              >
-                <div className="p-4 flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-semibold text-slate-800 text-sm">{result.name}</p>
-                      {result.discussWithDoctor && <AlertTriangle size={14} className="text-amber-500" />}
-                    </div>
-                    <p className="text-xs text-slate-500">Ref: {result.refRangeStr}</p>
-                  </div>
-                  
-                  <div className="text-right flex items-center gap-4">
-                    <div>
-                      <p className="font-bold text-slate-700">{result.value} <span className="text-xs font-normal text-slate-500">{result.unit}</span></p>
-                      <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold mt-1 ${getStatusColor(result.status)}`}>
-                        {getStatusLabel(result.status).toUpperCase()}
-                      </span>
-                    </div>
-                    <ChevronRight size={16} className={`text-slate-400 transition-transform ${selectedResult === result.name ? 'rotate-90' : ''}`} />
-                  </div>
-                </div>
-
-                {selectedResult === result.name && (
-                  <div className="p-4 pt-0 bg-slate-50 border-t border-slate-100/50">
-                    <div className="space-y-3 text-xs">
+        <Card>
+          <CardHeader title="Blood results" icon={<FlaskConical size={18} />} description="Typical reference ranges shown. Your lab's printed range is what counts." />
+          <div className="space-y-5">
+            {groups.map((g) => (
+              <div key={g}>
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">{g}</h3>
+                <ul className="divide-y divide-line rounded-xl border border-line">
+                  {BLOOD_RESULTS.filter((r) => r.group === g).map((r) => (
+                    <li key={r.name} className="grid gap-2 p-3 sm:grid-cols-[minmax(0,14rem)_1fr] sm:gap-5">
                       <div>
-                        <p className="font-semibold text-slate-700 mb-1">Interpretation:</p>
-                        <p className="text-slate-600">{result.interpretation}</p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm font-medium text-ink">{r.name}</span>
+                          <Badge tone={STATUS[r.status].tone}>{STATUS[r.status].label}</Badge>
+                        </div>
+                        <div className="tabular mt-1 text-lg font-semibold text-ink">
+                          {r.value} <span className="text-xs font-normal text-muted">{r.unit}</span>
+                        </div>
+                        <div className="text-xs text-muted">Range: {r.labRange}</div>
                       </div>
-                      <div>
-                        <p className="font-semibold text-slate-700 mb-1">Relevance to Goals:</p>
-                        <p className="text-slate-600">{result.relevance}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                      <p className="text-sm text-ink-2">{r.meaning}</p>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
-        </div>
+          <References ids={BLOOD_RESULTS.flatMap((r) => r.refs ?? [])} />
+        </Card>
 
-        {/* Hair Health Context */}
-        <div className="space-y-4">
-          <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-2">Hair Health Context</h2>
-          
-          <Card className="!p-4 border-l-4 border-l-violet-500">
-            <p className="text-xs text-slate-600 leading-relaxed italic mb-3">
-              {HAIR_HEALTH_CONTEXT.disclaimer}
-            </p>
-            
-            <div className="space-y-4 mt-4">
-              {HAIR_HEALTH_CONTEXT.nutritionalConsiderations.map((item, i) => (
-                <div key={i}>
-                  <p className="text-xs font-semibold text-slate-800">{item.factor}</p>
-                  <p className="text-[11px] text-slate-600 mt-0.5 mb-1">{item.relevance}</p>
-                  <div className="flex items-start gap-1.5 text-[11px] text-violet-700 bg-violet-50 p-1.5 rounded">
-                    <Activity size={12} className="flex-shrink-0 mt-0.5" />
-                    <span>{item.action}</span>
-                  </div>
-                </div>
-              ))}
+        <Card>
+          <CardHeader title="Hair fall and thinning" icon={<Scissors size={18} />} />
+          <p className="text-sm text-ink-2">{HAIR.summary}</p>
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <Callout tone="medical" title="Recommended: see a dermatologist">
+              <ul className="mt-1 list-disc space-y-1 pl-4">
+                {HAIR.seeDermatologist.map((s) => (
+                  <li key={s}>{s}</li>
+                ))}
+              </ul>
+            </Callout>
+            <div className="rounded-xl border border-line p-3.5 text-sm">
+              <div className="flex items-center gap-2 font-medium text-ink">
+                <Stethoscope size={16} className="text-muted" aria-hidden /> Tests to ask about
+              </div>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-ink-2">
+                {HAIR.askAbout.map((s) => (
+                  <li key={s}>{s}</li>
+                ))}
+              </ul>
             </div>
-          </Card>
+          </div>
+          <h3 className="mb-2 mt-5 text-sm font-semibold text-ink">What nutrition can and can’t do</h3>
+          <ul className="grid gap-3 md:grid-cols-2">
+            {HAIR.nutrition.map((n) => (
+              <li key={n.title} className="rounded-xl bg-slate-50 p-3 text-sm">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium text-ink">{n.title}</span>
+                  <Badge tone={LEVEL[n.level]}>{n.level === 'Avoid' ? 'Avoid' : `Evidence: ${n.level.toLowerCase()}`}</Badge>
+                </div>
+                <p className="mt-1 text-ink-2">{n.body}</p>
+              </li>
+            ))}
+          </ul>
+          <References ids={HAIR.refs} />
+        </Card>
 
-          <Card className="!p-4 bg-slate-800 text-white border-0">
-            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <Stethoscope size={16} className="text-sky-400" /> Discuss with Doctor
-            </h3>
-            <ul className="space-y-2">
-              {HAIR_HEALTH_CONTEXT.doctorDiscussion.map((point, i) => (
-                <li key={i} className="flex items-start gap-2 text-xs text-slate-300">
-                  <div className="w-1.5 h-1.5 rounded-full bg-sky-400 mt-1 flex-shrink-0" />
-                  {point}
-                </li>
-              ))}
-            </ul>
-          </Card>
-        </div>
+        <Card>
+          <CardHeader title="Supplements" icon={<Pill size={18} />} description="Food first. Only what your results, diet and goals justify." />
+          <ul className="grid gap-3 lg:grid-cols-2">
+            {SUPPLEMENTS.map((s) => (
+              <li key={s.name} className="rounded-xl border border-line p-3.5 text-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-semibold text-ink">{s.name}</span>
+                  <Badge tone={VERDICT[s.verdict]}>{s.verdict}</Badge>
+                </div>
+                {s.dose && (
+                  <p className="mt-1.5">
+                    <span className="font-medium text-ink">Dose: </span>
+                    <span className="text-ink-2">{s.dose}</span>
+                  </p>
+                )}
+                <p className="mt-1.5 text-ink-2">{s.why}</p>
+                {s.cautions && <p className="mt-1.5 text-xs text-muted">{s.cautions}</p>}
+                {s.cost && <p className="mt-1.5 text-xs text-muted">Cost: {s.cost}</p>}
+              </li>
+            ))}
+          </ul>
+          <References ids={SUPPLEMENTS.flatMap((s) => s.refs) as RefId[]} />
+        </Card>
       </div>
-    </div>
+    </>
   );
 }
-
