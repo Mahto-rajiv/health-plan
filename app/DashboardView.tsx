@@ -57,7 +57,7 @@ function Dashboard({ today }: { today: string }) {
       <header className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-muted">{longDate(today)}</p>
-          <h1 className="mt-1 text-xl font-semibold tracking-tight text-ink sm:text-2xl">{greeting()}, Rajiv</h1>
+          <h1 className="mt-1 text-xl font-semibold tracking-tight text-ink sm:text-2xl">{greeting()}, Bro</h1>
         </div>
         <div className="flex flex-wrap gap-2">
           <Badge tone="outline">Program week {week}</Badge>
