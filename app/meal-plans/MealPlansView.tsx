@@ -83,7 +83,7 @@ export function MealPlansView() {
       {view === 'day' && (
         <section aria-label="Daily meals" className="space-y-4">
           <div className="scroll-x -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div className="flex gap-1.5" role="tablist" aria-label="Day of week">
+            <div className="flex gap-1.5" role="tablist" aria-label="Day of week" aria-orientation="horizontal">
               {DAYS.map((d) => {
                 const active = d === day;
                 const isToday = today ? dayName(today) === d : false;

@@ -27,7 +27,11 @@ export default function NutritionPage() {
               <Card key={t.key} as="div" className="p-4">
                 <div className="text-xs font-medium text-muted">{t.label}</div>
                 <div className="tabular mt-1 text-2xl font-semibold tracking-tight text-ink">
-                  {t.key === 'kcal' ? '≈ 2,700' : t.key === 'water' ? '2.5–3.5' : `≈ ${t.value}`}
+                  {t.key === 'kcal'
+                    ? `≈ ${t.value.toLocaleString('en-IN')}`
+                    : t.key === 'water'
+                      ? '2.5–3.5'
+                      : `≈ ${t.value}`}
                   <span className="ml-1 text-sm font-normal text-muted">{t.unit}</span>
                 </div>
                 <div className="mt-1 text-xs text-muted">{t.range}</div>

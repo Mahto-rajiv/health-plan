@@ -51,13 +51,16 @@ function Dashboard({ today }: { today: string }) {
   const [log] = useWorkoutLog();
   const week = programWeek(settings.programStart, today);
   const deload = settings.deloadWeek === weekStart(today);
+  const name = settings.firstName?.trim();
 
   return (
     <div className="space-y-5">
       <header className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-muted">{longDate(today)}</p>
-          <h1 className="mt-1 text-xl font-semibold tracking-tight text-ink sm:text-2xl">{greeting()}, Bro</h1>
+          <h1 className="mt-1 text-xl font-semibold tracking-tight text-ink sm:text-2xl">
+            {greeting()}{name ? `, ${name}` : ''}
+          </h1>
         </div>
         <div className="flex flex-wrap gap-2">
           <Badge tone="outline">Program week {week}</Badge>

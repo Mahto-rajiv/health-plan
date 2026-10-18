@@ -182,13 +182,13 @@ function OffDayPanel({ kind, today, week }: { kind: 'cardio' | 'rest'; today: st
 
 function LogOtherSession({ onPick, suggested }: { onPick: (id: SessionId) => void; suggested: SessionId }) {
   return (
-    <label className="inline-flex items-center gap-2 text-sm text-muted">
-      <span>Lift anyway:</span>
+    <div className="flex items-center gap-2 text-sm text-muted">
+      <label htmlFor="lift-anyway-select">Log a session anyway:</label>
       <select
+        id="lift-anyway-select"
         className="h-8 rounded-lg border border-line-strong bg-surface px-2 text-sm text-ink"
         defaultValue=""
         onChange={(e) => e.target.value && onPick(e.target.value as SessionId)}
-        aria-label="Log a session anyway"
       >
         <option value="" disabled>
           Choose session…
@@ -200,7 +200,7 @@ function LogOtherSession({ onPick, suggested }: { onPick: (id: SessionId) => voi
           </option>
         ))}
       </select>
-    </label>
+    </div>
   );
 }
 

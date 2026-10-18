@@ -18,6 +18,8 @@ export interface Settings {
   heightCm: number;
   /** Monday (YYYY-MM-DD) of a week the user marked as a deload week. */
   deloadWeek?: string | null;
+  /** Optional first name shown in the dashboard greeting. */
+  firstName?: string;
 }
 
 export interface BodyEntry {

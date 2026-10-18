@@ -52,7 +52,7 @@ export function itemsCost(items: MealItem[]): number {
 export const roundKcal = (v: number) => Math.round(v / 10) * 10;
 export const roundG = (v: number) => Math.round(v);
 
-/** Human-friendly quantity: "300 ml", "3 rotis (105 g atta)", "2 eggs". */
+/** Human-friendly quantity: "300 ml", "3 rotis (105 g atta)", "2 eggs", "1 medium banana (110 g)". */
 export function formatQuantity(item: MealItem): string {
   const food = FOODS[item.food];
   if (item.food === 'milk') return `${item.g} ml`;
@@ -65,10 +65,17 @@ export function formatQuantity(item: MealItem): string {
     return `${rotis} roti${rotis === 1 ? '' : 's'} (${item.g} g atta)`;
   }
   const measure = 'measure' in food ? food.measure : undefined;
-  if (measure && (measure.label === 'tsp' || measure.label === 'tbsp')) {
-    const count = item.g / measure.grams;
-    const pretty = Number.isInteger(count) ? String(count) : count.toFixed(1);
-    return `${item.g} g (${pretty} ${measure.label})`;
+  if (measure) {
+    if (measure.label === 'tsp' || measure.label === 'tbsp') {
+      const count = item.g / measure.grams;
+      const pretty = Number.isInteger(count) ? String(count) : count.toFixed(1);
+      return `${item.g} g (${pretty} ${measure.label})`;
+    }
+    // Named unit: e.g. "medium banana", "date"
+    const count = Math.round(item.g / measure.grams);
+    if (count >= 1) {
+      return `${item.g} g (${count} ${count === 1 ? measure.label : `${measure.label}s`})`;
+    }
   }
   return `${item.g} g`;
 }

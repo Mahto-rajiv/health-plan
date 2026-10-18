@@ -41,7 +41,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </a>
 
       {/* Desktop / laptop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-line bg-surface lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-line bg-surface lg:flex" aria-label="Sidebar navigation">
         <div className="border-b border-line px-5 py-4">
           <Logo />
         </div>
@@ -77,7 +77,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <Logo />
       </header>
 
-      <main id="main" className="pb-24 lg:pb-10 lg:pl-60">
+      <main id="main" className="pb-safe pb-24 lg:pb-10 lg:pl-60">
         <div className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6 sm:py-7 lg:px-8">{children}</div>
       </main>
 
@@ -121,11 +121,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </nav>
 
       {moreOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="More pages" id="more-sheet">
+        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-labelledby="more-heading" id="more-sheet">
           <button type="button" aria-label="Close menu" className="absolute inset-0 bg-slate-900/30" onClick={() => setMoreOpen(false)} />
           <div className="pb-safe absolute inset-x-0 bottom-0 rounded-t-2xl border-t border-line bg-surface p-4 shadow-xl">
             <div className="mb-3 flex items-center justify-between">
-              <span className="text-sm font-semibold">More</span>
+              <span id="more-heading" className="text-sm font-semibold">More</span>
               <button type="button" onClick={() => setMoreOpen(false)} className="rounded-lg p-2 text-muted hover:bg-slate-100" aria-label="Close">
                 <X size={18} />
               </button>

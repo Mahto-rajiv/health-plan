@@ -71,19 +71,31 @@ export function SettingsView() {
     <div className="grid gap-5 lg:grid-cols-2">
       <Card>
         <CardHeader title="Profile & goal" icon={<User size={18} />} description="Used for the waist limit, weight-progress bar and decisions." />
-        <div className="grid grid-cols-2 gap-3">
-          <NumField label="Height" value={settings.heightCm} onChange={(v) => update({ heightCm: v })} suffix="cm" step="1" />
-          <NumField label="Start weight" value={settings.startWeightKg} onChange={(v) => update({ startWeightKg: v })} suffix="kg" />
-          <NumField label="Long-term target" value={settings.targetWeightKg} onChange={(v) => update({ targetWeightKg: v })} suffix="kg" />
+        <div className="space-y-3">
           <label className="block">
-            <span className="text-xs font-medium text-muted">Program start</span>
+            <span className="text-xs font-medium text-muted">Your first name (optional — shown in the greeting)</span>
             <input
-              type="date"
-              value={settings.programStart}
-              onChange={(e) => e.target.value && update({ programStart: e.target.value })}
+              type="text"
+              placeholder="e.g. Rajiv"
+              value={settings.firstName ?? ''}
+              onChange={(e) => update({ firstName: e.target.value || undefined })}
               className="mt-1 h-10 w-full rounded-lg border border-line-strong bg-surface px-3 text-[15px]"
             />
           </label>
+          <div className="grid grid-cols-2 gap-3">
+            <NumField label="Height" value={settings.heightCm} onChange={(v) => update({ heightCm: v })} suffix="cm" step="1" />
+            <NumField label="Start weight" value={settings.startWeightKg} onChange={(v) => update({ startWeightKg: v })} suffix="kg" />
+            <NumField label="Long-term target" value={settings.targetWeightKg} onChange={(v) => update({ targetWeightKg: v })} suffix="kg" />
+            <label className="block">
+              <span className="text-xs font-medium text-muted">Program start</span>
+              <input
+                type="date"
+                value={settings.programStart}
+                onChange={(e) => e.target.value && update({ programStart: e.target.value })}
+                className="mt-1 h-10 w-full rounded-lg border border-line-strong bg-surface px-3 text-[15px]"
+              />
+            </label>
+          </div>
         </div>
         <p className="mt-3 text-xs text-muted">
           Waist limit at your height: {Math.round(settings.heightCm / 2)} cm (half your height). Review point: {Math.round(settings.heightCm * 0.47)} cm.
