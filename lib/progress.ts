@@ -5,9 +5,10 @@ import { bestE1rm } from './training';
 
 // ─── Weight-gain decision system ──────────────────────────────────────────────
 // Targets (see Nutrition page for sources):
-//  • +0.3–0.6 kg/month (~0.1–0.2% of body weight per week). Larger surpluses
-//    add mostly fat, not more muscle or strength (Helms 2023; Garthe 2013).
-//  • After ~6 months: +0.25–0.5 kg/month.
+//  • +0.5–1.0 kg/month (~0.2–0.35% of body weight per week): the lower half of
+//    the 0.25–0.5%/week advised for novices (Iraki 2019). Larger surpluses add
+//    mostly fat, not more muscle or strength (Helms 2023; Garthe 2013).
+//  • After ~6 months, as beginner gains slow: +0.3–0.7 kg/month.
 //  • Waist: < 90 cm is the Asian-Indian cut-off for men (Misra 2009) and also
 //    half of 180 cm. 85 cm is the "slow down and look" line.
 //  • 72 kg checkpoint: BMI 23 is the Asian action point (WHO 2004), so the
@@ -66,7 +67,7 @@ export interface GainAssessment {
 export function assessGain(entries: BodyEntry[], opts: { heightCm: number; monthsIn: number }): GainAssessment {
   const weeks = weeklyAverages(entries).filter((w) => w.weight !== undefined);
   const lateStage = opts.monthsIn >= 6;
-  const targetRange: [number, number] = lateStage ? [0.25, 0.5] : [0.3, 0.6];
+  const targetRange: [number, number] = lateStage ? [0.3, 0.7] : [0.5, 1.0];
   const latest = weeks[weeks.length - 1];
   const waistWeeks = weeklyAverages(entries).filter((w) => w.waist !== undefined);
   const latestWaist = waistWeeks[waistWeeks.length - 1]?.waist;

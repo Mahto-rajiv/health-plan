@@ -1,6 +1,7 @@
 // ─── References ───────────────────────────────────────────────────────────────
 // Every entry was checked against PubMed or the publisher/organisation page in
-// October 2026. `note` flags limitations that matter for how much weight a
+// October 2026 (re-checked 21 Oct 2026: all resolve except the NIH ODS fact
+// sheets and the EFSA DOI target, which block automated checks). `note` flags limitations that matter for how much weight a
 // recommendation should carry.
 
 export interface Reference {
@@ -14,9 +15,9 @@ export const REFS = {
   frankenfield: { label: 'Frankenfield D et al. (2005). Comparison of predictive equations for resting metabolic rate. J Am Diet Assoc.', url: 'https://pubmed.ncbi.nlm.nih.gov/15883556/', note: 'Individual errors above 10% are common; South Asians were under-represented.' },
   faoEnergy: { label: 'FAO/WHO/UNU (2004). Human energy requirements — physical activity levels.', url: 'https://www.fao.org/4/y5686e/y5686e07.htm' },
   icmr2020: { label: 'ICMR-NIN (2020). Nutrient Requirements for Indians — brief note.', url: 'https://www.nin.res.in/rdabook/brief_note.pdf' },
-  icmr2024: { label: 'ICMR-NIN (2024). Dietary Guidelines for Indians.', url: 'https://main.icmr.nic.in/sites/default/files/upload_documents/DGI_07th_May_2024_fin.pdf' },
+  icmr2024: { label: 'ICMR-NIN (2024). Dietary Guidelines for Indians — summary by Nutrition Connect (GAIN).', url: 'https://nutritionconnect.org/resource-center/dietary-guidelines-indians-2024-edition-icmr-nin', note: 'The official ICMR PDF link stopped resolving in Oct 2026; this page summarises the same guidelines.' },
   iraki: { label: 'Iraki J et al. (2019). Nutrition recommendations for bodybuilders in the off-season. Sports.', url: 'https://pubmed.ncbi.nlm.nih.gov/31247944/' },
-  helms2023: { label: 'Helms ER et al. (2023). Effect of small and large energy surpluses on strength, muscle and fat. Sports Med Open.', url: 'https://pubmed.ncbi.nlm.nih.gov/37914977/', note: 'Small sample (n = 17), 8 weeks.' },
+  helms2023: { label: 'Helms ER et al. (2023). Effect of small and large energy surpluses on strength, muscle and fat. Sports Med Open.', url: 'https://pubmed.ncbi.nlm.nih.gov/37914977/', note: 'Trained lifters, not beginners; small sample (17 completers), 8 weeks.' },
   garthe: { label: 'Garthe I et al. (2013). Effect of nutritional intervention on body composition in elite athletes. Eur J Sport Sci.', url: 'https://pubmed.ncbi.nlm.nih.gov/23679146/' },
   benito: { label: 'Benito PJ et al. (2020). Effect of resistance training on whole-body muscle growth in healthy adult males: meta-analysis. IJERPH.', url: 'https://pubmed.ncbi.nlm.nih.gov/32079265/' },
   slater: { label: 'Slater GJ et al. (2019). Is an energy surplus required to maximize skeletal muscle hypertrophy? Front Nutr.', url: 'https://pubmed.ncbi.nlm.nih.gov/31482093/' },
@@ -37,7 +38,7 @@ export const REFS = {
   zourdos: { label: 'Zourdos MC et al. (2016). Novel RPE scale measuring repetitions in reserve. J Strength Cond Res.', url: 'https://pubmed.ncbi.nlm.nih.gov/26049792/' },
   singer: { label: 'Singer A et al. (2024). Inter-set rest and muscle hypertrophy: Bayesian meta-analysis. Front Sports Act Living.', url: 'https://pubmed.ncbi.nlm.nih.gov/39205815/' },
   schoenfeldRest: { label: 'Schoenfeld BJ et al. (2016). Longer inter-set rest periods enhance muscle strength and hypertrophy. J Strength Cond Res.', url: 'https://pubmed.ncbi.nlm.nih.gov/26605807/' },
-  bellDeload: { label: 'Bell L et al. (2023). Deloading practices in strength and physique sports: Delphi consensus. Sports Med Open.', url: 'https://pubmed.ncbi.nlm.nih.gov/37730925/', note: 'Expert opinion.' },
+  bellDeload: { label: 'Bell L et al. (2023). Integrating deloading into strength and physique sports training programmes: an international Delphi consensus. Sports Med Open.', url: 'https://pubmed.ncbi.nlm.nih.gov/37730925/', note: 'Expert opinion.' },
   colemanDeload: { label: 'Coleman M et al. (2024). A one-week deload during resistance training. PeerJ.', url: 'https://pubmed.ncbi.nlm.nih.gov/38274324/' },
   who2020: { label: 'Bull FC et al. (2020). WHO 2020 guidelines on physical activity and sedentary behaviour. Br J Sports Med.', url: 'https://pubmed.ncbi.nlm.nih.gov/33239350/' },
   schumann: { label: 'Schumann M et al. (2022). Compatibility of concurrent aerobic and strength training: meta-analysis. Sports Med.', url: 'https://pubmed.ncbi.nlm.nih.gov/34757594/' },
@@ -56,7 +57,8 @@ export const REFS = {
   trost: { label: 'Trost LB et al. (2006). The diagnosis and treatment of iron deficiency and its potential relationship to hair loss. J Am Acad Dermatol.', url: 'https://pubmed.ncbi.nlm.nih.gov/16635664/' },
   yongpisarn: { label: 'Yongpisarn T et al. (2024). Vitamin D deficiency in non-scarring alopecias: meta-analysis. Front Nutr.', url: 'https://pubmed.ncbi.nlm.nih.gov/39416654/', note: 'Observational.' },
   fdaBiotin: { label: 'US FDA. Biotin interference with troponin lab tests.', url: 'https://www.fda.gov/medical-devices/in-vitro-diagnostics/biotin-interference-troponin-lab-tests-assays-subject-biotin-interference' },
-  nhsHairLoss: { label: 'NHS. Hair loss.', url: 'https://www.nhs.uk/conditions/hair-loss/' },
+  biotinThyroid: { label: 'Al-Bahadili H et al. (2025). The complex web of interferences with thyroid function tests. Endocr Pract.', url: 'https://pubmed.ncbi.nlm.nih.gov/39477092/' },
+  nhsHairLoss: { label: 'NHS. Hair loss.', url: 'https://www.nhs.uk/symptoms/hair-loss/' },
   odsVitD: { label: 'NIH Office of Dietary Supplements. Vitamin D — fact sheet for health professionals.', url: 'https://ods.od.nih.gov/factsheets/VitaminD-HealthProfessional/' },
   holick2011: { label: 'Holick MF et al. (2011). Evaluation, treatment and prevention of vitamin D deficiency: Endocrine Society guideline. JCEM.', url: 'https://pubmed.ncbi.nlm.nih.gov/21646368/' },
   demay2024: { label: 'Demay MB et al. (2024). Vitamin D for the prevention of disease: Endocrine Society guideline. JCEM.', url: 'https://pubmed.ncbi.nlm.nih.gov/38828931/' },
@@ -70,7 +72,7 @@ export const REFS = {
   niddkGas: { label: 'NIDDK. Eating, diet and nutrition for gas in the digestive tract.', url: 'https://www.niddk.nih.gov/health-information/digestive-diseases/gas-digestive-tract/eating-diet-nutrition' },
   girigowda: { label: 'Girigowda K et al. (2005). Effect of processing on oligosaccharides in black gram. Plant Foods Hum Nutr.', url: 'https://pubmed.ncbi.nlm.nih.gov/16395628/' },
   nhsIndigestion: { label: 'NHS. Indigestion.', url: 'https://www.nhs.uk/conditions/indigestion/' },
-  nhsBloating: { label: 'NHS. Bloating.', url: 'https://www.nhs.uk/conditions/bloating/' },
+  nhsBloating: { label: 'NHS. Bloating.', url: 'https://www.nhs.uk/symptoms/bloating/' },
   odsZinc: { label: 'NIH Office of Dietary Supplements. Zinc — fact sheet.', url: 'https://ods.od.nih.gov/factsheets/Zinc-HealthProfessional/' },
   odsOmega3: { label: 'NIH Office of Dietary Supplements. Omega-3 fatty acids — fact sheet.', url: 'https://ods.od.nih.gov/factsheets/Omega3FattyAcids-HealthProfessional/' },
   odsIodine: { label: 'NIH Office of Dietary Supplements. Iodine — fact sheet.', url: 'https://ods.od.nih.gov/factsheets/Iodine-HealthProfessional/' },

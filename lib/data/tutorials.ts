@@ -1,5 +1,6 @@
 // ─── Verified external tutorials ──────────────────────────────────────────────
-// Every URL below was checked on 7 Oct 2026:
+// Every URL below was checked on 7 Oct 2026 (moongCheela, sattuParatha,
+// palakPaneer, paneerTikka and soyaKeema added and checked 21 Oct 2026):
 //  • YouTube links via the oEmbed endpoint (confirms the video exists and the
 //    title/channel shown here).
 //  • Web pages fetched (HTTP 200) and the page title / instructions read.
@@ -162,6 +163,21 @@ export const COOKING_TUTORIALS = {
   ],
   cheela: [
     { title: 'Besan Chilla (Cheela)', url: 'https://www.indianhealthyrecipes.com/cheela-recipe/', source: "Swasthi's Recipes", kind: 'article' },
+  ],
+  moongCheela: [
+    { title: 'Moong Dal Chilla', url: 'https://www.cookwithmanali.com/moong-dal-chilla/', source: 'Cook With Manali', kind: 'article' },
+  ],
+  sattuParatha: [
+    { title: 'Sattu Paratha', url: 'https://www.cookwithmanali.com/sattu-paratha/', source: 'Cook With Manali', kind: 'article' },
+  ],
+  palakPaneer: [
+    { title: 'Palak Paneer', url: 'https://www.indianhealthyrecipes.com/palak-paneer-recipe-easy-paneer-recipes-step-by-step-pics/', source: "Swasthi's Recipes", kind: 'article' },
+  ],
+  paneerTikka: [
+    { title: 'Paneer Tikka (oven, air fryer or stovetop)', url: 'https://www.indianhealthyrecipes.com/paneer-tikka-on-stove-top/', source: "Swasthi's Recipes", kind: 'article' },
+  ],
+  soyaKeema: [
+    { title: 'Soya Keema', url: 'https://www.indianhealthyrecipes.com/soya-keema/', source: "Swasthi's Recipes", kind: 'article' },
   ],
   paneerBhurji: [
     { title: 'Paneer Bhurji', url: 'https://www.indianhealthyrecipes.com/paneer-bhurji-recipe/', source: "Swasthi's Recipes", kind: 'article' },

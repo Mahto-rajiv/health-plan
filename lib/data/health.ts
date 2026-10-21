@@ -177,7 +177,7 @@ export const HAIR = {
     { title: 'Vitamin D', body: 'Low vitamin D is common in some hair conditions, but the link is clearest for alopecia areata, not male pattern hair loss. Correcting a low level is sensible for general health; it is not a proven hair treatment.', level: 'Weak' },
     { title: 'Biotin and “hair” supplements', body: 'No benefit without a proven deficiency, which is rare. High-dose biotin can falsify blood tests, including thyroid and heart tests. Some multi-ingredient hair products contain amounts of vitamin A or selenium that can themselves cause shedding.', level: 'Avoid' },
   ],
-  refs: ['aadCauses', 'aadShedding', 'almohanna', 'guoKatta', 'trost', 'yongpisarn', 'fdaBiotin', 'nhsHairLoss'] as RefId[],
+  refs: ['aadCauses', 'aadShedding', 'almohanna', 'guoKatta', 'trost', 'yongpisarn', 'fdaBiotin', 'biotinThyroid', 'nhsHairLoss'] as RefId[],
 };
 
 // ─── Supplements ──────────────────────────────────────────────────────────────
@@ -238,7 +238,7 @@ export const SUPPLEMENTS: Supplement[] = [
     name: 'Iron, zinc, biotin, “hair growth” blends, multivitamins',
     verdict: 'Not recommended',
     why: 'Your iron markers are normal and zinc hasn’t been tested. Supplementing without a deficiency is unsupported, some ingredients can worsen shedding, and biotin interferes with lab tests.',
-    refs: ['guoKatta', 'fdaBiotin', 'odsZinc'],
+    refs: ['guoKatta', 'fdaBiotin', 'biotinThyroid', 'odsZinc'],
   },
 ];
 
