@@ -3,7 +3,8 @@ import type { RefId } from './references';
 // ─── Daily targets ────────────────────────────────────────────────────────────
 // Energy: Mifflin-St Jeor BMR = 10×66 + 6.25×180 − 5×24 + 5 ≈ 1,670 kcal.
 // Desk job + 4 lifting sessions ≈ PAL 1.5–1.6 → maintenance ≈ 2,450–2,700 kcal.
-// A small surplus of ~150–250 kcal gives the plan target of ~2,700 kcal.
+// A surplus of ~200–300 kcal (≈10%, the low end of the 10–20% advised for
+// novices by Iraki 2019) gives the plan target of ~2,700 kcal.
 // Your weight is currently stable, so your real maintenance is whatever you eat
 // now — the first 3–4 weeks of weigh-ins calibrate the estimate.
 
@@ -24,7 +25,7 @@ export const TARGETS: Target[] = [
     value: 2700,
     unit: 'kcal',
     range: '2,600–2,800',
-    basis: 'Estimated maintenance ~2,450–2,700 kcal (BMR ≈ 1,670 × activity 1.5–1.6) plus a small 150–250 kcal surplus. The estimate is calibrated by your weight trend, not trusted blindly.',
+    basis: 'Estimated maintenance ~2,450–2,700 kcal (BMR ≈ 1,670 × activity 1.5–1.6) plus a ~200–300 kcal surplus (≈10%, the low end of the 10–20% suggested for novices). The estimate is calibrated by your weight trend, not trusted blindly.',
     refs: ['mifflin', 'frankenfield', 'faoEnergy', 'helms2023'],
   },
   {
@@ -78,23 +79,23 @@ export const ENERGY_MATH = [
   { label: 'BMR (Mifflin-St Jeor)', value: '≈ 1,670 kcal' },
   { label: 'Activity level (desk job + 4 lifts/week)', value: '× 1.5–1.6' },
   { label: 'Estimated maintenance', value: '≈ 2,450–2,700 kcal' },
-  { label: 'Lean-gain surplus', value: '+150–250 kcal' },
+  { label: 'Lean-gain surplus (≈10%)', value: '+200–300 kcal' },
   { label: 'Plan target', value: '≈ 2,700 kcal (2,600–2,800)' },
 ];
 
 // ─── Weight-gain rules (shown on Nutrition + Progress) ───────────────────────
 
 export const GAIN_RULES = {
-  rate: '+0.3–0.6 kg per month (≈ 0.1–0.2% of body weight per week). Small and steady.',
-  why: 'In trials, bigger surpluses mostly added fat, not more muscle or strength. Beginners gain muscle well even on small surpluses, because training is the main driver.',
+  rate: '+0.5–1.0 kg per month (≈ 0.2–0.35% of body weight per week). After ~6 months, as beginner gains slow, +0.3–0.7 kg per month.',
+  why: 'A review of off-season nutrition suggests 0.25–0.5% of body weight per week for novices. This plan sits in the lower half of that range because your goals are strength, health and a moderate physique, not maximum size. In trials, bigger surpluses mostly added fat, not more muscle. Beginners gain muscle well even on small surpluses, because training is the main driver.',
   refs: ['helms2023', 'garthe', 'iraki', 'slater', 'benito'] as RefId[],
-  timeline: 'At that rate, 66 → 75 kg takes roughly 18–30 months. That is normal for lean gain — most of what you see in the first year will be strength and shape, not scale weight.',
+  timeline: 'At that rate, 66 → 72 kg (the first checkpoint) takes roughly 6–12 months, and 75 kg roughly 12–20 months. Weight gain slows after the first year — that is normal. Much of what you notice early will be strength and shape, not scale weight.',
   target: '75 kg (BMI 23.1) is within the WHO “normal” range, but it sits right at the Asian action point of BMI 23. So the plan treats 72 kg as a checkpoint: pause, compare waist, photos and lifts, then decide whether 74–76 kg suits you.',
   targetRefs: ['whoAsianBmi', 'misra'] as RefId[],
   decisions: [
-    { when: 'Rate 0.3–0.6 kg/month, waist stable or rising slowly, lifts improving', then: 'Continue — change nothing.' },
-    { when: 'Rate < 0.3 kg/month for 4+ weeks and you ate the plan most days', then: 'Add ~150 kcal (e.g. +200 ml milk or +1 roti) and re-check in 4 weeks.' },
-    { when: 'Rate > 0.8 kg/month after the first month', then: 'Slow down: remove ~150 kcal (one roti or a third of the dinner rice).' },
+    { when: 'Rate 0.5–1.0 kg/month, waist stable or rising slowly, lifts improving', then: 'Continue — change nothing.' },
+    { when: 'Rate < 0.5 kg/month for 4+ weeks and you ate the plan most days', then: 'Add ~150 kcal (e.g. +200 ml milk or +1 roti) and re-check in 4 weeks.' },
+    { when: 'Rate > 1.2 kg/month after the first month', then: 'Slow down: remove ~150 kcal (one roti or a third of the dinner rice).' },
     { when: 'Waist rising more than ~1 cm per kg gained', then: 'Slow down — more of the gain is fat than muscle.' },
     { when: 'Waist reaches 85 cm', then: 'Maintain for 4–8 weeks (drop the surplus) and reassess.' },
     { when: 'Waist reaches 90 cm (half your height; Asian-Indian cut-off)', then: 'Stop gaining. Maintain, or a short gentle cut if needed.' },
@@ -169,11 +170,4 @@ export const BUDGET_NOTES = [
   'Prices are approximate (Oct 2026): milk, eggs, chicken, fruit, oats and soya were checked against current listings; the rest are local-shop estimates. Your local prices may differ by ±15%.',
   'Costs include every food in the plan plus ~₹300/month for spices, salt, tea and other basics. Cooking gas is not included.',
   'Biggest savers: set curd at home (≈ milk price), buy sattu, chana and dals loose, buy fruit in season, and swap some paneer for soya chunks.',
-];
-
-export const BUDGET_SWAPS = [
-  { swap: 'Paneer → soya chunks for 2 meals a week', saves: '≈ ₹250–350/month' },
-  { swap: 'Walnuts/almonds/pumpkin seeds → peanuts + flaxseed', saves: '≈ ₹200–300/month' },
-  { swap: 'Seasonal fruit → banana/papaya on most days', saves: '≈ ₹150–250/month' },
-  { swap: 'Chicken breast → curry-cut chicken or eggs', saves: '≈ ₹300–500/month (Plan 4)' },
 ];

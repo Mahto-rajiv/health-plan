@@ -73,7 +73,7 @@ export const FOODS = {
     category: 'Dairy',
     per100: n(60, 3.3, 4.6, 3.1, 0, 0.1, 120, 0.5, 1),
     pricePerKg: 58,
-    buyUnit: { label: '1 L milk to set', grams: 1000 },
+    buyUnit: { label: '1 L milk, set as curd at home,', grams: 1000 },
   },
   paneer: {
     name: 'Paneer',
