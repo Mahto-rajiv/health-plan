@@ -6,7 +6,8 @@ A personal, evidence-based training, nutrition, recovery and progress app. It is
 npm install
 npm run dev          # http://localhost:3000
 npm run build        # production build (all routes are statically prerendered)
-npm run validate     # checks the hard meal-plan rules (4 meals, fixed Meal 1/3, diet, targets)
+npm run validate     # checks meal-plan rules: 4 meals, identical Meal 1 / weekday Meal 3, diet, targets,
+                     # packable office meals, title–ingredient match, eggs/week, cost consistency, budget
 npm run plans:report # day-by-day calories, macros, micronutrients and cost for each plan
 ```
 
@@ -16,7 +17,7 @@ npm run plans:report # day-by-day calories, macros, micronutrients and cost for 
 |---|---|
 | `/` | Dashboard: today's workout, meal checklist with calorie and protein progress, weight trend and quick weigh-in, this week's adherence, strength, recovery check-in, tonight's prep |
 | `/training` | Workout logger (kg/reps per set, rest timer, previous performance, progression hints, drafts survive reloads), weekly schedule, rescheduling rules, full program with verified tutorials, cardio and mobility, progression and deloads, history |
-| `/meal-plans` | Four 7-day plans, plus a grocery list, cost estimate, prep strategy and substitutions for each |
+| `/meal-plans` | Four 7-day plans, plus a grocery list with pack hints, budget check with computed swaps, protein-per-rupee comparison, prep strategy and substitutions for each |
 | `/nutrition` | Targets and how they were derived, meal timing, training-day guidance, the weight-gain decision system, digestion, hydration |
 | `/progress` | Weight and waist logging; charts for weight, waist, strength, consistency and adherence (labelled sample data until you have your own); the "should I keep gaining?" assessment |
 | `/recovery` | Daily check-in, sleep plan, desk-job movement, rest days, recovery signs |
@@ -50,3 +51,4 @@ The stored data shapes (`Settings`, `BodyEntry`, `WorkoutRecord`, `MealLog`, `Ch
 - Prices were checked in October 2026 where possible (milk, eggs, chicken, fruit, soya, oats). The rest are local-shop estimates.
 - Tutorial links and references were verified when they were added. Re-check them occasionally, because external links can change.
 - This is educational guidance, not medical advice.
+- Work status and open items: see `PROGRESS.md`.
