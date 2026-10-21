@@ -92,7 +92,7 @@ function TrainingCard({ today, week, deload, log }: { today: string; week: numbe
         title="Today's training"
         icon={<Dumbbell size={18} />}
         action={
-          <Link href="/training" className="inline-flex items-center gap-0.5 text-sm text-accent hover:underline">
+          <Link href="/training" className="inline-flex min-h-8 items-center gap-0.5 text-sm text-accent hover:underline">
             Training <ChevronRight size={16} aria-hidden />
           </Link>
         }
@@ -169,7 +169,7 @@ function WeightCard() {
 
   return (
     <Card>
-      <CardHeader title="Body weight" icon={<Scale size={18} />} action={<Link href="/progress" className="text-sm text-accent hover:underline">Progress</Link>} />
+      <CardHeader title="Body weight" icon={<Scale size={18} />} action={<Link href="/progress" className="inline-flex min-h-8 items-center text-sm text-accent hover:underline">Progress</Link>} />
       <div className="flex items-end justify-between gap-3">
         <div>
           <div className="tabular text-3xl font-semibold tracking-tight text-ink">
@@ -190,7 +190,7 @@ function WeightCard() {
       </div>
       <ProgressBar value={Math.max(0, gained)} max={span > 0 ? span : 1} className="mt-1.5" label="Progress toward goal weight" />
       <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs">
-        <span className="font-medium text-ink">{status.headline}.</span> <span className="text-ink-2">Target +0.3–0.6 kg/month.</span>
+        <span className="font-medium text-ink">{status.headline}.</span> <span className="text-ink-2">Target +{status.targetRange[0]}–{status.targetRange[1]} kg/month.</span>
       </div>
       <form onSubmit={save} className="mt-3 flex gap-2">
         <label className="sr-only" htmlFor="quick-weight">
@@ -235,7 +235,7 @@ function MealsCard({ today }: { today: string }) {
         icon={<Utensils size={18} />}
         description={`${plan.def.name}. Tick each meal you eat as planned.`}
         action={
-          <Link href="/meal-plans" className="inline-flex items-center gap-0.5 text-sm text-accent hover:underline">
+          <Link href="/meal-plans" className="inline-flex min-h-8 items-center gap-0.5 text-sm text-accent hover:underline">
             Details <ChevronRight size={16} aria-hidden />
           </Link>
         }
@@ -379,7 +379,7 @@ function StrengthCard() {
   const any = series.some((s) => s.points.length);
   return (
     <Card>
-      <CardHeader title="Strength" icon={<Dumbbell size={18} />} description="Estimated 1RM from your best set" action={<Link href="/progress" className="text-sm text-accent hover:underline">Charts</Link>} />
+      <CardHeader title="Strength" icon={<Dumbbell size={18} />} description="Estimated 1RM from your best set" action={<Link href="/progress" className="inline-flex min-h-8 items-center text-sm text-accent hover:underline">Charts</Link>} />
       {any ? (
         <ul className="tabular divide-y divide-line text-sm">
           {series.map((s) => {
@@ -421,7 +421,7 @@ function RecoveryCard({ today }: { today: string }) {
         title="Recovery"
         icon={<MoonStar size={18} />}
         description={avg !== null ? `7-day sleep average: ${avg.toFixed(1)} h` : 'Aim for 7.5–8 h in bed.'}
-        action={<Link href="/recovery" className="text-sm text-accent hover:underline">More</Link>}
+        action={<Link href="/recovery" className="inline-flex min-h-8 items-center text-sm text-accent hover:underline">Recovery</Link>}
       />
       <CheckInForm compact />
       <p className="mt-3 text-xs text-muted">Last check-in: {checkins[today] ? 'today' : Object.keys(checkins).sort().pop() ? shortDate(Object.keys(checkins).sort().pop()!) : 'none yet'}</p>

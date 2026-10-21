@@ -20,7 +20,7 @@ function ScalePicker({ label, value, onChange, low, high }: { label: string; val
             aria-pressed={value === n}
             onClick={() => onChange(n)}
             className={cn(
-              'tabular h-10 flex-1 rounded-lg border text-sm font-medium',
+              'tabular h-10 min-w-9 flex-1 rounded-lg border text-sm font-medium',
               value === n ? 'border-accent bg-accent text-white' : 'border-line-strong text-ink-2 hover:bg-slate-50',
             )}
           >
@@ -69,12 +69,12 @@ export function CheckInForm({ compact }: { compact?: boolean }) {
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className={cn('grid gap-3', !compact && 'sm:grid-cols-2')}>
         <Field label="Sleep last night" value={entry.sleepHours} onChange={(v) => update({ sleepHours: v })} suffix="hours" placeholder="7.5" />
         {!compact && <Field label="Cardio today" value={entry.cardioMin} onChange={(v) => update({ cardioMin: v })} suffix="min" step="5" placeholder="0" />}
         {!compact && <Field label="Steps today" value={entry.steps} onChange={(v) => update({ steps: v })} suffix="steps" step="100" placeholder="8000" />}
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={cn('grid gap-4', !compact && 'sm:grid-cols-2')}>
         <ScalePicker label="Energy" value={entry.energy} onChange={(v) => update({ energy: v })} low="drained" high="great" />
         {!compact && <ScalePicker label="Muscle soreness" value={entry.soreness} onChange={(v) => update({ soreness: v })} low="none" high="very sore" />}
       </div>

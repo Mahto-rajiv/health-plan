@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MoreHorizontal, X } from 'lucide-react';
 import { NAV, isActive } from './nav';
 import { cn } from '@/lib/utils';
@@ -25,13 +25,43 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const primary = NAV.filter((n) => n.primary);
   const secondary = NAV.filter((n) => !n.primary);
   const moreActive = secondary.some((n) => isActive(pathname, n.href));
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
 
-  // Close the "More" sheet on navigation and on Escape.
+  // "More" sheet behaves as a modal dialog: focus moves in, Tab stays inside,
+  // Escape closes it, focus returns to the trigger, and the page behind doesn't scroll.
   useEffect(() => {
     if (!moreOpen) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMoreOpen(false);
+    const sheet = sheetRef.current;
+    const trigger = triggerRef.current;
+    const focusables = () => [...(sheet?.querySelectorAll<HTMLElement>('a[href], button:not([tabindex="-1"])') ?? [])];
+    focusables()[0]?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMoreOpen(false);
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const list = focusables();
+      if (!list.length) return;
+      const first = list[0];
+      const last = list[list.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = overflow;
+      trigger?.focus();
+    };
   }, [moreOpen]);
 
   return (
@@ -77,7 +107,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <Logo />
       </header>
 
-      <main id="main" className="pb-safe pb-24 lg:pb-10 lg:pl-60">
+      <main id="main" className="pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-10 lg:pl-60">
         <div className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6 sm:py-7 lg:px-8">{children}</div>
       </main>
 
@@ -104,6 +134,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           })}
           <li>
             <button
+              ref={triggerRef}
               type="button"
               onClick={() => setMoreOpen((o) => !o)}
               aria-expanded={moreOpen}
@@ -122,12 +153,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {moreOpen && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-labelledby="more-heading" id="more-sheet">
-          <button type="button" aria-label="Close menu" className="absolute inset-0 bg-slate-900/30" onClick={() => setMoreOpen(false)} />
-          <div className="pb-safe absolute inset-x-0 bottom-0 rounded-t-2xl border-t border-line bg-surface p-4 shadow-xl">
+          <button type="button" tabIndex={-1} aria-label="Close menu" className="absolute inset-0 bg-slate-900/30" onClick={() => setMoreOpen(false)} />
+          <div ref={sheetRef} className="absolute inset-x-0 bottom-0 rounded-t-2xl border-t border-line bg-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-xl">
             <div className="mb-3 flex items-center justify-between">
               <span id="more-heading" className="text-sm font-semibold">More</span>
-              <button type="button" onClick={() => setMoreOpen(false)} className="rounded-lg p-2 text-muted hover:bg-slate-100" aria-label="Close">
-                <X size={18} />
+              <button type="button" onClick={() => setMoreOpen(false)} className="rounded-lg p-2.5 text-muted hover:bg-slate-100" aria-label="Close">
+                <X size={18} aria-hidden />
               </button>
             </div>
             <ul className="grid grid-cols-2 gap-2">
