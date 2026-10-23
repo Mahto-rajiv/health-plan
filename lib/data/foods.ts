@@ -9,6 +9,10 @@
 // Oct 2026 where possible: milk, eggs, chicken, fruit, soya, oats; the rest are
 // kirana estimates). Meat and fish prices are per kg of EDIBLE part (curry-cut
 // chicken ≈ ₹280/kg bought, ~75% edible). They estimate a budget, not exact cost.
+//
+// Meal grams are edible weight. Produce prices are per kg as bought, so
+// `edible` (the share left after peel, seeds, stems and trimmings) converts
+// one into the other. The yields are typical approximations, not measurements.
 
 export type GroceryCategory =
   | 'Dairy'
@@ -40,6 +44,8 @@ export interface Food {
   pricePerKg: number;
   /** How the item is usually bought, used to round the grocery list. */
   buyUnit: { label: string; grams: number };
+  /** Share of the bought weight that is eaten (default 1). Cost and grocery weight divide by it. */
+  edible?: number;
   /** Optional household measure shown next to grams. */
   measure?: { label: string; grams: number };
   isEgg?: boolean;
@@ -268,6 +274,7 @@ export const FOODS = {
     category: 'Fruit',
     per100: n(282, 2.5, 67, 0.4, 8, 1, 64, 0.4),
     pricePerKg: 320,
+    edible: 0.9,
     buyUnit: { label: '250 g', grams: 250 },
     measure: { label: 'date', grams: 10 },
   },
@@ -275,8 +282,9 @@ export const FOODS = {
     name: 'Banana',
     category: 'Fruit',
     per100: n(89, 1.1, 20.5, 0.3, 2.6, 0.3, 5, 0.2, 9),
-    pricePerKg: 55,
-    buyUnit: { label: '1 dozen (~1.3 kg)', grams: 1300 },
+    pricePerKg: 36, // ≈ ₹72 a dozen, ~₹6 a banana
+    edible: 0.65,
+    buyUnit: { label: '1 dozen (~2 kg)', grams: 2000 },
     measure: { label: 'medium banana', grams: 110 },
   },
   papaya: {
@@ -284,6 +292,7 @@ export const FOODS = {
     category: 'Fruit',
     per100: n(43, 0.5, 9, 0.3, 1.7, 0.3, 20, 0.1, 60),
     pricePerKg: 55,
+    edible: 0.7,
     buyUnit: { label: '1 kg', grams: 1000 },
   },
   guava: {
@@ -291,6 +300,7 @@ export const FOODS = {
     category: 'Fruit',
     per100: n(68, 2.6, 9, 1, 5.4, 0.3, 18, 0.2, 228),
     pricePerKg: 80,
+    edible: 0.95,
     buyUnit: { label: '1 kg', grams: 1000 },
   },
   seasonalFruit: {
@@ -298,14 +308,16 @@ export const FOODS = {
     category: 'Fruit',
     per100: n(55, 0.8, 12, 0.3, 2.5, 0.3, 25, 0.1, 40),
     pricePerKg: 85,
+    edible: 0.8,
     buyUnit: { label: '1 kg', grams: 1000 },
   },
   lemon: {
-    name: 'Lemon juice',
+    name: 'Lemon (juice)',
     category: 'Fruit',
     per100: n(22, 0.4, 7, 0.2, 0.3, 0.1, 6, 0.1, 39),
     pricePerKg: 120,
-    buyUnit: { label: '250 g lemons', grams: 250 },
+    edible: 0.4,
+    buyUnit: { label: '250 g', grams: 250 },
   },
 
   // Vegetables
@@ -314,6 +326,7 @@ export const FOODS = {
     category: 'Vegetables',
     per100: n(86, 1.6, 17, 0.1, 3, 0.6, 30, 0.3, 2.4),
     pricePerKg: 70,
+    edible: 0.85,
     buyUnit: { label: '1 kg', grams: 1000 },
   },
   beetroot: {
@@ -321,6 +334,7 @@ export const FOODS = {
     category: 'Vegetables',
     per100: n(43, 1.6, 7, 0.2, 2.8, 0.8, 16, 0.35, 5),
     pricePerKg: 50,
+    edible: 0.85,
     buyUnit: { label: '500 g', grams: 500 },
   },
   mixedVeg: {
@@ -328,6 +342,7 @@ export const FOODS = {
     category: 'Vegetables',
     per100: n(35, 2, 5, 0.3, 2.5, 0.8, 30, 0.3, 25),
     pricePerKg: 50,
+    edible: 0.85,
     buyUnit: { label: '1 kg', grams: 1000 },
   },
   spinach: {
@@ -335,6 +350,7 @@ export const FOODS = {
     category: 'Vegetables',
     per100: n(23, 2.9, 1.4, 0.4, 2.2, 2.7, 99, 0.5, 28),
     pricePerKg: 40,
+    edible: 0.7,
     buyUnit: { label: '1 bunch (~250 g)', grams: 250 },
   },
   salad: {
@@ -342,6 +358,7 @@ export const FOODS = {
     category: 'Vegetables',
     per100: n(25, 1, 4.5, 0.2, 1.5, 0.4, 20, 0.2, 12),
     pricePerKg: 40,
+    edible: 0.88,
     buyUnit: { label: '1 kg', grams: 1000 },
   },
 

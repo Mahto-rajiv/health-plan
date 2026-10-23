@@ -1,8 +1,10 @@
-import { Clock, Repeat, Briefcase, CookingPot } from 'lucide-react';
+import { Clock, Repeat, Briefcase, CookingPot, Timer } from 'lucide-react';
 import { FOODS, type Nutrients } from '@/lib/data/foods';
 import { MEAL_SLOTS, type PlannedMeal } from '@/lib/data/meal-plans';
 import { cookingTutorials } from '@/lib/data/tutorials';
 import { formatQuantity, itemNutrients, roundKcal } from '@/lib/nutrition';
+import { mealMinutes, storageAdvice } from '@/lib/meal-plans';
+import { formatINR } from '@/lib/utils';
 import { Badge } from '../ui/Badge';
 import { Disclosure } from '../ui/Disclosure';
 import { TutorialLinks } from '../ui/ExternalLink';
@@ -34,10 +36,12 @@ export function MacroLine({ n, compact }: { n: Nutrients; compact?: boolean }) {
   );
 }
 
-export function MealCard({ planned, totals }: { planned: PlannedMeal; totals: Nutrients }) {
+export function MealCard({ planned, totals, cost }: { planned: PlannedMeal; totals: Nutrients; cost: number }) {
   const { meal, slot, time, tag } = planned;
   const t = tag ? TAGS[tag] : null;
   const tutorials = cookingTutorials(meal.tutorials);
+  const minutes = mealMinutes(planned);
+  const storage = storageAdvice(planned);
   return (
     <article className="rounded-2xl border border-line bg-surface">
       <header className="border-b border-line px-4 py-3">
@@ -58,6 +62,13 @@ export function MealCard({ planned, totals }: { planned: PlannedMeal; totals: Nu
         <h3 className="mt-1.5 text-[15px] font-semibold leading-snug text-ink">{meal.title}</h3>
         <div className="mt-1">
           <MacroLine n={totals} />
+        </div>
+        <div className="tabular mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted">
+          <span className="inline-flex items-center gap-1">
+            <Timer size={12} aria-hidden />
+            {minutes === 0 ? 'No cooking today' : `~${minutes} min hands-on`}
+          </span>
+          <span>≈ {formatINR(cost)} a serving</span>
         </div>
       </header>
 
@@ -83,10 +94,26 @@ export function MealCard({ planned, totals }: { planned: PlannedMeal; totals: Nu
       </ul>
 
       <div className="space-y-2 p-3">
-        <Disclosure summary="Preparation, nutrients & tutorials">
+        <Disclosure summary="Preparation, flavour, storage & nutrients">
           <div className="space-y-3">
             <p>{meal.prep}</p>
             {meal.why && <p className="text-muted">{meal.why}</p>}
+            {meal.flavour && (
+              <p>
+                <span className="font-medium text-ink">More flavour: </span>
+                {meal.flavour}
+              </p>
+            )}
+            {storage.length > 0 && (
+              <div>
+                <p className="font-medium text-ink">Storage</p>
+                <ul className="list-disc space-y-0.5 pl-4">
+                  {storage.map((s) => (
+                    <li key={s}>{s}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <dl className="tabular grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
               {[
                 ['Iron', `${totals.iron.toFixed(1)} mg`],

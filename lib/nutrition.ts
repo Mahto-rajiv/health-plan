@@ -1,4 +1,4 @@
-import { FOODS, type FoodId, type Nutrients } from './data/foods';
+import { FOODS, type Food, type FoodId, type Nutrients } from './data/foods';
 
 export interface MealItem {
   food: FoodId;
@@ -40,8 +40,13 @@ export function itemsNutrients(items: MealItem[]): Nutrients {
   return sumNutrients(items.map(itemNutrients));
 }
 
+/** Grams to buy for this many edible grams (peel, seeds and trimmings added back). */
+export function boughtGrams(food: FoodId, edibleGrams: number): number {
+  return edibleGrams / ((FOODS[food] as Food).edible ?? 1);
+}
+
 export function itemCost(item: MealItem): number {
-  return (FOODS[item.food].pricePerKg * item.g) / 1000;
+  return (FOODS[item.food].pricePerKg * boughtGrams(item.food, item.g)) / 1000;
 }
 
 export function itemsCost(items: MealItem[]): number {

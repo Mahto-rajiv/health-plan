@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Repeat, ShoppingBasket, CalendarDays, ArrowLeftRight, Wallet, Scale } from 'lucide-react';
 import { PLANS, getPlan, budgetSwaps, PROTEIN_VALUE, BUDGET_MAX, BUDGET_MIN } from '@/lib/meal-plans';
 import { DAYS, type DayName, type PlanId } from '@/lib/data/meal-plans';
-import { TARGETS, BUDGET_NOTES, PANTRY_MONTHLY } from '@/lib/data/nutrition-guide';
+import { TARGETS, BUDGET_NOTES, PANTRY_MONTHLY, FOOD_SAFETY } from '@/lib/data/nutrition-guide';
 import { useSettings } from '@/lib/storage';
 import { useToday } from '@/lib/hooks';
 import { dayName } from '@/lib/dates';
@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Callout } from '@/components/ui/Callout';
 import { ProgressBar } from '@/components/ui/Progress';
 import { MealCard } from '@/components/meals/MealCard';
+import { References } from '@/components/References';
 
 type View = 'day' | 'grocery' | 'prep';
 
@@ -95,15 +96,15 @@ export function MealPlansView() {
 
           <Callout tone="info" title="The 4-meal structure">
             Exactly four meals, no snacks. <strong>Meal 1</strong> is the same every day.{' '}
-            <strong>Meal 3</strong> is the same Monday–Friday. Weekday lunch is the extra portion of last
-            night&apos;s dinner (cook once, eat twice). Weekends are freer.
+            <strong>Meal 3</strong> is the same Monday–Friday; Saturday and Sunday each have their own. Weekday lunch
+            is the extra portion of last night&apos;s dinner (cook once, eat twice).
           </Callout>
 
-          <DayTotals totals={computed.totals} />
+          <DayTotals totals={computed.totals} minutes={computed.activeMinutes} cost={computed.cost} />
 
           <div className="grid gap-4 xl:grid-cols-2">
             {computed.meals.map((pm, i) => (
-              <MealCard key={`${day}-${pm.slot}`} planned={pm} totals={computed.mealTotals[i]} />
+              <MealCard key={`${day}-${pm.slot}`} planned={pm} totals={computed.mealTotals[i]} cost={computed.mealCosts[i]} />
             ))}
           </div>
           <p className="text-xs text-muted">
@@ -164,7 +165,7 @@ function PlanStat({ label, value, tone }: { label: string; value: string; tone?:
   );
 }
 
-function DayTotals({ totals }: { totals: Nutrients }) {
+function DayTotals({ totals, minutes, cost }: { totals: Nutrients; minutes: number; cost: number }) {
   const rows = [
     { t: TARGETS.find((x) => x.key === 'kcal')!, v: totals.kcal, fmt: (v: number) => `${roundKcal(v)}` },
     { t: TARGETS.find((x) => x.key === 'protein')!, v: totals.protein, fmt: (v: number) => `${Math.round(v)}` },
@@ -174,7 +175,12 @@ function DayTotals({ totals }: { totals: Nutrients }) {
   ];
   return (
     <Card as="div" className="p-4">
-      <h3 className="mb-3 text-sm font-semibold text-ink">Day total vs target</h3>
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h3 className="text-sm font-semibold text-ink">Day total vs target</h3>
+        <p className="tabular text-xs text-muted">
+          ~{minutes} min hands-on cooking · food ≈ {formatINR(cost)}
+        </p>
+      </div>
       <div className="grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-3 lg:grid-cols-5">
         {rows.map(({ t, v, fmt }) => (
           <div key={t.key}>
@@ -276,7 +282,7 @@ function GroceryView({ planId }: { planId: PlanId }) {
         <CardHeader
           title="Weekly grocery list"
           icon={<ShoppingBasket size={18} />}
-          description="Quantities for one week, as weighed (dry pulses and grains, edible portion for meat and fish)."
+          description="Quantities for one week, as bought: dry weight for pulses and grains, whole produce including peel and trimmings, edible portion for meat and fish."
         />
         <div className="grid gap-x-8 gap-y-5 md:grid-cols-2">
           {plan.grocery.map((g) => (
@@ -360,13 +366,20 @@ function PrepView({ planId }: { planId: PlanId }) {
           ))}
         </ol>
         <div className="mt-4 rounded-xl bg-slate-50 p-3 text-xs text-ink-2">
-          <p className="mb-1 font-medium text-ink">Office food safety (fridge + kettle)</p>
+          <p className="mb-1 font-medium text-ink">Leftovers and the office lunch</p>
           <ul className="list-disc space-y-1 pl-4">
-            <li>Refrigerate cooked food within 2 hours. Pack lunch straight from the fridge, and put it in the office fridge when you arrive.</li>
-            <li>Eat cooked rice, chicken and fish leftovers within 24 hours. Dals and sabzis keep 1–2 days.</li>
-            <li>An insulated lunch box lets food packed hot in the morning still be warm at 1 PM. Without a microwave, choose roti or pulao days for cold eating.</li>
+            {[FOOD_SAFETY.leftovers, FOOD_SAFETY.rice, ...FOOD_SAFETY.office].map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+          <p className="mb-1 mt-3 font-medium text-ink">Buying and storing ingredients</p>
+          <ul className="list-disc space-y-1 pl-4">
+            {FOOD_SAFETY.buying.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
           </ul>
         </div>
+        <References ids={FOOD_SAFETY.refs} />
       </Card>
       <Card>
         <CardHeader title="Substitutions" icon={<ArrowLeftRight size={18} />} description="Swap like for like to keep the totals similar." />

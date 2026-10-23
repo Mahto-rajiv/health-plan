@@ -76,6 +76,9 @@ export const REFS = {
   odsZinc: { label: 'NIH Office of Dietary Supplements. Zinc — fact sheet.', url: 'https://ods.od.nih.gov/factsheets/Zinc-HealthProfessional/' },
   odsOmega3: { label: 'NIH Office of Dietary Supplements. Omega-3 fatty acids — fact sheet.', url: 'https://ods.od.nih.gov/factsheets/Omega3FattyAcids-HealthProfessional/' },
   odsIodine: { label: 'NIH Office of Dietary Supplements. Iodine — fact sheet.', url: 'https://ods.od.nih.gov/factsheets/Iodine-HealthProfessional/' },
+  fssRice: { label: 'Food Standards Scotland. How to store and reheat cooked rice safely.', url: 'https://foodstandards.gov.scot/consumers/food-safety/at-home/rice' },
+  fsisLeftovers: { label: 'USDA FSIS. Leftovers and food safety.', url: 'https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/food-safety-basics/leftovers-and-food-safety', note: 'Blocks automated checks; wording confirmed from FSIS material reproduced by US extension services.' },
+  whoMycotoxins: { label: 'WHO (2023). Mycotoxins — fact sheet.', url: 'https://www.who.int/news-room/fact-sheets/detail/mycotoxins' },
   ifct: { label: 'Longvah T et al. (2017). Indian Food Composition Tables. ICMR-NIN.', url: 'https://www.nin.res.in/ebooks/IFCT2017.pdf' },
 } satisfies Record<string, Reference>;
 

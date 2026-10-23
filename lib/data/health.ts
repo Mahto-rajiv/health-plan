@@ -242,5 +242,12 @@ export const SUPPLEMENTS: Supplement[] = [
   },
 ];
 
+/** Shown under the supplement list. Supplement costs are kept out of the food budget. */
+export const SUPPLEMENT_NOTES = [
+  'These costs are separate from the ₹4,000–5,000 food budget. Only vitamin D is recommended outright (≈ ₹100–200/month); B12 is a decision to make with your doctor.',
+  'Choose single-ingredient products that show an FSSAI licence number, and check the dose per tablet. Vitamin D is often sold as 60,000 IU, which is a weekly treatment dose and not the daily dose above.',
+  'Tell your doctor about any supplement before a blood test or if you start a prescription medicine.',
+];
+
 export const HEALTH_DISCLAIMER =
   'This page explains your results in plain language and suggests questions for your doctor. It does not diagnose anything or replace a consultation. Reference ranges vary between laboratories.';

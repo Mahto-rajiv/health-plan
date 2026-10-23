@@ -162,12 +162,35 @@ export const GUT = {
   refs: ['niddkGas', 'girigowda', 'nhsIndigestion', 'nhsBloating'] as RefId[],
 };
 
+// ─── Food safety ──────────────────────────────────────────────────────────────
+
+export const FOOD_SAFETY = {
+  /** Applied to every cooked-double dinner and its packed lunch. */
+  leftovers: 'Refrigerate the second portion within 2 hours of cooking, or within 1 hour on hot days (above ~32 °C). Eat it the next day, and reheat it until it is steaming hot all the way through.',
+  rice: 'Rice: spread the second portion out in the box so it cools within about 1 hour, refrigerate it, and eat it within 24 hours. Reheat it once only, until steaming hot. Eating it cold straight from the fridge is also fine.',
+  office: [
+    'Keep the lunch box and Meal 3 in the office fridge from arrival until you eat. With no fridge, use an insulated bag with an ice pack.',
+    'Cooked chicken and fish, like rice, are eaten the next day, not later.',
+    'Without a microwave, choose the roti, paratha or pulao days for eating cold, and use an insulated box packed hot in the morning on the others.',
+  ],
+  buying: [
+    'Nuts, peanuts, roasted chana and sattu: buy from a shop with high turnover and keep them airtight, dry and cool. Throw away any that look mouldy, discoloured or shrivelled, or taste bitter — that is how aflatoxin contamination usually shows.',
+    'Ground flaxseed and nuts go rancid: buy small packs and keep them in the fridge once opened.',
+    'Paneer: buy a sealed pack whose label says it is made from milk. Products labelled “analogue” are made with vegetable fat and are not the same food.',
+    'Milk for home-set curd: packaged pasteurised milk can be used as it is; boil loose milk first and cool it to lukewarm before adding the starter.',
+    'Rajma and other dry beans must be soaked and then boiled or pressure-cooked until completely soft. Raw or undercooked kidney beans contain a toxin that causes vomiting.',
+    'Wash fruit and salad vegetables under running water before cutting them, and cut salad fresh rather than days ahead.',
+  ],
+  refs: ['fssRice', 'fsisLeftovers', 'whoMycotoxins'] as RefId[],
+};
+
 // ─── Budget ───────────────────────────────────────────────────────────────────
 
-export const PANTRY_MONTHLY = 300; // spices, salt, tea, sugar, ginger-garlic, lemons etc.
+export const PANTRY_MONTHLY = 300; // spices, salt, tea, sugar, ginger-garlic, coriander, mint, curry leaves etc.
 
 export const BUDGET_NOTES = [
   'Prices are approximate (Oct 2026): milk, eggs, chicken, fruit, oats and soya were checked against current listings; the rest are local-shop estimates. Your local prices may differ by ±15%.',
-  'Costs include every food in the plan plus ~₹300/month for spices, salt, tea and other basics. Cooking gas is not included.',
+  'Costs include every food in the plan plus ~₹300/month for spices, salt, tea, herbs and other basics. Cooking gas is not included.',
+  'Produce is costed as bought, so peel, seeds and trimmings are paid for (e.g. ~30% of a papaya, ~35% of a banana). The yields used are typical approximations.',
   'Biggest savers: set curd at home (≈ milk price), buy sattu, chana and dals loose, buy fruit in season, and swap some paneer for soya chunks.',
 ];

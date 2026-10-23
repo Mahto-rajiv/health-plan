@@ -5,7 +5,7 @@ import { Card, CardHeader } from '@/components/ui/Card';
 import { Badge, type BadgeTone } from '@/components/ui/Badge';
 import { Callout } from '@/components/ui/Callout';
 import { References } from '@/components/References';
-import { BLOOD_DATE, BLOOD_RESULTS, HAIR, HEALTH_DISCLAIMER, SUPPLEMENTS, type ResultStatus, type Supplement } from '@/lib/data/health';
+import { BLOOD_DATE, BLOOD_RESULTS, HAIR, HEALTH_DISCLAIMER, SUPPLEMENTS, SUPPLEMENT_NOTES, type ResultStatus, type Supplement } from '@/lib/data/health';
 import type { RefId } from '@/lib/data/references';
 
 export const metadata: Metadata = { title: 'Health' };
@@ -151,6 +151,11 @@ export default function HealthPage() {
                 {s.cautions && <p className="mt-1.5 text-xs text-muted">{s.cautions}</p>}
                 {s.cost && <p className="mt-1.5 text-xs text-muted">Cost: {s.cost}</p>}
               </li>
+            ))}
+          </ul>
+          <ul className="mt-4 list-disc space-y-1 pl-5 text-xs text-muted">
+            {SUPPLEMENT_NOTES.map((n) => (
+              <li key={n}>{n}</li>
             ))}
           </ul>
           <References ids={SUPPLEMENTS.flatMap((s) => s.refs) as RefId[]} />

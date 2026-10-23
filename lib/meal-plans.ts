@@ -1,7 +1,7 @@
 import { FOODS, type FoodId, type GroceryCategory, type Nutrients } from './data/foods';
-import { MEAL_PLAN_DEFINITIONS, buildWeek, type PlanId, type PlannedDay, type MealPlanDefinition } from './data/meal-plans';
-import { PANTRY_MONTHLY } from './data/nutrition-guide';
-import { itemsCost, itemsNutrients, sumNutrients } from './nutrition';
+import { MEAL_PLAN_DEFINITIONS, buildWeek, type PlanId, type PlannedDay, type PlannedMeal, type MealPlanDefinition } from './data/meal-plans';
+import { FOOD_SAFETY, PANTRY_MONTHLY } from './data/nutrition-guide';
+import { boughtGrams, itemCost, itemsCost, itemsNutrients, sumNutrients } from './nutrition';
 
 // Everything here is computed once at module load from the plan definitions,
 // so totals can never drift from the foods listed.
@@ -10,12 +10,16 @@ export interface ComputedDay extends PlannedDay {
   totals: Nutrients;
   cost: number;
   mealTotals: Nutrients[];
+  mealCosts: number[];
+  /** Hands-on cooking minutes that day. A packed lunch was cooked the night before, so it counts 0. */
+  activeMinutes: number;
 }
 
 export interface GroceryLine {
   food: FoodId;
   name: string;
   category: GroceryCategory;
+  /** As bought: includes peel, seeds and trimmings for produce. */
   weeklyGrams: number;
   buy: string;
   pack: string;
@@ -58,16 +62,29 @@ function packHint(food: FoodId, weeklyGrams: number): string {
   if (food === 'paneer') return `1 × ${unit.label} covers ~${Math.floor(7 / ratio)} days — freeze the extra in portions`;
   if (PERISHABLE.has(food)) return 'buy fresh, 2–3 times a week';
   const weeks = Math.floor(1 / ratio);
+  if (FOODS[food].category === 'Nuts & seeds' && weeks > 8) return `buy the smallest pack you can (1 × ${unit.label} would last ${weeks > 26 ? '6+ months' : `~${weeks} weeks`}) and keep it airtight in the fridge`;
   if (weeks > 26) return `1 × ${unit.label} lasts 6+ months`;
   return weeks >= 2 ? `1 × ${unit.label} lasts ~${weeks} weeks` : `1 × ${unit.label} lasts ~${Math.floor(7 / ratio)} days`;
 }
 
 function formatAmount(food: FoodId, grams: number): string {
+  if (food === 'banana') return `${Math.round(grams / FOODS.banana.buyUnit.grams * 12)} bananas`;
   if (food === 'egg') return `${Math.round(grams / 50)} eggs`;
   if (food === 'milk') return `${(grams / 1000).toFixed(1)} L`;
   if (food === 'curd') return `${(grams / 1000).toFixed(1)} L milk`;
   if (grams >= 1000) return `${(grams / 1000).toFixed(1)} kg`;
   return `${Math.round(grams / 10) * 10} g`;
+}
+
+export const mealMinutes = (pm: PlannedMeal) => (pm.tag === 'leftover' ? 0 : pm.meal.minutes);
+
+/** Storage advice for a planned meal: its own note plus the leftovers rule if it is cooked ahead. */
+export function storageAdvice(pm: PlannedMeal): string[] {
+  const out = pm.meal.keeps ? [pm.meal.keeps] : [];
+  if (pm.tag === 'leftover' || pm.tag === 'cook-double') {
+    out.push(pm.meal.items.some((i) => i.food === 'rice') ? FOOD_SAFETY.rice : FOOD_SAFETY.leftovers);
+  }
+  return out;
 }
 
 function computePlan(def: MealPlanDefinition): ComputedPlan {
@@ -79,6 +96,8 @@ function computePlan(def: MealPlanDefinition): ComputedPlan {
       totals: itemsNutrients(items),
       cost: itemsCost(items),
       mealTotals: d.meals.map((m) => itemsNutrients(m.meal.items)),
+      mealCosts: d.meals.map((m) => itemsCost(m.meal.items)),
+      activeMinutes: d.meals.reduce((s, m) => s + mealMinutes(m), 0),
     };
   });
 
@@ -94,14 +113,15 @@ function computePlan(def: MealPlanDefinition): ComputedPlan {
 
   const lines: GroceryLine[] = [...grams.entries()].map(([food, g]) => {
     const f = FOODS[food];
+    const bought = boughtGrams(food, g);
     return {
       food,
       name: f.name,
       category: f.category,
-      weeklyGrams: g,
-      buy: formatAmount(food, g),
-      pack: packHint(food, g),
-      weeklyCost: (f.pricePerKg * g) / 1000,
+      weeklyGrams: bought,
+      buy: formatAmount(food, bought),
+      pack: packHint(food, bought),
+      weeklyCost: itemCost({ food, g }),
     };
   });
   const grocery = CATEGORY_ORDER.map((category) => ({
@@ -246,7 +266,7 @@ export const PROTEIN_VALUE: ProteinValue[] = PROTEIN_FOODS.map((food) => {
     food,
     name: f.name,
     gramsFor20g: g,
-    costFor20g: (f.pricePerKg * g) / 1000,
+    costFor20g: itemCost({ food, g }),
     kcalFor20g: (f.per100.kcal * g) / 100,
     fiberFor20g: (f.per100.fiber * g) / 100,
   };

@@ -6,8 +6,9 @@ A personal, evidence-based training, nutrition, recovery and progress app. It is
 npm install
 npm run dev          # http://localhost:3000
 npm run build        # production build (all routes are statically prerendered)
-npm run validate     # checks meal-plan rules: 4 meals, identical Meal 1 / weekday Meal 3, diet, targets,
-                     # packable office meals, title–ingredient match, eggs/week, cost consistency, budget
+npm run validate     # checks meal-plan rules: 4 meals, identical Meal 1 / weekday Meal 3 (weekend Meal 3 is free),
+                     # diet, targets, ≥400 g fruit+veg, packable office meals with storage advice, hands-on
+                     # time ≤60 min on weekdays, title–ingredient match, eggs/week, cost consistency, budget
 npm run plans:report # day-by-day calories, macros, micronutrients and cost for each plan
 ```
 
@@ -49,6 +50,7 @@ The stored data shapes (`Settings`, `BodyEntry`, `WorkoutRecord`, `MealLog`, `Ch
 
 - Nutrient values are based on IFCT 2017 and USDA data. Treat them as estimates. The UI rounds them on purpose.
 - Prices were checked in October 2026 where possible (milk, eggs, chicken, fruit, soya, oats). The rest are local-shop estimates.
+- Produce is costed as bought: each food has an approximate edible yield (`edible` in `foods.ts`), so peel, seeds and trimmings count toward the cost and the grocery weights.
 - Tutorial links and references were verified when they were added. Re-check them occasionally, because external links can change.
 - This is educational guidance, not medical advice.
 - Work status and open items: see `PROGRESS.md`.
