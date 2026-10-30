@@ -66,12 +66,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-dvh">
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[60] focus:rounded-lg focus:bg-surface focus:px-3 focus:py-2 focus:shadow">
+      <a href="#main" className="print:hidden sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[60] focus:rounded-lg focus:bg-surface focus:px-3 focus:py-2 focus:shadow">
         Skip to content
       </a>
 
       {/* Desktop / laptop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-line bg-surface lg:flex" aria-label="Sidebar navigation">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 print:!hidden flex-col border-r border-line bg-surface lg:flex" aria-label="Sidebar navigation">
         <div className="border-b border-line px-5 py-4">
           <Logo />
         </div>
@@ -103,16 +103,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Mobile / tablet top bar */}
-      <header className="sticky top-0 z-30 flex h-14 items-center border-b border-line bg-surface/95 px-4 backdrop-blur lg:hidden">
+      <header className="print:hidden sticky top-0 z-30 flex h-14 items-center border-b border-line bg-surface/95 px-4 backdrop-blur lg:hidden">
         <Logo />
       </header>
 
-      <main id="main" className="pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-10 lg:pl-60">
+      <main id="main" className="pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-10 lg:pl-60 print:p-0">
         <div className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6 sm:py-7 lg:px-8">{children}</div>
       </main>
 
       {/* Mobile / tablet bottom navigation */}
-      <nav aria-label="Main" className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface lg:hidden">
+      <nav aria-label="Main" className="print:hidden pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface lg:hidden">
         <ul className="mx-auto grid max-w-xl grid-cols-5">
           {primary.map((item) => {
             const active = isActive(pathname, item.href);

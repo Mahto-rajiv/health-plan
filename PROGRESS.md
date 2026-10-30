@@ -4,17 +4,100 @@ Spec: `docs/brief.md` (audit-driven fix, 30 Oct 2026). Branch: `audit-fixes`. No
 
 ## Status
 
-### Done
-- [x] Step 1: inspection of every route, data file and script (findings below).
+### Done (30 Oct 2026)
+- [x] **1. Inspection.** Findings are below and were recorded before any change.
+- [x] **2. Weight, phase and calorie model.**
+  - One config, `lib/config.ts`, holds the profile (64 kg now, 68 kg six months ago, 180 cm, 24), the phases, the budget and the energy factors.
+  - Phases:
+    - Phase 0 (weeks 1–2): 2,090–2,310 kcal, 85.5–94.5 g protein, fibre ≤ 35 g, soya ≤ 20 g, sattu ≤ 25 g.
+    - Phase 1 (weeks 3–4): 2,280–2,520 kcal, 99.75–110.25 g protein, fibre ≤ 40 g.
+    - Phase 2 (week 5+): 2,550–2,700 kcal, 110–125 g protein, fibre ≤ 50 g.
+    - Fat is 25–30% of energy in every phase.
+  - kcal are computed from the macros: 4/4/9, plus 2 kcal per g of fibre (FAO 2003). Carbs are available carbohydrate.
+  - Settings now has an Auto/0/1/2 phase override and an optional current-intake estimate.
+  - Old saved settings are migrated: the "Preferred" plan → Vegetarian, a stored 66 kg → 64 kg, and the morning/evening toggle is removed.
+- [x] **3. Meal structure, 3 plans × 3 phases.** The "Preferred" plan is removed.
+  - Weekday Meal 2 is a cold office lunch: sattu paratha, paneer/egg/soya/chicken rolls, besan chilla, aloo-paneer paratha. No rice, dal, gravy or reheating.
+  - Meal 3 is the same Mon–Fri at 6:15–6:45 PM, with no cooking.
+  - Meal 1 is the same every day and takes ≤ 10 minutes.
+  - Every meal has quantities per phase, household measures, steps, active and total time, pots (≤ 2), swaps, flavour and micronutrients.
+  - Printable dinner cooking cards are at `/meal-plans/cards`.
+  - The cold-lunch rule follows USDA guidance (via Purdue Extension): two cold sources, refrigerate on arrival, 2 h out of the fridge (1 h above ~32 °C).
+  - Quantities were solved with a linear programme. It applies every phase band, the fibre caps, fat 25–30%, the Phase 0 soya and sattu caps, the cross-plan spread, a vitamin C floor, and weekly zinc and iron floors, with realistic portion limits.
+- [x] **4. Training.**
+  - Saturday Lower A and Sunday Upper A are fixed, 60–75 min each.
+  - Lower B (Mon–Wed) and Upper B (Tue–Fri) are ≤ 45 min with 5 exercises, and are offered only before 9:00 PM.
+  - Never two sessions a day; a missed session is skipped, not made up.
+  - Removed: the 7–8:30 PM default, the "slept by 11:30" gate and the catch-up slots.
+  - Added: RIR with RPE, injury prevention, a deload at the latest every 8–10 weeks, and a 12:30 AM bedtime.
+- [x] **5. Health.**
+  - New to-do card: dermatologist, tell the doctor about the ~4 kg loss, and ask for ferritin, zinc, folate and active B12.
+  - The hair text is replaced: weight loss is a plausible trigger and needs a dermatologist. The AAD's 20 lb threshold is stated.
+  - B12 is shortened to: test, course, retest, doctor decides. The lung-cancer cohort detail is dropped.
+  - The stray "₹3,000–4,000" is removed.
+  - The diet coverage table now shows Phase 0 → Phase 2.
+- [x] **6. Budget and prices.**
+  - `BUDGET` is the only source for every "within/above target" label (target ₹4,000–4,500, range ₹3,000–6,000).
+  - `lib/data/prices.ts` holds the prices, all labelled as estimates as of 2026-10.
+  - Settings → Prices edits them in localStorage, and every cost recomputes (checked in the browser).
+  - The meal-plan page shows cost per serving and per 10 g protein for 17 ingredients, and per 10 g protein for each plan.
+- [x] **7. Tests** (`npm test`, 104 tests, built-in Node runner via tsx, no new dependency). Covered:
+  - 7 days × 4 meals; Meal 1 and weekday Meal 3 identical; weekday Meal 2 with no reheating, rice, dal or gravy.
+  - Phase bands, fibre caps, fat %, the Phase 0 soya and sattu caps.
+  - kcal reconciliation ≤ 3% (macros, and the food table per day); cross-plan spread ≤ 5%.
+  - Grocery and monthly cost from the price table; budget labels from the config, with no hard-coded budget figures.
+  - Training limits and schedule rules; weight decisions.
+  - `scripts/validate-plans.ts` is replaced by these tests.
+- [x] **8. Responsive, accessibility and performance.**
+  - All 9 routes (and their tabs) were checked at 320/375/768/1280 px in Chrome against the production build: 0 horizontal overflow, 0 console errors.
+  - Fixed overflows on Settings, the cooking cards and Training.
+  - Added `app/error.tsx`, print styles and 40 px selects.
+  - JS per route went from 278 KB to 255 KB compressed (/progress 384 → 361 KB, Recharts), measured on the production build.
+- [x] **9. Link check** (`npm run links` → `docs/link-report.md`): 193 links, 185 OK, 8 blocked automated access, 0 failed.
+  - Two links followed redirects and were updated: WHO salt → sodium-reduction, and Food Standards Scotland rice → food storage.
+  - The Food Standards Scotland page says hard-boiled eggs keep 2 days, so eggs are now boiled the night before (was a Sun/Wed batch).
+
+### Results (default prices; per day, every day of the week)
+
+| Phase | Plan | kcal | Protein | Fibre | ₹/month | ₹/10 g protein |
+|---|---|---|---|---|---|---|
+| 0 | Vegetarian | 2,171–2,230 | 87–91 | 33–34 | ≈ 4,390 (within target) | 15.3 |
+| 0 | Veg + eggs | 2,157–2,202 | 88–93 | 34 | ≈ 4,380 (within) | 14.9 |
+| 0 | Non-veg | 2,163–2,246 | 88–93 | 31–34 | ≈ 4,700 (above) | 16.0 |
+| 1 | Vegetarian | 2,401–2,439 | 101–103 | 37–40 | ≈ 4,720 (above) | 14.5 |
+| 1 | Veg + eggs | 2,357–2,400 | 103–107 | 37–39 | ≈ 4,800 (above) | 14.2 |
+| 1 | Non-veg | 2,362–2,453 | 101–106 | 34–38 | ≈ 5,140 (above) | 15.5 |
+| 2 | Vegetarian | 2,623–2,654 | 111–114 | 42–48 | ≈ 5,150 (above) | 14.4 |
+| 2 | Veg + eggs | 2,584–2,615 | 115–119 | 40–47 | ≈ 5,200 (above) | 14.0 |
+| 2 | Non-veg | 2,585–2,629 | 112–118 | 35–45 | ≈ 5,630 (above) | 15.4 |
+
+Micronutrients (weekly average, all plans):
+- Iron: 14 mg in Phase 0, 18–19.5 mg in Phase 2.
+- Zinc: 13.0–13.1 mg in Phase 0, 15.4–15.8 mg in Phase 2.
+- Vitamin C ≥ 128 mg on every day.
+- Calcium 1,290–1,640 mg.
+- B12: 3.5–4.8 µg.
 
 ### In progress
-- [ ] Step 2: weight, phase and calorie model; profile fixes.
+- (none)
 
 ### Blocked
 - (none)
 
-### Unverified
-- (filled in as work proceeds)
+### Unverified or known gaps
+- **Prices** are estimates and not re-checked this session. Phase 1–2 costs are above the ₹4,500 target but under ₹6,000. The main driver is dairy (~900 g/day), the low-fibre protein that lets the plans meet protein under the fibre caps.
+- **Zinc in Phase 0** is ~13.0 mg against the 14.1 mg average requirement (ICMR 2020) for those 2 weeks. It is infeasible under the 35 g fibre cap with these foods; Phases 1–2 meet it.
+- **Iron** is near the 19 mg RDA only in Phase 2; it is above the 11 mg average need in every phase.
+- **Omega-3 (ALA)** is not computed. The plans contain little; the Health page suggests 1 tbsp of flaxseed as an option.
+- **Blocked to automated checks, so content not re-read:** NIH ODS fact sheets (5), EFSA DOIs (3), USDA FSIS and FoodSafety.gov (cold-lunch guidance is cited via Purdue Extension, which restates FSIS).
+- **Household cup weights:** USDA values for rice, lentils, oats, besan, atta and yogurt; the rest are kitchen approximations.
+- **New foods:** potato values are USDA SR Legacy 170026; its ₹35/kg price is an estimate.
+- **Session lengths** are estimates (warm-up 11 min + sets × (work + rest) + a 10-min weekend finisher), not timed. Deload weeks are shorter than 60 min by design.
+- **Weekend training time** (late morning) is an assumption; the brief doesn't say.
+- **Photo tracking** stores only the date; photos stay on the phone (no backend).
+- **Food-table kcal:** individual foods differ from 4/4/9 + 2·fibre by up to ~15% (e.g. peanuts +10%). Day totals agree within ~2%.
+- **The linear programme** (`solve.py`, SciPy) lives in the session scratchpad, not in the repo. Quantities in `lib/data/meal-plans.ts` are its rounded output, then hand-adjusted where the tests showed a rounding miss.
+- **Production deploy** (Vercel) was not checked; only local production builds were.
 
 ## Inspection findings (30 Oct 2026, before any change)
 

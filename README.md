@@ -6,10 +6,12 @@ A personal, evidence-based training, nutrition, recovery and progress app. It is
 npm install
 npm run dev          # http://localhost:3000
 npm run build        # production build (all routes are statically prerendered)
-npm run validate     # checks meal-plan rules: 4 meals, identical Meal 1 / weekday Meal 3 (weekend Meal 3 is free),
-                     # diet, targets, ≥400 g fruit+veg, packable office meals with storage advice, hands-on
-                     # time ≤60 min on weekdays, title–ingredient match, eggs/week, cost consistency, budget
-npm run plans:report # day-by-day calories, macros, micronutrients and cost for each plan
+npm test             # 104 rule tests: meal structure, phase targets, fibre caps, cold office lunch,
+                     # kcal reconciliation, cross-plan spread, costs from the price table, budget labels,
+                     # training limits and schedule, weight decisions
+npm run typecheck
+npm run links        # checks every external URL; writes docs/link-report.md (needs network)
+npm run plans:report # day-by-day calories, macros, micronutrients and cost for each plan and phase
 ```
 
 ## Pages
@@ -18,27 +20,29 @@ npm run plans:report # day-by-day calories, macros, micronutrients and cost for 
 |---|---|
 | `/` | Dashboard: today's workout, meal checklist with calorie and protein progress, weight trend and quick weigh-in, this week's adherence, strength, recovery check-in, tonight's prep |
 | `/training` | Workout logger (kg/reps per set, rest timer, previous performance, progression hints, drafts survive reloads), weekly schedule, rescheduling rules, full program with verified tutorials, cardio and mobility, progression and deloads, history |
-| `/meal-plans` | Four 7-day plans, plus a grocery list with pack hints, budget check with computed swaps, protein-per-rupee comparison, prep strategy and substitutions for each |
+| `/meal-plans` | Three 7-day plans × three phases, grocery list, budget (from `lib/config.ts`) with computed swaps, cost per serving and per 10 g protein, food safety; `/meal-plans/cards` prints the dinner cooking cards |
 | `/nutrition` | Targets and how they were derived, meal timing, training-day guidance, the weight-gain decision system, digestion, hydration |
 | `/progress` | Weight and waist logging; charts for weight, waist, strength, consistency and adherence (labelled sample data until you have your own); the "should I keep gaining?" assessment |
 | `/recovery` | Daily check-in, sleep plan, desk-job movement, rest days, recovery signs |
 | `/health` | Blood results explained (not diagnosed), hair-loss guidance, supplements |
-| `/settings` | Profile and goal, active plan, training time, deload week toggle, backup, restore and reset |
+| `/settings` | Profile and goal, active plan, phase override, current-intake estimate, editable price table, deload week, backup, restore and reset |
 
 ## Code layout
 
 ```
 lib/data/          content as data, with no UI code
-  foods.ts         food database (per 100 g: macros, iron, calcium, zinc, vitamin C, price)
-  meal-plans.ts    4 plan definitions; buildWeek() enforces the 4-meal structure
+  foods.ts         food database (per 100 g: macros, iron, calcium, zinc, vitamin C, B12)
+  prices.ts        default prices (estimates, dated); Settings overrides them
+  meal-plans.ts    3 plan definitions, per-phase quantities; buildWeek() enforces the 4-meal structure
   training.ts      sessions, exercises, phases, rescheduling rules, cardio, mobility
   nutrition-guide.ts, health.ts, recovery.ts
   tutorials.ts     verified external links (exercise + cooking)
   references.ts    verified citations
   sample.ts        deterministic, clearly-labelled sample data
-lib/nutrition.ts   nutrient/cost maths (all meal totals are computed, never typed in)
+lib/config.ts      profile, phases, budget and energy factors (single source of truth)
+lib/nutrition.ts   nutrient/cost maths (kcal from macros; all totals computed, never typed in)
 lib/meal-plans.ts  computed plans: daily totals, ranges, grocery list, monthly cost
-lib/training.ts    rotation-based "what's today", progression hints, e1RM
+lib/training.ts    weekly schedule (fixed weekend, flexible weekday sessions), session length, progression hints, e1RM
 lib/progress.ts    weekly averages, gain-rate assessment, adherence series
 lib/storage.ts     hydration-safe localStorage store (useSyncExternalStore), export/import
 components/        UI primitives, app shell, charts (Recharts lazy-loaded), feature components
@@ -49,7 +53,7 @@ The stored data shapes (`Settings`, `BodyEntry`, `WorkoutRecord`, `MealLog`, `Ch
 ## Content notes
 
 - Nutrient values are based on IFCT 2017 and USDA data. Treat them as estimates. The UI rounds them on purpose.
-- Prices were checked in October 2026 where possible (milk, eggs, chicken, fruit, soya, oats). The rest are local-shop estimates.
+- All prices are estimates (Oct 2026) and can be edited in Settings.
 - Produce is costed as bought: each food has an approximate edible yield (`edible` in `foods.ts`), so peel, seeds and trimmings count toward the cost and the grocery weights.
 - Tutorial links and references were verified when they were added. Re-check them occasionally, because external links can change.
 - This is educational guidance, not medical advice.
