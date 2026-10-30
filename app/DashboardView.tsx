@@ -2,17 +2,18 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Activity, BedDouble, Check, ChevronRight, Dumbbell, MoonStar, Scale, TrendingUp, Utensils, CheckCircle2, ListTodo } from 'lucide-react';
+import { BedDouble, Check, ChevronRight, Clock, Dumbbell, MoonStar, Scale, TrendingUp, Utensils, CheckCircle2, ListTodo } from 'lucide-react';
 import { useBodyLog, useCheckIns, useMealLog, useSettings, useWorkoutLog } from '@/lib/storage';
 import { useToday } from '@/lib/hooks';
-import { addDays, dayName, longDate, programWeek, shortDate, weekStart, daysBetween } from '@/lib/dates';
-import { DEFAULT_WEEK, SESSIONS } from '@/lib/data/training';
+import { addDays, dayName, longDate, programWeek, shortDate, weekStart } from '@/lib/dates';
+import { SESSIONS, WEEK_PLAN } from '@/lib/data/training';
 import { DAYS, MEAL_SLOTS } from '@/lib/data/meal-plans';
-import { TARGETS } from '@/lib/data/nutrition-guide';
-import { getPlan } from '@/lib/meal-plans';
+import { PHASES } from '@/lib/config';
+import { useActivePlan } from '@/lib/plan-hooks';
+import { assessToday } from '@/lib/phase';
 import { roundKcal, sumNutrients } from '@/lib/nutrition';
-import { activeExercises, nextSession, todayTraining } from '@/lib/training';
-import { assessGain, averageSleep, rollingAverage, strengthSeries } from '@/lib/progress';
+import { activeExercises, estimateMinutes, plannedFor, todayTraining } from '@/lib/training';
+import { DOCTOR_WEIGHT_LOSS, averageSleep, rollingAverage, strengthSeries } from '@/lib/progress';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -20,9 +21,6 @@ import { ProgressBar } from '@/components/ui/Progress';
 import { Sparkline } from '@/components/charts/Sparkline';
 import { CheckInForm } from '@/components/recovery/CheckInForm';
 import { cn } from '@/lib/utils';
-
-const KCAL = TARGETS.find((t) => t.key === 'kcal')!.value;
-const PROTEIN = TARGETS.find((t) => t.key === 'protein')!.value;
 
 function greeting() {
   const h = new Date().getHours();
@@ -52,6 +50,7 @@ function Dashboard({ today }: { today: string }) {
   const week = programWeek(settings.programStart, today);
   const deload = settings.deloadWeek === weekStart(today);
   const name = settings.firstName?.trim();
+  const { plan, phase } = useActivePlan(today);
 
   return (
     <div className="space-y-5">
@@ -65,7 +64,8 @@ function Dashboard({ today }: { today: string }) {
         <div className="flex flex-wrap gap-2">
           <Badge tone="outline">Program week {week}</Badge>
           {deload && <Badge tone="info">Deload week</Badge>}
-          <Badge tone="outline">{getPlan(settings.planId).def.shortName} plan</Badge>
+          <Badge tone="outline">{PHASES[phase].name.split(' · ')[0]}</Badge>
+          <Badge tone="outline">{plan.def.shortName} plan</Badge>
         </div>
       </header>
 
@@ -84,8 +84,8 @@ function Dashboard({ today }: { today: string }) {
 
 function TrainingCard({ today, week, deload, log }: { today: string; week: number; deload: boolean; log: ReturnType<typeof useWorkoutLog>[0] }) {
   const plan = todayTraining(log, today);
-  const s = plan.sessionId ? SESSIONS[plan.sessionId] : null;
-  const exercises = plan.sessionId ? activeExercises(plan.sessionId, week, deload) : [];
+  const s = plan.sessionId && plan.kind !== 'late' ? SESSIONS[plan.sessionId] : null;
+  const exercises = s ? activeExercises(s.id, week, deload) : [];
   return (
     <Card className="lg:col-span-2">
       <CardHeader
@@ -109,8 +109,12 @@ function TrainingCard({ today, week, deload, log }: { today: string; week: numbe
         <div>
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <h3 className="text-lg font-semibold text-ink">{s.name}</h3>
-            <span className="text-sm text-muted">{s.minutes}</span>
-            {plan.kind === 'lift-optional' && <Badge tone="caution">Optional catch-up</Badge>}
+            <span className="text-sm text-muted">≈ {estimateMinutes(s.id, week, deload)} min</span>
+            {plan.kind === 'flex' && (
+              <Badge tone="caution">
+                <Clock size={12} aria-hidden /> at the gym by 9 PM
+              </Badge>
+            )}
           </div>
           <p className="mt-1 text-sm text-ink-2">{plan.note}</p>
           <ol className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
@@ -130,9 +134,9 @@ function TrainingCard({ today, week, deload, log }: { today: string; week: numbe
         </div>
       ) : (
         <div className="flex items-start gap-3 rounded-xl bg-slate-50 p-4">
-          {plan.kind === 'cardio' ? <Activity className="mt-0.5 shrink-0 text-accent" size={20} aria-hidden /> : <BedDouble className="mt-0.5 shrink-0 text-muted" size={20} aria-hidden />}
+          <BedDouble className="mt-0.5 shrink-0 text-muted" size={20} aria-hidden />
           <div>
-            <div className="font-semibold text-ink">{DEFAULT_WEEK[dayName(today)].label}</div>
+            <div className="font-semibold text-ink">{plan.kind === 'late' ? 'Skip tonight' : 'No session today'}</div>
             <p className="text-sm text-ink-2">{plan.note}</p>
           </div>
         </div>
@@ -148,13 +152,11 @@ function WeightCard() {
   const [input, setInput] = useState('');
   const series = useMemo(() => rollingAverage(body), [body]);
   const latest = series[series.length - 1];
-  const status = useMemo(
-    () => assessGain(body, { heightCm: settings.heightCm, monthsIn: Math.max(0, daysBetween(settings.programStart, today) / 30.4) }),
-    [body, settings.heightCm, settings.programStart, today],
-  );
+  const status = useMemo(() => assessToday(body, settings, today), [body, settings, today]);
   const current = latest?.avg ?? settings.startWeightKg;
   const gained = current - settings.startWeightKg;
-  const span = settings.targetWeightKg - settings.startWeightKg;
+  // The progress bar runs to the first checkpoint (pre-loss weight), not the long-term goal.
+  const span = settings.preLossWeightKg - settings.startWeightKg;
 
   const save = (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,11 +188,12 @@ function WeightCard() {
           {gained >= 0 ? '+' : ''}
           {gained.toFixed(1)} kg
         </span>
-        <span>{settings.targetWeightKg} kg goal</span>
+        <span>{settings.preLossWeightKg} kg checkpoint</span>
       </div>
-      <ProgressBar value={Math.max(0, gained)} max={span > 0 ? span : 1} className="mt-1.5" label="Progress toward goal weight" />
+      <ProgressBar value={Math.max(0, gained)} max={span > 0 ? span : 1} className="mt-1.5" label="Progress toward the first checkpoint" />
       <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs">
-        <span className="font-medium text-ink">{status.headline}.</span> <span className="text-ink-2">Target +{status.targetRange[0]}–{status.targetRange[1]} kg/month.</span>
+        <span className="font-medium text-ink">{status.headline}.</span> <span className="text-ink-2">{status.action}</span>
+        {status.doctor && <p className="mt-1 font-medium text-amber-800">{DOCTOR_WEIGHT_LOSS}</p>}
       </div>
       <form onSubmit={save} className="mt-3 flex gap-2">
         <label className="sr-only" htmlFor="quick-weight">
@@ -215,9 +218,9 @@ function WeightCard() {
 }
 
 function MealsCard({ today }: { today: string }) {
-  const [settings] = useSettings();
   const [mealLog, setMealLog] = useMealLog();
-  const plan = getPlan(settings.planId);
+  const { plan, phase } = useActivePlan(today);
+  const target = PHASES[phase];
   const day = plan.days.find((d) => d.day === dayName(today))!;
   const checked = mealLog[today] ?? [false, false, false, false];
   const eaten = sumNutrients(day.mealTotals.filter((_, i) => checked[i]));
@@ -233,7 +236,7 @@ function MealsCard({ today }: { today: string }) {
       <CardHeader
         title="Today's meals"
         icon={<Utensils size={18} />}
-        description={`${plan.def.name}. Tick each meal you eat as planned.`}
+        description={`${plan.def.name}, ${target.name}. Tick each meal you eat as planned.`}
         action={
           <Link href="/meal-plans" className="inline-flex min-h-8 items-center gap-0.5 text-sm text-accent hover:underline">
             Details <ChevronRight size={16} aria-hidden />
@@ -282,20 +285,20 @@ function MealsCard({ today }: { today: string }) {
               <span className="text-muted">Calories</span>
               <span>
                 <span className="font-semibold text-ink">{roundKcal(eaten.kcal).toLocaleString('en-IN')}</span>
-                <span className="text-muted"> / {KCAL.toLocaleString('en-IN')}</span>
+                <span className="text-muted"> / {roundKcal(day.totals.kcal).toLocaleString('en-IN')}</span>
               </span>
             </div>
-            <ProgressBar value={eaten.kcal} max={KCAL} className="mt-1.5" label="Calories eaten" />
+            <ProgressBar value={eaten.kcal} max={day.totals.kcal} className="mt-1.5" label="Calories eaten" />
           </div>
           <div>
             <div className="tabular flex items-baseline justify-between text-sm">
               <span className="text-muted">Protein</span>
               <span>
                 <span className="font-semibold text-ink">{Math.round(eaten.protein)}</span>
-                <span className="text-muted"> / {PROTEIN} g</span>
+                <span className="text-muted"> / {Math.round(day.totals.protein)} g</span>
               </span>
             </div>
-            <ProgressBar value={eaten.protein} max={PROTEIN} className="mt-1.5" label="Protein eaten" />
+            <ProgressBar value={eaten.protein} max={day.totals.protein} className="mt-1.5" label="Protein eaten" />
           </div>
           <div>
             <div className="tabular flex items-baseline justify-between text-sm">
@@ -306,7 +309,9 @@ function MealsCard({ today }: { today: string }) {
               </span>
             </div>
           </div>
-          <p className="text-xs text-muted">Today&apos;s plan totals {roundKcal(day.totals.kcal).toLocaleString('en-IN')} kcal and {Math.round(day.totals.protein)} g protein if all four meals are eaten.</p>
+          <p className="text-xs text-muted">
+            Phase target: {target.kcal[0].toLocaleString('en-IN')}–{target.kcal[1].toLocaleString('en-IN')} kcal and {Math.round(target.protein[0])}–{Math.round(target.protein[1])} g protein. The bars fill to today&apos;s plan.
+          </p>
         </div>
       </div>
     </Card>
@@ -334,7 +339,7 @@ function WeekCard({ today }: { today: string }) {
       <CardHeader title="This week" icon={<TrendingUp size={18} />} />
       <ol className="grid grid-cols-7 gap-1" aria-label="Training days this week">
         {dates.map((d) => {
-          const planned = DEFAULT_WEEK[dayName(d)].type === 'lift';
+          const planned = WEEK_PLAN[dayName(d)].type === 'lift-fixed';
           const done = lifted.has(d);
           const isToday = d === today;
           return (
@@ -346,9 +351,9 @@ function WeekCard({ today }: { today: string }) {
                   done ? 'border-emerald-500 bg-emerald-500 text-white' : planned ? 'border-line-strong text-muted' : 'border-dashed border-line text-transparent',
                   isToday && !done && 'border-accent',
                 )}
-                title={done ? 'Lifted' : planned ? 'Planned lift' : 'Rest / cardio'}
+                title={done ? 'Lifted' : planned ? 'Fixed session' : 'Flexible weekday session or walk'}
               >
-                {done ? <Check size={14} aria-hidden /> : planned ? 'L' : '·'}
+                {done ? <Check size={14} aria-hidden /> : planned ? 'L' : 'f'}
               </span>
             </li>
           );
@@ -368,7 +373,7 @@ function WeekCard({ today }: { today: string }) {
           <dd className="text-lg font-semibold text-ink">{cardio}m</dd>
         </div>
       </dl>
-      <p className="mt-3 text-xs text-muted">Target: 4 lifts (3 is fine), at least 80% of meals as planned, and 150+ minutes of moderate activity a week including walking.</p>
+      <p className="mt-3 text-xs text-muted">Target: 4 sessions (Saturday, Sunday and two flexible weekday ones; 3 is fine), at least 80% of meals as planned, and 150+ minutes of moderate activity a week including walking. L = fixed, f = flexible.</p>
     </Card>
   );
 }
@@ -420,7 +425,7 @@ function RecoveryCard({ today }: { today: string }) {
       <CardHeader
         title="Recovery"
         icon={<MoonStar size={18} />}
-        description={avg !== null ? `7-day sleep average: ${avg.toFixed(1)} h` : 'Aim for 7.5–8 h in bed.'}
+        description={avg !== null ? `7-day sleep average: ${avg.toFixed(1)} h` : 'Aim for 7.5–8 h in bed: lights out by 12:30 AM.'}
         action={<Link href="/recovery" className="inline-flex min-h-8 items-center text-sm text-accent hover:underline">Recovery</Link>}
       />
       <CheckInForm compact />
@@ -430,27 +435,25 @@ function RecoveryCard({ today }: { today: string }) {
 }
 
 function TonightCard({ today }: { today: string }) {
-  const [settings] = useSettings();
   const [log] = useWorkoutLog();
-  const plan = getPlan(settings.planId);
   const todayName = dayName(today);
   const tomorrow = addDays(today, 1);
   const tomorrowName = dayName(tomorrow);
-  const day = plan.days.find((d) => d.day === todayName)!;
+  const { plan } = useActivePlan(tomorrow);
   const tomorrowDay = plan.days.find((d) => d.day === tomorrowName)!;
-  const dinner = day.meals[3];
+  const [meal1, lunch, meal3, dinner] = tomorrowDay.meals;
   const tasks: string[] = [];
-  if (dinner.tag === 'cook-double') tasks.push(`Cook “${dinner.meal.title}” double and refrigerate the extra portion for tomorrow’s lunch.`);
-  if (tomorrowDay.meals[2].tag === 'fixed-weekday') tasks.push(`Pack tomorrow’s Meal 3: ${tomorrowDay.meals[2].meal.title.toLowerCase()}.`);
+  if (meal1.meal.items.some((i) => i.food === 'egg')) tasks.push('Boil tomorrow’s eggs while dinner cooks and refrigerate them.');
+  if (!tomorrowDay.isWeekend) {
+    tasks.push('Freeze a water bottle and an ice pack for tomorrow’s lunch bag.');
+    if (lunch.meal.madeWhen === 'night-before') tasks.push(`Make tomorrow’s lunch filling tonight and refrigerate it: ${lunch.meal.title.toLowerCase()}.`);
+    if (lunch.meal.dayBefore) tasks.push(lunch.meal.dayBefore);
+    tasks.push(`Morning: pack Meal 3 (${meal3.meal.title.toLowerCase()}) with the lunch.`);
+  }
+  if (dinner.meal.dayBefore) tasks.push(`For tomorrow’s dinner: ${dinner.meal.dayBefore.charAt(0).toLowerCase()}${dinner.meal.dayBefore.slice(1)}`);
   tasks.push('Set curd from milk for tomorrow.');
   if (todayName === 'Sunday') tasks.push(plan.def.prepStrategy[0]);
-  const plannedTomorrow = DEFAULT_WEEK[tomorrowName];
-  const doneToday = log.some((w) => w.date === today);
-  const next = nextSession(log);
-  const tomorrowTraining =
-    plannedTomorrow.type === 'lift'
-      ? `${SESSIONS[next].name}${doneToday || DEFAULT_WEEK[todayName].type !== 'lift' ? '' : ' (if today’s session is done)'}`
-      : plannedTomorrow.label;
+  const tomorrowTraining = plannedFor(log, tomorrow);
   return (
     <Card>
       <CardHeader title="Tonight & tomorrow" icon={<ListTodo size={18} />} />
@@ -466,7 +469,7 @@ function TonightCard({ today }: { today: string }) {
         <span className="text-muted">Tomorrow ({tomorrowName}): </span>
         <span className="font-medium text-ink">{tomorrowTraining}</span>
       </div>
-      <p className="mt-3 text-xs text-muted">Lights out by ~11:30 PM–midnight for 7.5 h or more before a 7:30 AM alarm.</p>
+      <p className="mt-3 text-xs text-muted">Lights out by 12:30 AM; an 8:00 AM alarm gives 7.5 h.</p>
     </Card>
   );
 }

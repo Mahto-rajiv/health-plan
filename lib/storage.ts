@@ -3,6 +3,7 @@
 import { useCallback, useSyncExternalStore } from 'react';
 import type { PlanId } from './data/meal-plans';
 import type { SessionId } from './data/training';
+import { PROFILE, type PhaseId } from './config';
 
 // ─── Persisted data shapes ────────────────────────────────────────────────────
 // Everything lives in localStorage under versioned keys. The shapes are plain
@@ -10,12 +11,18 @@ import type { SessionId } from './data/training';
 
 export interface Settings {
   planId: PlanId;
-  trainingTime: 'evening' | 'morning';
-  /** ISO date (YYYY-MM-DD) the program started — drives the week number. */
+  /** ISO date (YYYY-MM-DD) the program started — drives the week number and the phase. */
   programStart: string;
+  /** 'auto' follows the program week; a number pins that phase. */
+  phase: 'auto' | PhaseId;
   startWeightKg: number;
+  /** Weight before the recent loss; the first checkpoint. */
+  preLossWeightKg: number;
   targetWeightKg: number;
   heightCm: number;
+  /** Optional self-estimate of what you eat now (before starting the plan). */
+  intakeKcal?: number;
+  intakeProtein?: number;
   /** Monday (YYYY-MM-DD) of a week the user marked as a deload week. */
   deloadWeek?: string | null;
   /** Optional first name shown in the dashboard greeting. */
@@ -26,6 +33,10 @@ export interface BodyEntry {
   date: string; // YYYY-MM-DD
   weightKg?: number;
   waistCm?: number;
+  /** A weight remembered or from an old record, not a weigh-in: charted, never used for decisions. */
+  recalled?: boolean;
+  /** A progress photo was taken this day (the photo stays on your phone). */
+  photo?: boolean;
 }
 
 export interface LoggedSet {
@@ -62,14 +73,35 @@ export interface CheckIn {
 export type CheckInLog = Record<string, CheckIn>;
 
 export const DEFAULT_SETTINGS: Settings = {
-  planId: 'preferred',
-  trainingTime: 'evening',
-  programStart: '2026-10-06',
-  startWeightKg: 66,
-  targetWeightKg: 75,
-  heightCm: 180,
+  planId: 'vegetarian',
+  programStart: '2026-11-02',
+  phase: 'auto',
+  startWeightKg: PROFILE.weightKg,
+  preLossWeightKg: PROFILE.preLossWeightKg,
+  targetWeightKg: PROFILE.longTermTargetKg,
+  heightCm: PROFILE.heightCm,
   deloadWeek: null,
 };
+
+/** Price overrides, ₹ per kg by food id. Missing foods use lib/data/prices.ts. */
+export type PriceOverrides = Partial<Record<string, number>>;
+
+const VALID_PLANS: PlanId[] = ['vegetarian', 'egg', 'nonveg'];
+
+/**
+ * Settings saved by older versions: the "Preferred" plan no longer exists, and
+ * 66 kg was the old default start weight (the real figure is 64 kg).
+ */
+function migrateSettings(s: Settings & { trainingTime?: unknown }): Settings {
+  const { trainingTime: _drop, ...rest } = s;
+  void _drop;
+  return {
+    ...rest,
+    planId: VALID_PLANS.includes(rest.planId) ? rest.planId : 'vegetarian',
+    startWeightKg: rest.startWeightKg === 66 ? PROFILE.weightKg : rest.startWeightKg,
+    phase: rest.phase === 'auto' || rest.phase === 0 || rest.phase === 1 || rest.phase === 2 ? rest.phase : 'auto',
+  };
+}
 
 const PREFIX = 'hp:v2:';
 export const KEYS = {
@@ -79,6 +111,7 @@ export const KEYS = {
   draft: `${PREFIX}draft`,
   meals: `${PREFIX}meals`,
   checkins: `${PREFIX}checkins`,
+  prices: `${PREFIX}prices`,
 } as const;
 export type StoreKey = (typeof KEYS)[keyof typeof KEYS];
 
@@ -131,6 +164,7 @@ function read<T>(key: string, fallback: T): T {
       value = fallback;
     }
   }
+  if (key === KEYS.settings) value = migrateSettings(value as Settings) as T;
   cache.set(key, { raw, value });
   return value;
 }
@@ -205,6 +239,8 @@ export const useWorkoutLog = () => useStore<WorkoutRecord[]>(KEYS.workouts, EMPT
 export const useMealLog = () => useStore<MealLog>(KEYS.meals, EMPTY_OBJECT as MealLog);
 export const useCheckIns = () => useStore<CheckInLog>(KEYS.checkins, EMPTY_OBJECT as CheckInLog);
 export const useWorkoutDraft = () => useStore<WorkoutDraft | null>(KEYS.draft, null);
+export const usePriceOverrides = () => useStore<PriceOverrides>(KEYS.prices, EMPTY_OBJECT as PriceOverrides);
+
 
 export function exportAll(): string {
   const out: Record<string, unknown> = {};

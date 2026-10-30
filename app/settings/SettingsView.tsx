@@ -1,16 +1,94 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Download, Upload, RotateCcw, User, CalendarRange, Database } from 'lucide-react';
-import { useSettings, useHydrated, exportAll, importAll, clearAll, type Settings } from '@/lib/storage';
+import { Download, Upload, RotateCcw, User, CalendarRange, Database, IndianRupee } from 'lucide-react';
+import { useSettings, useHydrated, usePriceOverrides, exportAll, importAll, clearAll, type Settings } from '@/lib/storage';
 import { useToday } from '@/lib/hooks';
 import { programWeek, shortDate, weekStart, addDays } from '@/lib/dates';
-import { PLANS } from '@/lib/meal-plans';
-import type { PlanId } from '@/lib/data/meal-plans';
+import { MEAL_PLAN_DEFINITIONS, type PlanId } from '@/lib/data/meal-plans';
+import { FOODS, type FoodId } from '@/lib/data/foods';
+import { DEFAULT_PRICES, PRICES_AS_OF } from '@/lib/data/prices';
+import { PHASES, PROFILE, phaseForWeek } from '@/lib/config';
+import { waistLimits } from '@/lib/progress';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Callout } from '@/components/ui/Callout';
 import { Segmented } from '@/components/ui/Segmented';
+
+function OptField({ label, value, onChange, suffix, step }: { label: string; value: number | undefined; onChange: (v: number | undefined) => void; suffix: string; step: string }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-medium text-muted">{label}</span>
+      <span className="mt-1 flex h-10 items-center rounded-lg border border-line-strong bg-surface focus-within:border-accent">
+        <input
+          type="number"
+          inputMode="decimal"
+          step={step}
+          placeholder="—"
+          value={value ?? ''}
+          onChange={(e) => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+          className="tabular h-full w-full min-w-0 rounded-lg bg-transparent px-3 text-[15px] outline-none"
+        />
+        <span className="pr-3 text-xs text-muted">{suffix}</span>
+      </span>
+    </label>
+  );
+}
+
+/** Every price used by the plans, editable; blank = default. Costs everywhere recompute from this table. */
+function PriceTable() {
+  const [overrides, setOverrides] = usePriceOverrides();
+  const ids = Object.keys(DEFAULT_PRICES) as FoodId[];
+  const edited = ids.filter((id) => typeof overrides[id] === 'number').length;
+  const set = (id: FoodId, raw: string) =>
+    setOverrides((prev) => {
+      const next = { ...prev };
+      const v = Number(raw);
+      if (raw === '' || !Number.isFinite(v) || v <= 0) delete next[id];
+      else next[id] = v;
+      return next;
+    });
+  return (
+    <Card className="lg:col-span-2">
+      <CardHeader
+        title="Prices"
+        icon={<IndianRupee size={18} />}
+        description={`₹ per kg as bought (milk per litre). Defaults are estimates from ${PRICES_AS_OF}, not quotes. Enter your shop's price to replace one; all costs and grocery totals recompute.`}
+        action={
+          edited ? (
+            <Button variant="ghost" size="sm" onClick={() => setOverrides({})}>
+              Reset {edited} edited
+            </Button>
+          ) : undefined
+        }
+      />
+      <ul className="grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
+        {ids.map((id) => {
+          const def = DEFAULT_PRICES[id];
+          const v = overrides[id];
+          return (
+            <li key={id} className="flex min-w-0 items-center justify-between gap-3 border-b border-line py-1.5">
+              <label htmlFor={`price-${id}`} className="min-w-0 text-sm text-ink">
+                <span className="block">{FOODS[id].name}</span>
+                <span className="block text-[11px] text-muted">default ₹{def.perKg}{def.note ? ` · ${def.note}` : ''}</span>
+              </label>
+              <input
+                id={`price-${id}`}
+                type="number"
+                inputMode="decimal"
+                min="1"
+                placeholder={String(def.perKg)}
+                value={typeof v === 'number' ? v : ''}
+                onChange={(e) => set(id, e.target.value)}
+                className="tabular h-10 w-24 shrink-0 rounded-lg border border-line-strong bg-surface px-2 text-right text-[15px]"
+              />
+            </li>
+          );
+        })}
+      </ul>
+    </Card>
+  );
+}
 
 function NumField({ label, value, onChange, suffix, step = '0.5' }: { label: string; value: number; onChange: (v: number) => void; suffix: string; step?: string }) {
   return (
@@ -70,7 +148,7 @@ export function SettingsView() {
   return (
     <div className="grid gap-5 lg:grid-cols-2">
       <Card>
-        <CardHeader title="Profile & goal" icon={<User size={18} />} description="Used for the waist limit, weight-progress bar and decisions." />
+        <CardHeader title="Profile & goal" icon={<User size={18} />} description={`Defaults: ${PROFILE.sex}, ${PROFILE.age}, ${PROFILE.heightCm} cm, ${PROFILE.weightKg} kg now, ${PROFILE.preLossWeightKg} kg six months ago. Used for the waist limits, the checkpoint and the weight decisions.`} />
         <div className="space-y-3">
           <label className="block">
             <span className="text-xs font-medium text-muted">Your first name (optional — shown in the greeting)</span>
@@ -84,7 +162,8 @@ export function SettingsView() {
           </label>
           <div className="grid grid-cols-2 gap-3">
             <NumField label="Height" value={settings.heightCm} onChange={(v) => update({ heightCm: v })} suffix="cm" step="1" />
-            <NumField label="Start weight" value={settings.startWeightKg} onChange={(v) => update({ startWeightKg: v })} suffix="kg" />
+            <NumField label="Start weight (now)" value={settings.startWeightKg} onChange={(v) => update({ startWeightKg: v })} suffix="kg" />
+            <NumField label="Pre-loss weight (checkpoint)" value={settings.preLossWeightKg} onChange={(v) => update({ preLossWeightKg: v })} suffix="kg" />
             <NumField label="Long-term target" value={settings.targetWeightKg} onChange={(v) => update({ targetWeightKg: v })} suffix="kg" />
             <label className="block">
               <span className="text-xs font-medium text-muted">Program start</span>
@@ -98,8 +177,19 @@ export function SettingsView() {
           </div>
         </div>
         <p className="mt-3 text-xs text-muted">
-          Waist limit at your height: {Math.round(settings.heightCm / 2)} cm (half your height). Review point: {Math.round(settings.heightCm * 0.47)} cm.
+          Waist limit at your height: {waistLimits(settings.heightCm).stop} cm (half your height). Review point: {waistLimits(settings.heightCm).review} cm.
         </p>
+        <div className="mt-4 border-t border-line pt-3">
+          <div className="text-xs font-medium text-muted">What you eat now (optional, your own estimate)</div>
+          <div className="mt-2 grid grid-cols-2 gap-3">
+            <OptField label="Calories" value={settings.intakeKcal} onChange={(v) => update({ intakeKcal: v })} suffix="kcal" step="50" />
+            <OptField label="Protein" value={settings.intakeProtein} onChange={(v) => update({ intakeProtein: v })} suffix="g" step="5" />
+          </div>
+          <p className="mt-2 text-xs text-muted">
+            Only for comparison with Phase 0 ({PHASES[0].kcal[0].toLocaleString('en-IN')}–{PHASES[0].kcal[1].toLocaleString('en-IN')} kcal, ~90 g protein). If you eat much less than that now, the
+            digestive ramp on the Nutrition page matters even more.
+          </p>
+        </div>
       </Card>
 
       <Card>
@@ -107,19 +197,26 @@ export function SettingsView() {
         <div className="space-y-4">
           <div>
             <div className="mb-1 text-xs font-medium text-muted">Active meal plan</div>
-            <Segmented<PlanId> wrap label="Active meal plan" value={settings.planId} onChange={(v) => update({ planId: v })} options={PLANS.map((p) => ({ value: p.def.id, label: p.def.shortName }))} />
+            <Segmented<PlanId> wrap label="Active meal plan" value={settings.planId} onChange={(v) => update({ planId: v })} options={MEAL_PLAN_DEFINITIONS.map((p) => ({ value: p.id, label: p.shortName }))} />
           </div>
           <div>
-            <div className="mb-1 text-xs font-medium text-muted">Usual training time</div>
-            <Segmented
-              label="Usual training time"
-              value={settings.trainingTime}
-              onChange={(v) => update({ trainingTime: v })}
+            <div className="mb-1 text-xs font-medium text-muted">Phase</div>
+            <Segmented<string>
+              wrap
+              label="Phase"
+              value={String(settings.phase)}
+              onChange={(v) => update({ phase: v === 'auto' ? 'auto' : (Number(v) as 0 | 1 | 2) })}
               options={[
-                { value: 'evening', label: 'Evening' },
-                { value: 'morning', label: 'Morning' },
+                { value: 'auto', label: 'Auto' },
+                { value: '0', label: 'Phase 0' },
+                { value: '1', label: 'Phase 1' },
+                { value: '2', label: 'Phase 2' },
               ]}
             />
+            <p className="mt-1.5 text-xs text-muted">
+              Auto follows the program week ({today ? `now week ${programWeek(settings.programStart, today)} → ${PHASES[phaseForWeek(programWeek(settings.programStart, today))].name}` : '…'}).
+              Pick a phase to move up early (e.g. when the Progress page suggests +200 kcal) or to stay longer.
+            </p>
           </div>
           <div className="rounded-xl border border-line p-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -137,6 +234,8 @@ export function SettingsView() {
           </div>
         </div>
       </Card>
+
+      <PriceTable />
 
       <Card className="lg:col-span-2">
         <CardHeader title="Your data" icon={<Database size={18} />} description="Everything is stored only in this browser (localStorage). No account, no server." />

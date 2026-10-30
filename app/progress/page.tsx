@@ -9,7 +9,7 @@ export default function ProgressPage() {
     <>
       <PageHeader
         title="Progress"
-        description="Weight, waist, strength and consistency, with a clear rule for when to keep gaining, slow down or stop."
+        description="Weight (including past weights), waist, photos, strength and consistency, with clear rules: first stop the loss, then gain slowly, and when to slow down or stop."
       />
       <ProgressView />
     </>

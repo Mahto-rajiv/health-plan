@@ -25,7 +25,7 @@ function buildBody(): BodyEntry[] {
   const out: BodyEntry[] = [];
   for (let d = 0; d < WEEKS * 7; d++) {
     if (d % 7 === 2 || d % 7 === 5 || d % 7 === 6) continue; // ~4 weigh-ins a week
-    const trend = 66 + (d / 30) * 0.7;
+    const trend = 64 + (d / 30) * 0.7;
     const noise = (r() - 0.5) * 1.0;
     const entry: BodyEntry = { date: addDays(SAMPLE_START, d), weightKg: Math.round((trend + noise) * 10) / 10 };
     if (d % 7 === 0) entry.waistCm = Math.round((77 + (d / 84) * 0.8 + (r() - 0.5) * 0.4) * 10) / 10;
