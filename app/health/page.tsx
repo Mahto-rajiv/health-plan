@@ -1,12 +1,15 @@
 import type { Metadata } from 'next';
-import { ClipboardList, FlaskConical, Pill, Salad, Scissors, Stethoscope } from 'lucide-react';
+import { ClipboardList, FlaskConical, ListChecks, Pill, Salad, Scissors, Stethoscope } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Badge, type BadgeTone } from '@/components/ui/Badge';
 import { Callout } from '@/components/ui/Callout';
 import { References } from '@/components/References';
-import { BLOOD_DATE, BLOOD_RESULTS, DIET_COVERAGE, HAIR, HEALTH_DISCLAIMER, SUPPLEMENTS, SUPPLEMENT_NOTES, SUPPLEMENT_NOTE_REFS, type Coverage, type CoverageRow, type ResultStatus, type Supplement } from '@/lib/data/health';
-import { PLANS, planB12 } from '@/lib/meal-plans';
+import { BLOOD_DATE, BLOOD_RESULTS, DIET_COVERAGE, HAIR, HEALTH_TODO, HEALTH_DISCLAIMER, SUPPLEMENTS, SUPPLEMENT_NOTES, SUPPLEMENT_NOTE_REFS, type Coverage, type CoverageRow, type ResultStatus, type Supplement } from '@/lib/data/health';
+import { defaultPlans } from '@/lib/meal-plans';
+
+// Server component: computed once at build time.
+const DEFAULT_PLANS = defaultPlans();
 import type { RefId } from '@/lib/data/references';
 
 export const metadata: Metadata = { title: 'Health' };
@@ -28,10 +31,11 @@ const LEVEL: Record<string, BadgeTone> = { Reasonable: 'good', Mixed: 'caution',
 
 const COVERAGE: Record<Coverage, BadgeTone> = { 'Covered by diet': 'good', Close: 'caution', 'Not from diet': 'alert' };
 
-/** Average daily amount in each plan, computed from its foods. */
-function planAmount(key: NonNullable<CoverageRow['key']>, plan: (typeof PLANS)[number]): string {
-  const v = key === 'b12' ? planB12(plan) : plan.weeklyAverage[key];
-  return v < 10 ? v.toFixed(1) : Math.round(v).toLocaleString('en-IN');
+const fmt = (v: number) => (v < 10 ? v.toFixed(1) : Math.round(v).toLocaleString('en-IN'));
+
+/** Average daily amount in a plan in Phase 0 and Phase 2, computed from its foods. */
+function planAmount(key: NonNullable<CoverageRow['key']>, i: number): string {
+  return `${fmt(DEFAULT_PLANS[0][i].weeklyAverage[key])} → ${fmt(DEFAULT_PLANS[2][i].weeklyAverage[key])}`;
 }
 
 export default function HealthPage() {
@@ -47,13 +51,25 @@ export default function HealthPage() {
         <Callout tone="medical">{HEALTH_DISCLAIMER}</Callout>
 
         <Card>
+          <CardHeader title="To do" icon={<ListChecks size={18} />} description="Book these before or soon after starting the plan." />
+          <ol className="space-y-2 text-sm">
+            {HEALTH_TODO.map((t, i) => (
+              <li key={t} className="flex gap-3">
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-semibold text-violet-900">{i + 1}</span>
+                <span className="text-ink-2">{t}</span>
+              </li>
+            ))}
+          </ol>
+        </Card>
+
+        <Card>
           <CardHeader title="Summary" icon={<ClipboardList size={18} />} />
           <div className="grid gap-4 text-sm md:grid-cols-3">
             <div className="rounded-xl bg-emerald-50/60 p-3">
               <div className="font-medium text-emerald-900">Reassuring</div>
               <p className="mt-1 text-emerald-950/80">
                 Blood count, iron markers, thyroid, blood sugar, kidney, liver, lipids and inflammation are all within range.
-                Nothing here stops you training hard or eating ~125 g of protein a day.
+                Nothing here stops you training hard or eating 110–125 g of protein a day.
               </p>
             </div>
             <div className="rounded-xl bg-amber-50/70 p-3">
@@ -69,7 +85,7 @@ export default function HealthPage() {
             <div className="rounded-xl bg-violet-50/60 p-3">
               <div className="font-medium text-violet-900">Discuss with a doctor</div>
               <p className="mt-1 text-violet-950/80">
-                Hair thinning for 6 months (dermatologist), plus ferritin, zinc, folate and possibly active B12 to complete the picture.
+                Hair thinning for 6 months (dermatologist), the ~4 kg weight loss, and ferritin, zinc, folate and active B12 to complete the picture.
               </p>
             </div>
           </div>
@@ -145,7 +161,7 @@ export default function HealthPage() {
           <CardHeader
             title="What your diet covers"
             icon={<Salad size={18} />}
-            description="Daily need for adult Indian men (ICMR-NIN 2020) against each plan’s average day, computed from its foods. Supplements are only for what food can’t cover."
+            description="Daily need for adult Indian men (ICMR-NIN 2020) against each plan’s average day in Phase 0 → Phase 2, computed from its foods. Supplements are only for what food can’t cover."
           />
           <ul className="divide-y divide-line rounded-xl border border-line">
             {DIET_COVERAGE.map((c) => (
@@ -159,12 +175,12 @@ export default function HealthPage() {
                 </div>
                 <div>
                   {c.key && (
-                    <dl className="tabular mb-1.5 grid grid-cols-1 gap-x-4 gap-y-0.5 text-xs min-[400px]:grid-cols-2 sm:grid-cols-4">
-                      {PLANS.map((p) => (
+                    <dl className="tabular mb-1.5 grid grid-cols-1 gap-x-4 gap-y-0.5 text-xs sm:grid-cols-3">
+                      {DEFAULT_PLANS[2].map((p, i) => (
                         <div key={p.def.id} className="flex justify-between gap-2 sm:block">
                           <dt className="text-muted">{p.def.shortName}</dt>
                           <dd className="whitespace-nowrap font-medium text-ink">
-                            {planAmount(c.key!, p)} {c.unit}
+                            {planAmount(c.key!, i)} {c.unit}
                           </dd>
                         </div>
                       ))}
