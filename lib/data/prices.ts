@@ -1,0 +1,78 @@
+import type { FoodId } from './foods';
+
+// ─── Default food prices ──────────────────────────────────────────────────────
+// ₹ per kg as bought (milk: per litre, counted as 1 ml = 1 g). ALL of these are estimates of
+// Indian urban retail prices, not quotes: a few were compared with online
+// listings in Oct 2026 (milk, eggs, chicken, fruit, soya, oats, sattu, daliya),
+// the rest are local-shop estimates. Your shop may differ by ±15% or more.
+// Settings → Prices lets you overwrite any of them; every cost and grocery
+// total in the app is recomputed from the edited table.
+
+export const PRICES_AS_OF = '2026-10';
+export const PRICES_BASIS = 'Estimate';
+
+export interface PriceEntry {
+  perKg: number;
+  note?: string;
+}
+
+export const DEFAULT_PRICES: Record<FoodId, PriceEntry> = {
+  milk: { perKg: 58, note: 'per litre' },
+  curd: { perKg: 58, note: 'home-set from toned milk (≈ milk price)' },
+  paneer: { perKg: 450 },
+  ghee: { perKg: 620 },
+  oil: { perKg: 195 },
+  sattu: { perKg: 170, note: '1 kg packs ≈ ₹140–170/kg (Oct 2026); 500 g packs cost more per kg' },
+  roastedChana: { perKg: 200 },
+  moongWhole: { perKg: 130 },
+  moongDal: { perKg: 130 },
+  toorDal: { perKg: 160 },
+  kalaChana: { perKg: 110 },
+  kabuliChana: { perKg: 160 },
+  rajma: { perKg: 180 },
+  soyaChunks: { perKg: 135, note: '1 kg pouch ≈ ₹130–135 online (Oct 2026); 200 g packs ≈ ₹180/kg' },
+  besan: { perKg: 110 },
+  oats: { perKg: 160 },
+  atta: { perKg: 50 },
+  daliya: { perKg: 65, note: '1 kg store-brand packs ≈ ₹58–70 (Oct 2026)' },
+  rice: { perKg: 55 },
+  poha: { perKg: 75 },
+  peanuts: { perKg: 150 },
+  pumpkinSeeds: { perKg: 800 },
+  watermelonSeeds: { perKg: 700 },
+  flax: { perKg: 220 },
+  almonds: { perKg: 1000 },
+  walnuts: { perKg: 1300 },
+  cashews: { perKg: 1000 },
+  raisins: { perKg: 380 },
+  dates: { perKg: 320 },
+  banana: { perKg: 36, note: '≈ ₹72 a dozen, ~₹6 a banana' },
+  papaya: { perKg: 55 },
+  guava: { perKg: 80 },
+  seasonalFruit: { perKg: 85 },
+  lemon: { perKg: 120 },
+  sweetPotato: { perKg: 70 },
+  beetroot: { perKg: 50 },
+  mixedVeg: { perKg: 50 },
+  spinach: { perKg: 40 },
+  salad: { perKg: 40 },
+  egg: { perKg: 140, note: '≈ ₹7 an egg, ~50 g edible' },
+  chicken: { perKg: 380, note: 'per kg EDIBLE part (curry cut ≈ ₹280/kg bought, ~75% edible)' },
+  fish: { perKg: 380, note: 'per kg edible part' },
+  potato: { perKg: 35 },
+};
+
+export type PriceTable = Record<FoodId, number>;
+
+export const DEFAULT_PRICE_TABLE = Object.fromEntries(
+  Object.entries(DEFAULT_PRICES).map(([k, v]) => [k, v.perKg]),
+) as PriceTable;
+
+/** User overrides on top of the defaults; ignores unknown foods and non-positive values. */
+export function resolvePrices(overrides: Partial<Record<string, number>> | null | undefined): PriceTable {
+  const out = { ...DEFAULT_PRICE_TABLE };
+  for (const [k, v] of Object.entries(overrides ?? {})) {
+    if (k in out && typeof v === 'number' && Number.isFinite(v) && v > 0) out[k as FoodId] = v;
+  }
+  return out;
+}
