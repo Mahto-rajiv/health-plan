@@ -5,6 +5,8 @@ import {
   MOBILITY,
   MOBILITY_NOTES,
   NEVER_DO,
+  INJURY_PREVENTION,
+  MISSED_SESSION_RULE,
   PHASES,
   PROGRESSION_RULES,
   SCHEDULE_RULES,
@@ -12,6 +14,7 @@ import {
   SESSION_ORDER,
 } from '@/lib/data/training';
 import { EXERCISE_TUTORIALS, type Tutorial } from '@/lib/data/tutorials';
+import { estimateMinutes } from '@/lib/training';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Disclosure } from '@/components/ui/Disclosure';
 import { TutorialLinks } from '@/components/ui/ExternalLink';
@@ -25,14 +28,16 @@ export function ProgramDetails() {
       <Card>
         <CardHeader
           title="How the program works"
-          description="Upper/lower split, 4 days a week, each muscle trained twice. Strength first, muscle second, with cardio and mobility built in."
+          description="Upper/lower split, 4 sessions a week, each muscle trained twice: two fixed weekend sessions and two short weekday ones. Strength first, muscle second."
         />
         <ul className="grid gap-3 text-sm sm:grid-cols-2">
           {[
             ['Main lifts', 'Squat, bench, overhead press, deadlift and pull-ups at 4–8 reps to build strength.'],
             ['Accessories', '8–20 reps to build muscle and balance, with roughly 8–12 hard sets per muscle each week.'],
-            ['Effort', 'Stop 1–3 reps short of failure (RIR), or 3–4 reps short in weeks 1–2.'],
-            ['Session length', '60–70 minutes including warm-up. A short version (first 3 exercises) covers busy days.'],
+            ['Effort', 'Stop 1–3 reps short of failure (RIR 1–3, RPE 7–9), or 3–4 reps short (RPE 6–7) in weeks 1–2.'],
+            ['Session length', 'Saturday and Sunday 60–75 minutes including warm-up and a 10-minute finisher; weekday sessions ≤ 45 minutes with 5 exercises.'],
+            ['Progression', 'Double progression: add reps up to the top of the range on every set, then add the smallest load step.'],
+            ['Deload', 'When fatigue signals appear, and at the latest every 8–10 weeks: half the sets, ~10% lighter, for one week.'],
           ].map(([k, v]) => (
             <li key={k} className="rounded-xl bg-slate-50 p-3">
               <div className="font-medium text-ink">{k}</div>
@@ -47,13 +52,13 @@ export function ProgramDetails() {
         const s = SESSIONS[id];
         return (
           <Card key={id}>
-            <CardHeader title={s.name} description={`${s.focus} · ${s.minutes}`} />
+            <CardHeader title={s.name} description={`${s.focus} · ≈ ${estimateMinutes(id, 1)} min in weeks 1–2, ≈ ${estimateMinutes(id, 3)} min from week 3`} />
             <ul className="divide-y divide-line sm:hidden">
               {s.exercises.map((ex) => (
                 <li key={ex.id} className="py-2.5 text-sm">
                   <div className="font-medium text-ink">{ex.name}</div>
                   <div className="tabular mt-0.5 text-xs text-ink-2">
-                    {ex.sets.build} × {ex.reps} · RIR {ex.rir} · rest {ex.restSec >= 120 ? `${ex.restSec / 60} min` : `${ex.restSec} s`}
+                    {ex.sets.build} × {ex.reps} · {effort(ex.rir)} · rest {ex.restSec >= 120 ? `${ex.restSec / 60} min` : `${ex.restSec} s`}
                   </div>
                   <div className="text-xs text-muted">
                     {ex.muscles}
@@ -70,7 +75,7 @@ export function ProgramDetails() {
                     <th className="py-2 pr-2 font-medium">Exercise</th>
                     <th className="px-2 py-2 font-medium">Sets</th>
                     <th className="px-2 py-2 font-medium">Reps</th>
-                    <th className="px-2 py-2 font-medium">RIR</th>
+                    <th className="px-2 py-2 font-medium">Effort (RIR / RPE)</th>
                     <th className="py-2 pl-2 font-medium">Rest</th>
                   </tr>
                 </thead>
@@ -89,13 +94,14 @@ export function ProgramDetails() {
                         {ex.sets.learn !== ex.sets.build && <span className="text-xs text-muted"> ({ex.sets.learn} wk 1–2)</span>}
                       </td>
                       <td className="px-2 py-2 text-ink-2">{ex.reps}</td>
-                      <td className="px-2 py-2 text-ink-2">{ex.rir}</td>
+                      <td className="px-2 py-2 text-ink-2">{effort(ex.rir)}</td>
                       <td className="py-2 pl-2 text-ink-2">{ex.restSec >= 120 ? `${ex.restSec / 60} min` : `${ex.restSec} s`}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+            <p className="mt-3 text-xs text-muted">Finish: {s.finisher}</p>
             <div className="mt-3 space-y-2">
               {s.exercises.map((ex) => {
                 const links = tut(ex.tutorials);
@@ -137,10 +143,11 @@ export function ScheduleRules() {
     <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
       <Card>
         <CardHeader
-          title="Real-life rescheduling"
+          title="Missed sessions and real life"
           icon={<CalendarClock size={18} />}
           description="Consistency over perfection. The Today tab applies these rules automatically."
         />
+        <p className="mb-3 rounded-xl bg-accent-soft/60 p-3 text-sm font-medium text-ink">{MISSED_SESSION_RULE}</p>
         <ul className="space-y-3">
           {SCHEDULE_RULES.map((r) => (
             <li key={r.situation} className="rounded-xl border border-line p-3">
@@ -152,7 +159,7 @@ export function ScheduleRules() {
         </ul>
       </Card>
       <Card className="h-fit">
-        <CardHeader title="Never do this" icon={<Ban size={18} />} description="Catch-up training causes more harm than missed sessions." />
+        <CardHeader title="Never do this" icon={<Ban size={18} />} description="Catch-up training costs more than a missed session." />
         <ul className="space-y-2.5 text-sm text-ink-2">
           {NEVER_DO.map((n) => (
             <li key={n} className="flex gap-2">
@@ -161,9 +168,26 @@ export function ScheduleRules() {
             </li>
           ))}
         </ul>
+        <h3 className="mt-5 text-sm font-semibold text-ink">Injury prevention</h3>
+        <ul className="mt-2 space-y-2 text-sm text-ink-2">
+          {INJURY_PREVENTION.map((n) => (
+            <li key={n} className="flex gap-2">
+              <span className="mt-2 size-1.5 shrink-0 rounded-full bg-accent" aria-hidden />
+              {n}
+            </li>
+          ))}
+        </ul>
       </Card>
     </div>
   );
+}
+
+/** "2" → "RIR 2 (RPE 8)"; non-numeric cues are shown as written. */
+function effort(rir: string): string {
+  const m = rir.match(/^(\d)(?:–(\d))?$/);
+  if (!m) return rir;
+  const rpe = m[2] ? `${10 - Number(m[2])}–${10 - Number(m[1])}` : `${10 - Number(m[1])}`;
+  return `RIR ${rir} (RPE ${rpe})`;
 }
 
 export function CardioMobility() {

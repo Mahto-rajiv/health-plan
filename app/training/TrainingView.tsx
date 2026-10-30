@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Activity, BedDouble, CheckCircle2, Dumbbell, HeartPulse, Move, RefreshCw, Trash2 } from 'lucide-react';
+import { BedDouble, CheckCircle2, Clock, Dumbbell, Footprints, Move, RefreshCw, Trash2 } from 'lucide-react';
 import { DAYS } from '@/lib/data/meal-plans';
-import { CARDIO, DEFAULT_WEEK, MOBILITY, SESSIONS, SESSION_ORDER, type SessionId } from '@/lib/data/training';
+import { CARDIO, MOBILITY, SESSIONS, SESSION_ORDER, WEEK_PLAN, WEEKDAY_GYM_CUTOFF, type SessionId } from '@/lib/data/training';
 import { useCheckIns, useSettings, useWorkoutDraft, useWorkoutLog, type WorkoutRecord } from '@/lib/storage';
 import { useToday } from '@/lib/hooks';
 import { dayName, longDate, programWeek, shortDate, weekStart } from '@/lib/dates';
-import { nextSession, todayTraining } from '@/lib/training';
+import { estimateMinutes, todayTraining } from '@/lib/training';
 import { cn } from '@/lib/utils';
 import { Segmented } from '@/components/ui/Segmented';
 import { Card, CardHeader } from '@/components/ui/Card';
@@ -59,7 +59,7 @@ function TodayTab() {
   const plan = todayTraining(log, today);
   // An unfinished workout from today always comes back, even on a cardio/rest day.
   const resumed = draft && draft.date === today ? draft.sessionId : undefined;
-  const sessionId: SessionId | undefined = override ?? resumed ?? (plan.kind === 'lift' ? plan.sessionId : undefined);
+  const sessionId: SessionId | undefined = override ?? resumed ?? (plan.kind === 'fixed' ? plan.sessionId : undefined);
 
   const save = (rec: WorkoutRecord) => {
     setLog((prev) => [...prev, rec]);
@@ -79,10 +79,10 @@ function TodayTab() {
         <div className="mt-2 flex items-start gap-3">
           {plan.kind === 'done' ? (
             <CheckCircle2 className="mt-0.5 shrink-0 text-emerald-600" size={20} aria-hidden />
-          ) : plan.kind === 'rest' ? (
+          ) : plan.kind === 'rest' || plan.kind === 'late' ? (
             <BedDouble className="mt-0.5 shrink-0 text-muted" size={20} aria-hidden />
-          ) : plan.kind === 'cardio' ? (
-            <Activity className="mt-0.5 shrink-0 text-accent" size={20} aria-hidden />
+          ) : plan.kind === 'flex' ? (
+            <Clock className="mt-0.5 shrink-0 text-accent" size={20} aria-hidden />
           ) : (
             <Dumbbell className="mt-0.5 shrink-0 text-accent" size={20} aria-hidden />
           )}
@@ -90,33 +90,34 @@ function TodayTab() {
             <h2 className="text-base font-semibold text-ink">
               {plan.kind === 'done'
                 ? `Done: ${SESSIONS[plan.sessionId!].short}`
-                : plan.kind === 'lift' || plan.kind === 'lift-optional'
-                  ? SESSIONS[plan.sessionId!].name
-                  : DEFAULT_WEEK[dayName(today)].label}
+                : plan.kind === 'fixed' || plan.kind === 'flex'
+                  ? `${SESSIONS[plan.sessionId!].name} · ≈ ${estimateMinutes(plan.sessionId!, week, deload)} min`
+                  : plan.kind === 'late'
+                    ? 'Skip tonight'
+                    : WEEK_PLAN[dayName(today)].label}
             </h2>
             <p className="mt-0.5 text-sm text-ink-2">{plan.note}</p>
           </div>
         </div>
-        {plan.kind !== 'lift' && !sessionId && (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {plan.kind === 'lift-optional' && (
-              <Button size="sm" onClick={() => setOverride(plan.sessionId!)}>
-                Do {SESSIONS[plan.sessionId!].short} today
+        {plan.kind !== 'fixed' && !sessionId && (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {plan.kind === 'flex' && (
+              <Button size="sm" className="h-auto min-h-10 shrink py-1.5" onClick={() => setOverride(plan.sessionId!)}>
+                Start {SESSIONS[plan.sessionId!].short} (at the gym by {WEEKDAY_GYM_CUTOFF.label})
               </Button>
             )}
-            <LogOtherSession onPick={setOverride} suggested={nextSession(log)} />
+            {plan.kind !== 'done' && <LogOtherSession onPick={setOverride} />}
           </div>
         )}
       </Card>
 
       {justSaved && (
         <Callout tone="good" title={`${SESSIONS[justSaved.sessionId].short} saved`}>
-          {Object.values(justSaved.sets).flat().length} sets logged. Your next session is {SESSIONS[nextSession(log)].short}. Eat
-          Meal 4 within the next hour or two and get to bed on time.
+          {Object.values(justSaved.sets).flat().length} sets logged. Eat Meal 4 within the next hour or two and get to bed by 12:30 AM.
         </Callout>
       )}
 
-      {!sessionId && (plan.kind === 'cardio' || plan.kind === 'rest') && <OffDayPanel kind={plan.kind} today={today} week={week} />}
+      {!sessionId && (plan.kind === 'rest' || plan.kind === 'late') && <OffDayPanel today={today} />}
 
       {sessionId && (
         <WorkoutLogger key={`${sessionId}-${today}`} sessionId={sessionId} date={today} week={week} deload={deload} log={log} onComplete={save} />
@@ -125,45 +126,34 @@ function TodayTab() {
   );
 }
 
-function OffDayPanel({ kind, today, week }: { kind: 'cardio' | 'rest'; today: string; week: number }) {
+function OffDayPanel({ today }: { today: string }) {
   const [checkins, setCheckins] = useCheckIns();
   const minutes = checkins[today]?.cardioMin;
-  const isSaturday = dayName(today) === 'Saturday';
-  const block = isSaturday && week >= 5 ? CARDIO.intervals : CARDIO.zone2;
   const add = (m: number) => setCheckins((prev) => ({ ...prev, [today]: { ...(prev[today] ?? {}), cardioMin: (prev[today]?.cardioMin ?? 0) + m } }));
-  const mobility = MOBILITY[isSaturday ? 1 : 0];
+  const mobility = MOBILITY[0];
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      {kind === 'cardio' ? (
-        <Card>
-          <CardHeader title={block.title} icon={<HeartPulse size={18} />} />
-          <p className="text-sm text-ink-2">{block.how}</p>
-          <div className="mt-4 rounded-xl bg-slate-50 p-3">
-            <div className="tabular text-sm text-ink">
-              Cardio logged today: <span className="font-semibold">{minutes ?? 0} min</span>
-            </div>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {[10, 20, 30, 40].map((m) => (
-                <Button key={m} variant="secondary" size="sm" onClick={() => add(m)}>
-                  +{m} min
-                </Button>
-              ))}
-              {minutes ? (
-                <Button variant="ghost" size="sm" onClick={() => setCheckins((prev) => ({ ...prev, [today]: { ...(prev[today] ?? {}), cardioMin: 0 } }))}>
-                  Reset
-                </Button>
-              ) : null}
-            </div>
+      <Card>
+        <CardHeader title="Walk or easy cardio" icon={<Footprints size={18} />} description={CARDIO.weeklyTarget} />
+        <p className="text-sm text-ink-2">{CARDIO.steps}</p>
+        <div className="mt-4 rounded-xl bg-slate-50 p-3">
+          <div className="tabular text-sm text-ink">
+            Walking / cardio logged today: <span className="font-semibold">{minutes ?? 0} min</span>
           </div>
-        </Card>
-      ) : (
-        <Card>
-          <CardHeader title="Rest day" icon={<BedDouble size={18} />} />
-          <p className="text-sm text-ink-2">
-            No training. Take a relaxed walk, prep food for the week, and get to bed on time. Recovery is when the adaptation happens.
-          </p>
-        </Card>
-      )}
+          <div className="mt-2 flex flex-wrap gap-2">
+            {[10, 20, 30].map((m) => (
+              <Button key={m} variant="secondary" size="sm" onClick={() => add(m)}>
+                +{m} min
+              </Button>
+            ))}
+            {minutes ? (
+              <Button variant="ghost" size="sm" onClick={() => setCheckins((prev) => ({ ...prev, [today]: { ...(prev[today] ?? {}), cardioMin: 0 } }))}>
+                Reset
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      </Card>
       <Card>
         <CardHeader title={mobility.title} icon={<Move size={18} />} description={mobility.when} />
         <ul className="divide-y divide-line text-sm">
@@ -180,13 +170,13 @@ function OffDayPanel({ kind, today, week }: { kind: 'cardio' | 'rest'; today: st
   );
 }
 
-function LogOtherSession({ onPick, suggested }: { onPick: (id: SessionId) => void; suggested: SessionId }) {
+function LogOtherSession({ onPick }: { onPick: (id: SessionId) => void }) {
   return (
-    <div className="flex items-center gap-2 text-sm text-muted">
-      <label htmlFor="lift-anyway-select">Log a session anyway:</label>
+    <div className="flex flex-wrap items-center gap-2 text-sm text-muted">
+      <label htmlFor="lift-anyway-select">Already trained today? Log it:</label>
       <select
         id="lift-anyway-select"
-        className="h-8 rounded-lg border border-line-strong bg-surface px-2 text-sm text-ink"
+        className="h-10 rounded-lg border border-line-strong bg-surface px-2 text-sm text-ink"
         defaultValue=""
         onChange={(e) => e.target.value && onPick(e.target.value as SessionId)}
       >
@@ -196,7 +186,6 @@ function LogOtherSession({ onPick, suggested }: { onPick: (id: SessionId) => voi
         {SESSION_ORDER.map((id) => (
           <option key={id} value={id}>
             {SESSIONS[id].short}
-            {id === suggested ? ' (next in rotation)' : ''}
           </option>
         ))}
       </select>
@@ -212,13 +201,13 @@ function WeekTab() {
     <div className="space-y-4">
       <Card>
         <CardHeader
-          title="Default week"
-          description="Lifting days follow a rotation (Upper A → Lower A → Upper B → Lower B). Miss one and the sequence simply moves back."
+          title="Your week"
+          description={`Saturday and Sunday are fixed. Lower B (Mon–Wed) and Upper B (Tue–Fri) happen only if you can be at the gym by ${WEEKDAY_GYM_CUTOFF.label}; one session a day at most.`}
           action={today ? <Badge tone={thisWeek.length >= 4 ? 'good' : 'neutral'}>{thisWeek.length}/4 this week</Badge> : null}
         />
         <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
           {DAYS.map((d) => {
-            const p = DEFAULT_WEEK[d];
+            const p = WEEK_PLAN[d];
             const isToday = today ? dayName(today) === d : false;
             return (
               <li
@@ -226,7 +215,7 @@ function WeekTab() {
                 className={cn(
                   'rounded-xl border p-3',
                   isToday ? 'border-accent bg-accent-soft/50' : 'border-line',
-                  p.type === 'rest' && 'bg-slate-50',
+                  p.type === 'lift-flex' && 'border-dashed',
                 )}
               >
                 <div className="flex items-center justify-between text-xs">

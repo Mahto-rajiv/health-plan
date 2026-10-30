@@ -43,6 +43,8 @@ export interface Exercise {
   unit?: 'reps' | 'seconds' | 'metres';
   /** Shown only from this week onward (e.g. jumps after technique is learned). */
   fromWeek?: number;
+  /** Done one side at a time, so each set takes twice as long. */
+  perSide?: boolean;
 }
 
 export interface Session {
@@ -51,6 +53,8 @@ export interface Session {
   short: string;
   focus: string;
   minutes: string;
+  /** Weekend sessions are fixed (60–75 min, including a 10 min finisher); weekday ones are short and flexible. */
+  slot: 'weekend' | 'weekday';
   warmup: string[];
   exercises: Exercise[];
   finisher: string;
@@ -70,17 +74,18 @@ const WARMUP_UPPER = [
 export const SESSIONS: Record<SessionId, Session> = {
   upperA: {
     id: 'upperA',
-    name: 'Upper A — Bench focus',
+    name: 'Upper A — Bench focus (Sunday)',
     short: 'Upper A',
     focus: 'Horizontal push and pull, with bench press as the strength lift.',
-    minutes: '60–70 min',
+    minutes: '60–75 min',
+    slot: 'weekend',
     warmup: WARMUP_UPPER,
     exercises: [
       {
         id: 'bench',
         name: 'Barbell bench press',
         muscles: 'Chest, front delts, triceps',
-        sets: { learn: 2, build: 3 },
+        sets: { learn: 3, build: 3 },
         reps: '5–8',
         repRange: [5, 8],
         rir: '2',
@@ -94,7 +99,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'row',
         name: 'Barbell row',
         muscles: 'Upper back, lats, rear delts',
-        sets: { learn: 2, build: 3 },
+        sets: { learn: 3, build: 3 },
         reps: '8–10',
         repRange: [8, 10],
         rir: '2',
@@ -169,14 +174,15 @@ export const SESSIONS: Record<SessionId, Session> = {
         tutorials: ['curl'],
       },
     ],
-    finisher: 'Optional: 10 min easy bike (Zone 2). Counts toward your weekly cardio.',
+    finisher: '10 min easy bike or incline walk (Zone 2), then 2–3 min of stretching. Counts toward your weekly cardio.',
   },
   lowerA: {
     id: 'lowerA',
-    name: 'Lower A — Squat focus',
+    name: 'Lower A — Squat focus (Saturday)',
     short: 'Lower A',
     focus: 'Squat strength, hamstrings, calves and anti-extension core.',
-    minutes: '60–70 min',
+    minutes: '60–75 min',
+    slot: 'weekend',
     warmup: WARMUP_LOWER,
     exercises: [
       {
@@ -197,7 +203,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'squat',
         name: 'Barbell back squat',
         muscles: 'Quads, glutes, adductors',
-        sets: { learn: 2, build: 3 },
+        sets: { learn: 3, build: 3 },
         reps: '5–8',
         repRange: [5, 8],
         rir: '2',
@@ -211,7 +217,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'rdl',
         name: 'Romanian deadlift',
         muscles: 'Hamstrings, glutes, back',
-        sets: { learn: 2, build: 3 },
+        sets: { learn: 3, build: 3 },
         reps: '8–10',
         repRange: [8, 10],
         rir: '2',
@@ -273,14 +279,15 @@ export const SESSIONS: Record<SessionId, Session> = {
         tutorials: ['deadBug'],
       },
     ],
-    finisher: 'Hip flexor and couch stretch, 2 × 30 s per side.',
+    finisher: '10 min easy bike (Zone 2), then hip flexor and couch stretch, 2 × 30 s per side.',
   },
   upperB: {
     id: 'upperB',
-    name: 'Upper B — Press & pull-up focus',
+    name: 'Upper B — Press & pull-up (weekday, short)',
     short: 'Upper B',
-    focus: 'Vertical push and pull, with the overhead press as the strength lift.',
-    minutes: '60–70 min',
+    focus: 'Vertical push and pull, with the overhead press as the strength lift. 5 exercises, ≤ 45 min.',
+    minutes: '35–45 min',
+    slot: 'weekday',
     warmup: WARMUP_UPPER,
     exercises: [
       {
@@ -316,7 +323,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'incline-db',
         name: 'Incline dumbbell press',
         muscles: 'Upper chest, front delts, triceps',
-        sets: { learn: 2, build: 3 },
+        sets: { learn: 2, build: 2 },
         reps: '8–12',
         repRange: [8, 12],
         rir: '2',
@@ -329,7 +336,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'cable-row',
         name: 'Seated cable row',
         muscles: 'Mid-back, lats',
-        sets: { learn: 2, build: 3 },
+        sets: { learn: 2, build: 2 },
         reps: '10–12',
         repRange: [10, 12],
         rir: '1–2',
@@ -346,45 +353,21 @@ export const SESSIONS: Record<SessionId, Session> = {
         reps: '12–20',
         repRange: [12, 20],
         rir: '2',
-        restSec: 90,
+        restSec: 60,
         increment: 'add reps, then the next pin',
         cues: ['Rope at forehead height', 'Pull toward the eyes, hands apart, thumbs back'],
         tutorials: ['facePull'],
-      },
-      {
-        id: 'lateral-b',
-        name: 'Dumbbell lateral raise',
-        muscles: 'Side delts',
-        sets: { learn: 2, build: 2 },
-        reps: '12–20',
-        repRange: [12, 20],
-        rir: '1–2',
-        restSec: 90,
-        increment: 'add reps first',
-        cues: ['Same as Upper A'],
-        tutorials: ['lateralRaise'],
-      },
-      {
-        id: 'cable-fly',
-        name: 'Cable or dumbbell chest fly',
-        muscles: 'Chest',
-        sets: { learn: 2, build: 2 },
-        reps: '10–15',
-        repRange: [10, 15],
-        rir: '1–2',
-        restSec: 90,
-        increment: 'next pin / dumbbell',
-        cues: ['Slight, fixed bend in the elbows', 'Open until you feel a chest stretch, not a shoulder pinch', 'Bring the hands together in a hugging arc'],
       },
     ],
     finisher: 'Optional: 10 min easy bike (Zone 2).',
   },
   lowerB: {
     id: 'lowerB',
-    name: 'Lower B — Deadlift focus',
+    name: 'Lower B — Deadlift (weekday, short)',
     short: 'Lower B',
-    focus: 'Hinge strength, single-leg work, glutes, grip and carries.',
-    minutes: '60–70 min',
+    focus: 'Hinge strength, single-leg work, glutes and core. 5 exercises, ≤ 45 min.',
+    minutes: '35–45 min',
+    slot: 'weekday',
     warmup: WARMUP_LOWER,
     exercises: [
       {
@@ -406,20 +389,21 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'split-squat',
         name: 'Bulgarian split squat',
         muscles: 'Quads, glutes, balance',
-        sets: { learn: 2, build: 3 },
+        sets: { learn: 2, build: 2 },
         reps: '8–12 per leg',
         repRange: [8, 12],
         rir: '2',
         restSec: 90,
         increment: 'bodyweight first, then the next dumbbell',
         cues: ['Rear foot on a bench, front foot far enough forward', 'Drop straight down', 'Slight forward lean is fine'],
+        perSide: true,
         tutorials: ['splitSquat'],
       },
       {
         id: 'hip-thrust',
         name: 'Barbell hip thrust',
         muscles: 'Glutes',
-        sets: { learn: 2, build: 3 },
+        sets: { learn: 2, build: 2 },
         reps: '8–12',
         repRange: [8, 12],
         rir: '1–2',
@@ -429,22 +413,10 @@ export const SESSIONS: Record<SessionId, Session> = {
         tutorials: ['hipThrust'],
       },
       {
-        id: 'leg-ext',
-        name: 'Leg extension',
-        muscles: 'Quads',
-        sets: { learn: 2, build: 2 },
-        reps: '12–15',
-        repRange: [12, 15],
-        rir: '1–2',
-        restSec: 75,
-        increment: 'next pin',
-        cues: ['Pause at the top', 'Control down'],
-      },
-      {
         id: 'calf-b',
         name: 'Seated calf raise',
         muscles: 'Calves (soleus)',
-        sets: { learn: 2, build: 3 },
+        sets: { learn: 2, build: 2 },
         reps: '12–15',
         repRange: [12, 15],
         rir: '1–2',
@@ -452,20 +424,6 @@ export const SESSIONS: Record<SessionId, Session> = {
         increment: 'next pin',
         cues: ['Pause at the bottom stretch'],
         tutorials: ['calfRaise'],
-      },
-      {
-        id: 'carry',
-        name: "Farmer's carry",
-        muscles: 'Grip, core, traps',
-        sets: { learn: 2, build: 3 },
-        reps: '30–40 m',
-        repRange: [30, 40],
-        rir: 'tall posture throughout',
-        restSec: 90,
-        increment: 'heavier dumbbells once 40 m is solid',
-        cues: ['Stand tall, shoulders down', 'Short, quick steps'],
-        tutorials: ['farmersCarry'],
-        unit: 'metres',
       },
       {
         id: 'knee-raise',
@@ -485,19 +443,36 @@ export const SESSIONS: Record<SessionId, Session> = {
   },
 };
 
-export const SESSION_ORDER: SessionId[] = ['upperA', 'lowerA', 'upperB', 'lowerB'];
+/** Order used for the strength chart and "log a different session". */
+export const SESSION_ORDER: SessionId[] = ['lowerA', 'upperA', 'lowerB', 'upperB'];
 
-export type DayType = 'lift' | 'cardio' | 'rest';
+export type DayType = 'lift-fixed' | 'lift-flex' | 'rest';
 
-/** Default week. Lifting days are a *sequence*, not fixed appointments (see rules). */
-export const DEFAULT_WEEK: Record<DayName, { type: DayType; session?: SessionId; label: string; detail: string }> = {
-  Monday: { type: 'lift', session: 'upperA', label: 'Upper A', detail: 'Bench focus · 60–70 min' },
-  Tuesday: { type: 'lift', session: 'lowerA', label: 'Lower A', detail: 'Squat focus · 60–70 min' },
-  Wednesday: { type: 'cardio', label: 'Zone 2 + mobility', detail: '30–40 min easy cardio + 10 min mobility (optional, can be outdoors)' },
-  Thursday: { type: 'lift', session: 'upperB', label: 'Upper B', detail: 'Press & pull-up focus · 60–70 min' },
-  Friday: { type: 'lift', session: 'lowerB', label: 'Lower B', detail: 'Deadlift focus · 60–70 min' },
-  Saturday: { type: 'cardio', label: 'Cardio + mobility', detail: '40–45 min cardio (intervals from week 5) + 15 min mobility' },
-  Sunday: { type: 'rest', label: 'Rest', detail: 'Walk, prep food for the week' },
+// ─── Weekly schedule ──────────────────────────────────────────────────────────
+// 4 sessions a week: Saturday (Lower A) and Sunday (Upper A) are fixed and
+// train different regions. Two short weekday sessions (Lower B, Upper B) are
+// flexible: they happen only if you can be at the gym by 9:00 PM (it closes at
+// 10 PM), never two on one day, and a missed one is skipped, not made up.
+
+/** Latest arrival at the gym for a weekday session (24 h clock, local time). */
+export const WEEKDAY_GYM_CUTOFF = { hour: 21, minute: 0, label: '9:00 PM' } as const;
+
+/** Weekdays each flexible session may fall on. */
+export const FLEX_WINDOWS: Record<'lowerB' | 'upperB', DayName[]> = {
+  // Not Thursday or Friday, so there are ≥ 2 full days before Saturday's lower session.
+  lowerB: ['Monday', 'Tuesday', 'Wednesday'],
+  // Not Monday: the day after Sunday's upper session.
+  upperB: ['Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+};
+
+export const WEEK_PLAN: Record<DayName, { type: DayType; label: string; detail: string }> = {
+  Monday: { type: 'lift-flex', label: 'Lower B (if at the gym by 9 PM)', detail: 'Window for Lower B: Mon–Wed. Otherwise walk 20–30 min.' },
+  Tuesday: { type: 'lift-flex', label: 'Lower B or Upper B', detail: 'Best day for one of the two short sessions.' },
+  Wednesday: { type: 'lift-flex', label: 'Lower B or Upper B', detail: 'Last day for Lower B this week.' },
+  Thursday: { type: 'lift-flex', label: 'Upper B (if not done)', detail: 'Upper B window: Tue–Fri.' },
+  Friday: { type: 'lift-flex', label: 'Upper B (if not done)', detail: 'Last chance for Upper B; otherwise rest before the weekend.' },
+  Saturday: { type: 'lift-fixed', label: 'Lower A', detail: 'Squat focus · 60–75 min, late morning' },
+  Sunday: { type: 'lift-fixed', label: 'Upper A', detail: 'Bench focus · 60–75 min, late morning' },
 };
 
 export interface Phase {
@@ -524,16 +499,16 @@ export const PHASES: Phase[] = [
     summary: 'Full sets at the listed RIR. Add reps, then load (double progression).',
     details: [
       'Most beginners add load to the main lifts every week or two in this phase.',
-      'Box jumps start in week 3. Saturday cardio adds short intervals from week 5.',
+      'Box jumps start in week 3 on Saturdays.',
       'Re-test waist and photos every 4 weeks.',
     ],
   },
   {
     weeks: 'When needed',
     name: 'Deload week',
-    summary: 'Same exercises, about half the sets, ~10% lighter, easy effort (RIR 4+). Switch it on in Settings.',
+    summary: 'Same exercises, about half the sets, ~10% lighter, easy effort (RIR 4+, RPE ≤ 6). Switch it on in Settings.',
     details: [
-      'Take one when the fatigue signals below appear — not on a fixed calendar. Many beginners won’t need one for the first 10–12 weeks.',
+      'Take one when the fatigue signals below appear, and at the latest every 8–10 weeks. Many beginners won’t need one sooner.',
       'A busy work week, illness or travel is a good time to deload on purpose.',
       'Keep cardio easy and walking normal.',
     ],
@@ -557,7 +532,7 @@ export const PROGRESSION_RULES = [
   },
   {
     title: 'What RIR means',
-    body: 'Reps in reserve: how many more clean reps you could have done. RIR 2 = you stopped with two good reps left. Beginners usually underestimate this — film a set occasionally.',
+    body: 'Reps in reserve: how many more clean reps you could have done. RIR 2 = you stopped with two good reps left (RPE 8 on the 10-point effort scale; RPE = 10 − RIR). Beginners usually underestimate this — film a set occasionally.',
   },
   {
     title: 'If a lift stalls',
@@ -576,7 +551,7 @@ export const DELOAD_SIGNALS = [
   'Illness, exams, travel or a heavy work deadline is coming — deload into it',
 ];
 
-// ─── Real-life rescheduling ───────────────────────────────────────────────────
+// ─── Missed sessions and real life ────────────────────────────────────────────
 
 export interface ScheduleRule {
   situation: string;
@@ -584,25 +559,27 @@ export interface ScheduleRule {
   why?: string;
 }
 
+export const MISSED_SESSION_RULE =
+  'A missed session is skipped, not made up. Do the next session on its normal day with the same weights. Never add sets, never do two sessions in one day, and never move a weekday session to a day outside its window.';
+
 export const SCHEDULE_RULES: ScheduleRule[] = [
   {
-    situation: 'Missed the morning session',
-    action: 'Do the same session that evening. If you can only start after ~9:30 PM, do the short version (first 3 exercises) so you still sleep on time.',
-    why: 'Training time of day makes little difference to long-term gains; consistency and sleep matter more.',
+    situation: 'You can’t be at the gym by 9:00 PM',
+    action: 'Skip tonight. Try the next day in that session’s window; if the window has closed, skip it this week.',
+    why: 'Training until 10 PM pushes dinner and sleep past 12:30 AM. Sleep matters more than one short session.',
   },
   {
-    situation: 'Missed a whole day',
-    action: 'Do that session on your next free day and push the rest of the sequence back. Wednesday and Saturday are your buffer days.',
-    why: 'The sessions are a rotation (Upper A → Lower A → Upper B → Lower B), not fixed appointments.',
-  },
-  {
-    situation: 'Missed two or more days in a week',
-    action: 'Do as many sessions as fit, in order, with at least one rest day between two lower sessions. A 3-session week is fine — continue the rotation next week.',
+    situation: 'Only one weekday session happened',
+    action: 'That is a 3-session week. Fine — continue as normal next week.',
     why: 'Three good sessions beat four rushed ones.',
   },
   {
-    situation: 'Short on time (≤ 40 min)',
-    action: 'Warm up, then do only the first three exercises. That covers the main lift and the most important accessories.',
+    situation: 'Missed Saturday or Sunday',
+    action: 'Skip it. Don’t do both weekend sessions on one day, and don’t move it to a weekday.',
+  },
+  {
+    situation: 'Short on time (≤ 30 min at the gym)',
+    action: 'Warm up, then do only the first three exercises.',
   },
   {
     situation: 'Back after 1–2 weeks off',
@@ -620,26 +597,35 @@ export const SCHEDULE_RULES: ScheduleRule[] = [
 
 export const NEVER_DO = [
   'Never do two lifting sessions on the same day.',
-  'Never add a fifth session to “make up” for a missed one.',
-  'Never train lower body on two consecutive days if it means squatting on sore legs — swap in the next upper session instead.',
+  'Never add sets or a fifth session to “make up” for a missed one.',
+  'Never start a weekday session after 9:00 PM.',
   'Never cut sleep to fit a workout in. A missed session costs far less than a week of short sleep.',
+];
+
+export const INJURY_PREVENTION = [
+  'Warm up every time: 5 minutes easy cardio, the listed mobility drills, then ramp-up sets for the first lift.',
+  'Technique before load: weeks 1–2 stop 3–4 reps short of failure. Film one set of squat, bench and deadlift from the side.',
+  'Use safety pins or bars for squat and bench, and collars on the bar.',
+  'Add load in small steps (2.5 kg on barbells) and only after hitting the top of the rep range on every set.',
+  'Muscle burn is fine; sharp, joint or nerve-like pain is not. Stop that exercise, use the listed alternative, and get it checked if it lasts more than a week.',
+  'Sleep 7+ hours and eat all four meals: fatigue and low energy intake raise injury risk.',
 ];
 
 // ─── Cardio & mobility ────────────────────────────────────────────────────────
 
 export const CARDIO = {
-  weeklyTarget: '150+ minutes of moderate activity a week (WHO), counting cardio sessions, warm-ups and brisk walking.',
-  steps: 'Daily steps: build toward 8,000+. In large cohort studies, mortality risk keeps falling up to roughly 8,000–10,000 steps a day for adults under 60.',
+  weeklyTarget: '150+ minutes of moderate activity a week (WHO), counting brisk walking, warm-ups and easy cardio after weekend sessions.',
+  steps: 'Daily steps: build toward 8,000+. In large cohort studies, mortality risk keeps falling up to roughly 8,000–10,000 steps a day for adults under 60. Walking on the commute and a 20–30 minute walk on non-gym evenings count.',
   sitting: 'Break up sitting: stand or walk for 2–3 minutes every 30–45 minutes at work. Short walking breaks lower post-meal blood sugar.',
   zone2: {
-    title: 'Zone 2 (easy) — Wednesday and optional finishers',
-    how: '30–40 min on a bike, rower, incline treadmill walk or easy jog. You can talk in full sentences but not sing (the talk test). Roughly 60–70% of max heart rate (about 120–137 bpm at 24).',
+    title: 'Zone 2 (easy) — after weekend sessions, or a brisk walk',
+    how: '10–15 min on a bike, rower or incline treadmill after Saturday and Sunday sessions, plus brisk walks. You can talk in full sentences but not sing (the talk test). Roughly 60–70% of max heart rate (about 120–137 bpm at 24).',
   },
   intervals: {
-    title: 'Intervals — Saturday from week 5',
-    how: 'After a 10 min warm-up: 6 × 1 min hard (can only say a few words) / 2 min easy. Progress to 4 × 4 min hard / 3 min easy by week 12. Bike or rower is easier on the legs than running.',
+    title: 'Intervals — optional, Sunday from week 8',
+    how: 'After Upper A, if you feel fresh: 6 × 30 s hard / 90 s easy on a bike. Not after a leg session, and skip it in Phase 0–1 while you are still building food intake.',
   },
-  interference: 'Cardio at this dose doesn’t reduce muscle or maximal-strength gains (Schumann 2022). Explosive power is blunted mainly when cardio and lifting share a session, so keep hard intervals on non-leg days, and at least ~3 hours from lifting where possible.',
+  interference: 'Cardio at this dose doesn’t reduce muscle or maximal-strength gains (Schumann 2022). Keep hard intervals away from leg days.',
   tutorials: ['talkTest'] as ExerciseTutorialId[],
 };
 
@@ -662,7 +648,7 @@ export const MOBILITY: { title: string; when: string; items: MobilityItem[] }[] 
   },
   {
     title: 'Weekend mobility',
-    when: 'Saturday after cardio, ~15 min',
+    when: 'Saturday and Sunday after training, or any evening, ~15 min',
     items: [
       { name: "World's greatest stretch", dose: '5 per side', tutorials: ['worldsGreatestStretch'] },
       { name: '90/90 hip transitions', dose: '6 per side', tutorials: ['hip9090'] },

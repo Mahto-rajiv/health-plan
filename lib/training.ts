@@ -1,6 +1,6 @@
-import { SESSIONS, SESSION_ORDER, DEFAULT_WEEK, type Exercise, type SessionId } from './data/training';
+import { FLEX_WINDOWS, SESSIONS, WEEKDAY_GYM_CUTOFF, WEEK_PLAN, type Exercise, type SessionId } from './data/training';
 import type { LoggedSet, WorkoutRecord } from './storage';
-import { dayName, weekStart, daysBetween } from './dates';
+import { addDays, dayName, weekStart } from './dates';
 
 /**
  * Week-dependent prescription. Weeks 1–2 are the learning phase. A deload is
@@ -36,64 +36,93 @@ export function sortedWorkouts(log: WorkoutRecord[]) {
   return [...log].sort((a, b) => (a.date === b.date ? a.completedAt.localeCompare(b.completedAt) : a.date.localeCompare(b.date)));
 }
 
-/** Next session in the rotation, based on the last completed workout. */
-export function nextSession(log: WorkoutRecord[]): SessionId {
-  const sorted = sortedWorkouts(log);
-  const last = sorted[sorted.length - 1];
-  if (!last) return SESSION_ORDER[0];
-  const idx = SESSION_ORDER.indexOf(last.sessionId);
-  return SESSION_ORDER[(idx + 1) % SESSION_ORDER.length];
-}
-
 export interface TodayTraining {
-  kind: 'lift' | 'lift-optional' | 'done' | 'cardio' | 'rest';
+  /** fixed = weekend session; flex = a weekday session you may do tonight; late = too late tonight. */
+  kind: 'fixed' | 'flex' | 'late' | 'done' | 'rest';
   sessionId?: SessionId;
   note: string;
 }
 
-/**
- * What to do today. Lifting follows the rotation, so a missed day simply moves
- * the sequence back. Wednesday/Saturday become catch-up slots only if fewer than
- * 4 sessions are done this week and no lift happened yesterday.
- */
-export function todayTraining(log: WorkoutRecord[], today: string): TodayTraining {
-  const day = dayName(today);
-  const plan = DEFAULT_WEEK[day];
-  const doneToday = log.find((w) => w.date === today);
-  if (doneToday) return { kind: 'done', sessionId: doneToday.sessionId, note: 'Session logged. Recover well tonight.' };
+const FLEX: ('lowerB' | 'upperB')[] = ['lowerB', 'upperB'];
 
-  const thisWeek = log.filter((w) => weekStart(w.date) === weekStart(today));
-  const next = nextSession(log);
-  const liftedYesterday = log.some((w) => daysBetween(w.date, today) === 1);
-
-  if (plan.type === 'lift') {
-    const isDefault = plan.session === next;
-    return {
-      kind: 'lift',
-      sessionId: next,
-      note: isDefault
-        ? plan.detail
-        : `The rotation has moved: ${SESSIONS[next].short} is next (normally ${plan.label} today). Just continue the sequence.`,
-    };
-  }
-  if (thisWeek.length < 4 && (day === 'Wednesday' || day === 'Saturday') && !liftedYesterday && log.length > 0) {
-    const behind = expectedByNow(today) - thisWeek.length;
-    if (behind > 0) {
-      return {
-        kind: 'lift-optional',
-        sessionId: next,
-        note: `Catch-up slot: you have ${thisWeek.length} session${thisWeek.length === 1 ? '' : 's'} this week. If you feel fresh, do ${SESSIONS[next].short} instead of cardio. Otherwise keep the plan.`,
-      };
-    }
-  }
-  return { kind: plan.type === 'cardio' ? 'cardio' : 'rest', note: plan.detail };
+/** Weekday sessions still open on `iso` this week (not done, and today is in their window). */
+export function openFlexSessions(log: WorkoutRecord[], iso: string): ('lowerB' | 'upperB')[] {
+  const thisWeek = log.filter((w) => weekStart(w.date) === weekStart(iso));
+  const day = dayName(iso);
+  // Lower B first: its window closes on Wednesday.
+  return FLEX.filter((id) => FLEX_WINDOWS[id].includes(day) && !thisWeek.some((w) => w.sessionId === id));
 }
 
-/** Lifting sessions that would normally be done by the end of `today`. */
-function expectedByNow(today: string) {
-  const order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const;
-  const idx = order.indexOf(dayName(today));
-  return order.slice(0, idx + 1).filter((d) => DEFAULT_WEEK[d].type === 'lift').length;
+/** Local time is past the latest gym arrival for a weekday session. */
+export function pastCutoff(now: Date): boolean {
+  return now.getHours() * 60 + now.getMinutes() > WEEKDAY_GYM_CUTOFF.hour * 60 + WEEKDAY_GYM_CUTOFF.minute;
+}
+
+/**
+ * What to do today. Saturday and Sunday are fixed. On weekdays, a short session
+ * is offered if one is still open this week and you can be at the gym by 9 PM.
+ * Missed sessions are never made up and two sessions never share a day.
+ */
+export function todayTraining(log: WorkoutRecord[], iso: string, now: Date = new Date()): TodayTraining {
+  const day = dayName(iso);
+  const doneToday = log.find((w) => w.date === iso);
+  if (doneToday) return { kind: 'done', sessionId: doneToday.sessionId, note: 'Session logged. Eat Meal 4 and protect tonight’s sleep.' };
+  if (day === 'Saturday') return { kind: 'fixed', sessionId: 'lowerA', note: WEEK_PLAN.Saturday.detail };
+  if (day === 'Sunday') return { kind: 'fixed', sessionId: 'upperA', note: WEEK_PLAN.Sunday.detail };
+
+  const open = openFlexSessions(log, iso);
+  if (!open.length) {
+    const done = log.filter((w) => weekStart(w.date) === weekStart(iso) && FLEX.some((id) => id === w.sessionId)).length;
+    return {
+      kind: 'rest',
+      note:
+        done >= 2
+          ? 'Both weekday sessions are done. Walk 20–30 minutes if you can.'
+          : 'No weekday session is due today. Walk 20–30 minutes if you can; missed sessions are skipped, not made up.',
+    };
+  }
+  const id = open[0];
+  if (pastCutoff(now)) {
+    return { kind: 'late', sessionId: id, note: `It is past ${WEEKDAY_GYM_CUTOFF.label}: skip tonight. ${nextChance(iso, id)}` };
+  }
+  return {
+    kind: 'flex',
+    sessionId: id,
+    note: `Go only if you can be at the gym by ${WEEKDAY_GYM_CUTOFF.label} (it closes at 10). ${SESSIONS[id].minutes}, 5 exercises. If not, skip it — don’t double up later.`,
+  };
+}
+
+/** The next weekday in the session's window this week, as a sentence. */
+export function nextChance(iso: string, id: 'lowerB' | 'upperB'): string {
+  for (let i = 1; i <= 6; i++) {
+    const d = addDays(iso, i);
+    if (weekStart(d) !== weekStart(iso)) break;
+    if (FLEX_WINDOWS[id].includes(dayName(d))) return `Next chance for ${SESSIONS[id].short}: ${dayName(d)}.`;
+  }
+  return `${SESSIONS[id].short} is skipped this week.`;
+}
+
+/**
+ * Estimated session length in minutes: ~11 min warm-up (5 min cardio, drills,
+ * ramp-up sets), each working set's work time and rest, and the weekend finisher.
+ */
+export function estimateMinutes(sessionId: SessionId, week: number, deload = false): number {
+  const WARMUP_MIN = 11;
+  // Weekend sessions end with ~10 min of easy cardio and stretching.
+  const FINISHER_MIN = SESSIONS[sessionId].slot === 'weekend' ? 10 : 0;
+  const sec = activeExercises(sessionId, week, deload).reduce((total, ex) => {
+    const work = ex.perSide ? 80 : 40;
+    return total + setsFor(ex, week, deload) * (work + ex.restSec);
+  }, 0);
+  return Math.round(WARMUP_MIN + FINISHER_MIN + sec / 60);
+}
+
+/** What the schedule says for a date (used by the dashboard's "tomorrow"). */
+export function plannedFor(log: WorkoutRecord[], iso: string): string {
+  const day = dayName(iso);
+  if (day === 'Saturday' || day === 'Sunday') return SESSIONS[day === 'Saturday' ? 'lowerA' : 'upperA'].name;
+  const open = openFlexSessions(log, iso);
+  return open.length ? `${SESSIONS[open[0]].short} if you can be at the gym by ${WEEKDAY_GYM_CUTOFF.label}` : 'No session — walk';
 }
 
 /** Most recent logged sets for an exercise (any session), excluding a given date. */
