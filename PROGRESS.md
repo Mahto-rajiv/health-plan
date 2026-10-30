@@ -1,6 +1,97 @@
-# Progress checklist
+# Progress
 
-Last updated: 30 Oct 2026. Use this to resume work in a later session.
+Spec: `docs/brief.md` (audit-driven fix, 30 Oct 2026). Branch: `audit-fixes`. Nothing is pushed.
+
+## Status
+
+### Done
+- [x] Step 1: inspection of every route, data file and script (findings below).
+
+### In progress
+- [ ] Step 2: weight, phase and calorie model; profile fixes.
+
+### Blocked
+- (none)
+
+### Unverified
+- (filled in as work proceeds)
+
+## Inspection findings (30 Oct 2026, before any change)
+
+Measured with scripts in the session scratchpad; nothing below is guessed.
+
+**Profile and targets**
+- `lib/storage.ts` defaults: start weight 66 kg, plan `preferred`, a morning/evening `trainingTime` toggle. The sample data (`lib/data/sample.ts`) trends up from 66 kg; the Progress weight field's placeholder is 66.0.
+- `lib/data/nutrition-guide.ts` and `/nutrition`: Mifflin-St Jeor with 66 kg, maintenance "≈ 2,450–2,700 kcal", fixed target 2,700 kcal (2,600–2,800), and "Your weight is currently stable". All wrong for 64 kg after losing ~4 kg on < 2,000 kcal.
+- The dashboard's calorie and protein bars use the fixed 2,700 kcal / 125 g targets.
+- The checkpoint is 72 kg (`lib/progress.ts`, `GAIN_RULES`); the brief sets 68 kg.
+- There are no phases: every plan is built for 2,500–2,900 kcal from day 1.
+
+**Macros**
+- Carbs in `foods.ts` are available carbohydrate (fibre excluded); this is not shown in the UI.
+- Day totals reconcile with 4/4/9 + 2 kcal/g fibre to within −1.8% to +0.2%.
+- Per food, some tabulated kcal disagree with their macros: peanuts +10%, watermelon seeds +8%, soya chunks −8%, lemon +45%.
+- "Spread across 4 meals of ~25–40 g" (protein target text) is wrong. Actual per-meal protein ranges 15–49 g (Meal 3: 15–24 g; dinners up to 49 g).
+
+**Meal plans** (`lib/data/meal-plans.ts`, 4 plans)
+- The "Preferred" plan still exists.
+- Weekday Meal 2 is last night's dinner, packed. It includes rice on 4 of 5 weekdays (2 in non-veg), plus dal, rajma and gravies. The office food-safety text assumes reheating or a hot insulated box. Each of these breaks the new Meal 2 rule.
+- The meal times also break the brief:
+  - Meal 3 is set for 4:45–5:15 PM; the brief puts it at 6:15–6:45 PM, before the gym.
+  - Meal 4 is set for 8:45–9:30 PM; the brief puts it at 9:30–10:30 PM.
+- Fibre is 44–69 g/day in every plan, above all three new phase caps (35 / 40 / 50 g).
+- Soya reaches 55–70 g/day and sattu 105 g/day (Preferred). The Phase 0 caps are 20 g and 25 g.
+- Meals have hands-on minutes but no total time, no per-meal substitutions, no per-meal micronutrients and no cooking cards.
+
+**Training** (`lib/data/training.ts`, `lib/training.ts`, `/training` with tabs Today, Week & rescheduling, Program, Cardio & mobility, Progression)
+- Default week: lifting Mon, Tue, Thu, Fri; cardio Wed and Sat; rest Sun.
+- Each session is 60–70 min with 6–7 exercises. The brief wants weekday sessions of ≤ 45 min and ≤ 5 exercises.
+- The Today view offers Wed/Sat "catch-up slots", which are catch-up volume the brief forbids.
+- Rules still say "Missed the morning session → do it that evening" and "only choose mornings when you slept by ~11:30 PM". `TRAINING_DAY.evening` says "default, ~7–8:30 PM".
+- `NEVER_DO`, progression, deload signals, RIR, cardio and mobility content are sound and can be kept.
+
+**Progress**
+- `assessGain` needs 4 weekly averages and has no rule for a falling trend: "too slow" only adds +150 kcal, and there is no doctor prompt.
+- The waist chart's 85/90 cm lines and its 70–92 axis are hard-coded, not derived from height.
+- Past dates can be entered already, but there is no way to mark a recalled weight (e.g. "68 kg six months ago"). Such a weight would be averaged into the trend.
+- Waist, strength (e1RM), consistency and adherence charts work; there is no photo tracking at all. The current "photos" support is advice text only.
+
+**Recovery and dashboard**
+- Bedtime advice is "~11:30 PM–midnight" (`lib/data/recovery.ts`, `DashboardView.tsx:469`). The brief's target is 12:30 AM with waking at 7–8:30.
+
+**Settings**
+- No price table, phase, current-intake estimate or historical weight.
+
+**Health**
+- Hair: "The plan provides ~125 g of protein and a small calorie surplus, which removes these as possible causes" (`lib/data/health.ts:174`). This must be replaced.
+- Supplement note says "₹3,000–4,000 food budget".
+- The B12 entry is long and includes the lung-cancer cohort detail.
+- There is no top-of-page to-do list.
+
+**Budget and prices**
+- `BUDGET_MIN/MAX = 3000/4000` live in `lib/meal-plans.ts`, and budget wording is repeated in several data files.
+- Prices are constants in `foods.ts` with one shared "Oct 2026" comment and no per-item date. They can't be edited in the app, and totals are computed once at module load.
+
+**Tests and tooling**
+- No test runner; `scripts/validate-plans.ts` is the only check.
+- No link checker.
+
+**Performance baseline** (production build, `next start`, local Chrome at 375 px; compressed transfer):
+
+| Route | JS | Total | FCP |
+|---|---|---|---|
+| `/` | 278 KB | 326 KB | 56 ms |
+| `/training` | 278 KB | 327 KB | 56 ms |
+| `/meal-plans` | 278 KB | 333 KB | 124 ms |
+| `/nutrition` | 278 KB | 344 KB | 160 ms |
+| `/health` | 278 KB | 356 KB | 112 ms |
+| `/progress` | 384 KB | 435 KB | 64 ms |
+| `/recovery` | 302 KB | 356 KB | 80 ms |
+| `/settings` | 302 KB | 351 KB | 48 ms |
+
+All routes are static. Local FCP is not representative of a phone on mobile data; the JS size is the useful number.
+
+## History (before this brief)
 
 ## Done
 
