@@ -10,6 +10,10 @@
 // kirana estimates). Meat and fish prices are per kg of EDIBLE part (curry-cut
 // chicken ≈ ₹280/kg bought, ~75% edible). They estimate a budget, not exact cost.
 //
+// Vitamin B12 (`b12`) uses USDA FoodData Central values for the closest food
+// (whole milk, plain yogurt, cottage cheese, whole egg, broiler meat, carp).
+// Boiling milk destroys some of it, so treat diet totals as an upper estimate.
+//
 // Meal grams are edible weight. Produce prices are per kg as bought, so
 // `edible` (the share left after peel, seeds, stems and trimmings) converts
 // one into the other. The yields are typical approximations, not measurements.
@@ -48,6 +52,8 @@ export interface Food {
   edible?: number;
   /** Optional household measure shown next to grams. */
   measure?: { label: string; grams: number };
+  /** Vitamin B12, µg per 100 g. Only animal foods contain it; plant foods are 0. */
+  b12?: number;
   isEgg?: boolean;
   isMeatOrFish?: boolean;
 }
@@ -70,6 +76,7 @@ export const FOODS = {
     name: 'Toned milk',
     category: 'Dairy',
     per100: n(58, 3.1, 4.7, 3.0, 0, 0.1, 120, 0.4, 1),
+    b12: 0.4,
     pricePerKg: 58,
     buyUnit: { label: '1 L', grams: 1000 },
     measure: { label: 'ml', grams: 1 },
@@ -78,6 +85,7 @@ export const FOODS = {
     name: 'Curd (dahi, set at home from toned milk)',
     category: 'Dairy',
     per100: n(60, 3.3, 4.6, 3.1, 0, 0.1, 120, 0.5, 1),
+    b12: 0.35,
     pricePerKg: 58,
     buyUnit: { label: '1 L milk, set as curd at home,', grams: 1000 },
   },
@@ -85,6 +93,7 @@ export const FOODS = {
     name: 'Paneer',
     category: 'Dairy',
     per100: n(290, 18.5, 3, 22, 0, 0.3, 300, 2.5),
+    b12: 0.4,
     pricePerKg: 450,
     buyUnit: { label: '200 g pack', grams: 200 },
   },
@@ -97,7 +106,7 @@ export const FOODS = {
     measure: { label: 'tsp', grams: 5 },
   },
   oil: {
-    name: 'Mustard or groundnut oil',
+    name: 'Groundnut oil (or rice-bran oil)',
     category: 'Fats & oils',
     per100: n(884, 0, 0, 100, 0, 0, 0, 0),
     pricePerKg: 195,
@@ -110,8 +119,8 @@ export const FOODS = {
     name: 'Sattu (roasted chana flour)',
     category: 'Pulses & soya',
     per100: n(370, 22, 50, 5.5, 16, 5, 60, 3),
-    pricePerKg: 200,
-    buyUnit: { label: '500 g', grams: 500 },
+    pricePerKg: 170, // 1 kg packs ≈ ₹140–170/kg (Oct 2026); 500 g packs cost more per kg
+    buyUnit: { label: '1 kg', grams: 1000 },
     measure: { label: 'tbsp', grams: 10 },
   },
   roastedChana: {
@@ -167,8 +176,8 @@ export const FOODS = {
     name: 'Soya chunks (dry)',
     category: 'Pulses & soya',
     per100: n(345, 52, 20, 0.5, 13, 9, 240, 2.5),
-    pricePerKg: 180,
-    buyUnit: { label: '200 g pack', grams: 200 },
+    pricePerKg: 135, // 1 kg pouch ≈ ₹130–135 online (Oct 2026); 200 g packs ≈ ₹180/kg
+    buyUnit: { label: '1 kg pouch', grams: 1000 },
   },
   besan: {
     name: 'Besan (gram flour)',
@@ -193,6 +202,13 @@ export const FOODS = {
     pricePerKg: 50,
     buyUnit: { label: '5 kg bag', grams: 5000 },
     measure: { label: 'roti', grams: 35 },
+  },
+  daliya: {
+    name: 'Daliya (broken wheat)',
+    category: 'Grains & flours',
+    per100: n(340, 12, 62, 1.7, 11, 4, 35, 2.5), // whole wheat, as atta
+    pricePerKg: 65, // 1 kg store-brand packs ≈ ₹58–70 (Oct 2026)
+    buyUnit: { label: '1 kg', grams: 1000 },
   },
   rice: {
     name: 'Rice (raw)',
@@ -368,6 +384,7 @@ export const FOODS = {
     category: 'Eggs, meat & fish',
     per100: n(143, 12.6, 0.7, 9.5, 0, 1.8, 56, 1.3),
     // ~₹7 per egg (Delhi, Oct 2026), ~50 g edible portion
+    b12: 0.9,
     pricePerKg: 140,
     buyUnit: { label: 'tray of 30', grams: 1500 },
     measure: { label: 'egg', grams: 50 },
@@ -377,6 +394,7 @@ export const FOODS = {
     name: 'Chicken (raw, edible part — curry cut or boneless)',
     category: 'Eggs, meat & fish',
     per100: n(120, 22.5, 0, 2.6, 0, 0.4, 5, 0.8),
+    b12: 0.3,
     pricePerKg: 380,
     buyUnit: { label: '500 g', grams: 500 },
     isMeatOrFish: true,
@@ -385,6 +403,7 @@ export const FOODS = {
     name: 'Rohu / katla fish (raw, edible part)',
     category: 'Eggs, meat & fish',
     per100: n(100, 17, 0, 3, 0, 1, 80, 0.8),
+    b12: 1.5,
     pricePerKg: 380,
     buyUnit: { label: '500 g', grams: 500 },
     isMeatOrFish: true,

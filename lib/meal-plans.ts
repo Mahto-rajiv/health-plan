@@ -1,4 +1,4 @@
-import { FOODS, type FoodId, type GroceryCategory, type Nutrients } from './data/foods';
+import { FOODS, type Food, type FoodId, type GroceryCategory, type Nutrients } from './data/foods';
 import { MEAL_PLAN_DEFINITIONS, buildWeek, type PlanId, type PlannedDay, type PlannedMeal, type MealPlanDefinition } from './data/meal-plans';
 import { FOOD_SAFETY, PANTRY_MONTHLY } from './data/nutrition-guide';
 import { boughtGrams, itemCost, itemsCost, itemsNutrients, sumNutrients } from './nutrition';
@@ -150,8 +150,8 @@ export function getPlan(id: PlanId): ComputedPlan {
 
 // ─── Budget ───────────────────────────────────────────────────────────────────
 
-export const BUDGET_MIN = 4000;
-export const BUDGET_MAX = 5000;
+export const BUDGET_MIN = 3000;
+export const BUDGET_MAX = 4000;
 
 interface SwapRule {
   id: string;
@@ -186,12 +186,20 @@ const SWAP_RULES: SwapRule[] = [
     share: 1,
   },
   {
-    id: 'fruit-papaya',
-    label: 'Use papaya or banana instead of mixed seasonal fruit',
-    note: 'Same weight. Papaya is also one of the richest common sources of vitamin C.',
-    from: ['seasonalFruit', 'guava'],
-    to: [{ food: 'papaya', perGram: 1 }],
+    id: 'oats-daliya',
+    label: 'Use daliya (broken wheat) instead of oats',
+    note: 'Same dry weight; also a whole grain with similar protein and fibre. It needs cooking: ~10 minutes, or 2 whistles in a pressure cooker, so make 2 days’ worth at once. Oats lower LDL cholesterol slightly more, which matters little with your normal lipids.',
+    from: ['oats'],
+    to: [{ food: 'daliya', perGram: 1 }],
     share: 1,
+  },
+  {
+    id: 'fruit-banana',
+    label: 'Make half the papaya, guava and other fruit bananas',
+    note: 'Same edible weight. Banana has much less vitamin C (≈ 9 mg vs 60 mg per 100 g for papaya), so keep the lemon on dals and switch back to guava or papaya when they are cheap.',
+    from: ['papaya', 'guava', 'seasonalFruit'],
+    to: [{ food: 'banana', perGram: 1 }],
+    share: 0.5,
   },
   {
     id: 'chicken-soya',
@@ -240,6 +248,14 @@ export function budgetSwaps(plan: ComputedPlan): BudgetSwap[] {
   })
     .filter((s) => s.monthlySaving >= 30)
     .sort((a, b) => b.monthlySaving - a.monthlySaving);
+}
+
+// ─── Micronutrient coverage ───────────────────────────────────────────────────
+
+/** Average vitamin B12 per day (µg) from the plan's food, before cooking losses. */
+export function planB12(plan: ComputedPlan): number {
+  const items = plan.days.flatMap((d) => d.meals.flatMap((m) => m.meal.items));
+  return items.reduce((s, it) => s + ((FOODS[it.food] as Food).b12 ?? 0) * (it.g / 100), 0) / 7;
 }
 
 // ─── Protein value ────────────────────────────────────────────────────────────

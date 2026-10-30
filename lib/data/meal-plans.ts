@@ -71,6 +71,8 @@ export interface MealPlanDefinition {
   /** Sunday dinner is also cooked double: the extra portion is Monday's lunch. */
   sunday: { meal2: Meal; meal3: Meal; meal4: Meal };
   substitutions: { swap: string; with: string; note?: string }[];
+  /** Why the plan costs what it does, shown when it is above the budget. */
+  costNote: string;
   prepStrategy: string[];
   notes: string[];
 }
@@ -120,8 +122,10 @@ const m = (
 // Built around foods you already like. Corrections made after review:
 //  • Protein was too low in the original plan, so soya chunks are added in small
 //    amounts. They are the cheapest protein per gram in India.
-//  • Nuts and seeds are kept but portioned small (10–15 g), because they are the
-//    most expensive part of the budget per calorie.
+//  • Nuts and seeds are peanuts and ground flax. Almonds, walnuts and pumpkin
+//    seeds cost 5–8 times as much per gram and are listed as substitutions.
+//  • Paneer is about 100 g a week (Monday and Saturday); Thursday's tikka uses
+//    soya instead, to bring the cost toward the ₹3,000–4,000 budget.
 //  • Kala chana and green moong are soaked and pressure-cooked or sprouted, which
 //    makes them easier to digest.
 // ═════════════════════════════════════════════════════════════════════════════
@@ -135,21 +139,21 @@ const p1: MealPlanDefinition = {
     'Built around foods you already like: sattu, oats, moong, kala chana, paneer, curd, sweet potato and seeds. It has been corrected where the evidence or budget required it.',
   meal1: m(
     'p1-m1',
-    'Sattu–oats porridge with banana and seeds',
+    'Sattu–oats porridge with banana, peanuts and flax',
     [
       { food: 'oats', g: 60 },
       { food: 'milk', g: 250 },
       { food: 'sattu', g: 25, note: 'stirred in after cooking' },
       { food: 'banana', g: 110, note: '1 medium' },
-      { food: 'pumpkinSeeds', g: 5, note: '1 heaped tsp — zinc and iron' },
+      { food: 'peanuts', g: 10, note: 'roasted, crushed' },
       { food: 'flax', g: 7, note: 'ground — for omega-3 (ALA)' },
     ],
-    'Simmer the oats in milk for 3–4 minutes (or soak them in the milk overnight in the fridge). Take it off the heat, stir in the sattu so it doesn’t clump, and top with sliced banana and pumpkin seeds. Takes about 7 minutes.',
+    'Simmer the oats in milk for 3–4 minutes (or soak them in the milk overnight in the fridge). Take it off the heat, stir in the sattu so it doesn’t clump, and top with sliced banana and crushed peanuts. Takes about 7 minutes.',
     {
       why: 'Gives about 25 g of protein to start the day. Oats provide beta-glucan fibre, and sattu adds plant protein and iron. Making it the same every day means no decisions in the morning.',
       tutorials: ['overnightOats'],
       minutes: 7,
-      flavour: 'Simmer the oats with a pinch of cinnamon or 2 crushed elaichi pods, and dry-roast a week’s pumpkin seeds for 1–2 minutes so they turn nutty. A spice changes the taste without changing the meal.',
+      flavour: 'Simmer the oats with a pinch of cinnamon or 2 crushed elaichi pods, and dry-roast a week’s peanuts in one go so they stay crunchy. A spice changes the taste without changing the meal.',
       keeps: 'Overnight version: keeps up to 2 days in the fridge. Stir in the sattu and banana just before eating.',
     },
   ),
@@ -203,7 +207,7 @@ const p1: MealPlanDefinition = {
         { food: 'soyaChunks', g: 20 },
         { food: 'mixedVeg', g: 100 },
         { food: 'ghee', g: 7 },
-        { food: 'curd', g: 180 },
+        { food: 'curd', g: 150 },
         { food: 'beetroot', g: 80, note: 'grated into the raita' },
       ],
       'Pressure-cook the rice, soaked whole moong, soya chunks and vegetables with turmeric and salt (3–4 whistles). Finish with a ghee–jeera tadka. For the raita, mix curd with grated raw or boiled beetroot.',
@@ -221,7 +225,7 @@ const p1: MealPlanDefinition = {
       [
         { food: 'kalaChana', g: 45, note: 'soaked overnight' },
         { food: 'soyaChunks', g: 30 },
-        { food: 'rice', g: 80 },
+        { food: 'rice', g: 90 },
         { food: 'mixedVeg', g: 80, note: 'onion–tomato masala' },
         { food: 'oil', g: 10 },
         { food: 'curd', g: 150 },
@@ -237,23 +241,23 @@ const p1: MealPlanDefinition = {
     ),
     Thursday: m(
       'p1-d-thu',
-      'Paneer–sweet potato tikka, moong dal and roti',
+      'Soya–sweet potato tikka, moong dal and roti',
       [
-        { food: 'paneer', g: 30 },
         { food: 'sweetPotato', g: 120 },
         { food: 'oil', g: 7 },
         { food: 'moongDal', g: 40 },
         { food: 'atta', g: 70, note: '2 rotis' },
+        { food: 'rice', g: 35, note: 'or a 3rd roti' },
         { food: 'curd', g: 100, note: 'for the marinade and a small side' },
         { food: 'salad', g: 80 },
-        { food: 'soyaChunks', g: 30, note: 'soaked, squeezed, added to the tikka marinade' },
+        { food: 'soyaChunks', g: 40, note: 'soaked, squeezed, in the tikka marinade' },
       ],
-      'Marinate paneer, soaked soya chunks and par-boiled sweet potato cubes in curd and tikka spices. Pan-roast or air-fry them for 10–12 minutes. Serve with thin moong dal and rotis.',
+      'Marinate soaked, well-squeezed soya chunks and par-boiled sweet potato cubes in curd and tikka spices. Pan-roast or air-fry them for 10–12 minutes. Serve with thin moong dal and rotis.',
       {
         tutorials: ['paneerTikka', 'dal'],
         packable: true,
         minutes: 35,
-        flavour: 'Marinate for at least 20 minutes in curd, Kashmiri chilli, ginger–garlic, kasuri methi and a few drops of mustard oil. Then cook on high heat until the edges char a little.',
+        flavour: 'Marinate for at least 20 minutes in curd, Kashmiri chilli, ginger–garlic, kasuri methi and a little oil. Then cook on high heat until the edges get brown spots (not black).',
       },
     ),
     Friday: m(
@@ -261,9 +265,9 @@ const p1: MealPlanDefinition = {
       'Sattu paratha with curd and sabzi',
       [
         { food: 'atta', g: 85 },
-        { food: 'sattu', g: 55, note: 'filling' },
+        { food: 'sattu', g: 40, note: 'filling' },
         { food: 'ghee', g: 8 },
-        { food: 'curd', g: 200 },
+        { food: 'curd', g: 150 },
         { food: 'mixedVeg', g: 150, note: 'dry sabzi' },
       ],
       'Mix sattu with chopped onion, green chilli, ajwain, lemon and salt to make the filling. Stuff it into atta dough and cook 2 parathas with a little ghee. Serve with curd and a dry sabzi.',
@@ -299,7 +303,7 @@ const p1: MealPlanDefinition = {
       [
         { food: 'sweetPotato', g: 170 },
         { food: 'roastedChana', g: 30 },
-        { food: 'curd', g: 200, note: 'as chaas' },
+        { food: 'curd', g: 150, note: 'as chaas' },
         { food: 'banana', g: 110 },
         { food: 'lemon', g: 5 },
       ],
@@ -326,7 +330,7 @@ const p1: MealPlanDefinition = {
       {
         tutorials: ['paneerTikka', 'dal', 'roti'],
         minutes: 40,
-        flavour: 'Char the paneer on high heat. Finish the dal with a ghee–jeera–garlic tadka.',
+        flavour: 'Sear the paneer on high heat until it has brown spots (not black). Finish the dal with a ghee–jeera–garlic tadka.',
       },
     ),
   },
@@ -337,7 +341,7 @@ const p1: MealPlanDefinition = {
       [
         { food: 'moongWhole', g: 95, note: 'soaked, ground to batter' },
         { food: 'oil', g: 10 },
-        { food: 'curd', g: 200, note: 'as raita' },
+        { food: 'curd', g: 150, note: 'as raita' },
         { food: 'beetroot', g: 80, note: 'grated into the raita' },
         { food: 'papaya', g: 150 },
       ],
@@ -350,16 +354,15 @@ const p1: MealPlanDefinition = {
     ),
     meal3: m(
       'p1-sun-3',
-      'Curd bowl with banana, dates, nuts and milk',
+      'Curd bowl with banana, dates, peanuts and milk',
       [
-        { food: 'curd', g: 250 },
+        { food: 'curd', g: 200 },
         { food: 'dates', g: 20, note: '2 dates' },
-        { food: 'walnuts', g: 5, note: '2 halves' },
-        { food: 'peanuts', g: 15, note: 'roasted' },
+        { food: 'peanuts', g: 20, note: 'roasted' },
         { food: 'banana', g: 110 },
         { food: 'milk', g: 200, note: 'or more curd' },
       ],
-      'Slice the banana into the curd, chop the dates, and top with the nuts; drink the milk alongside or pour it over. This is the weekend home for the nuts you enjoy — kept to small amounts because nuts are the costliest food per gram of protein in this plan.',
+      'Slice the banana into the curd, chop the dates, and top with the peanuts; drink the milk alongside or pour it over. If you want almonds or walnuts, this is the place for a small handful — see the substitutions for the cost.',
       {
         minutes: 3,
         flavour: 'Chop the dates so their sweetness spreads through the bowl. A pinch of cinnamon or elaichi on the curd works well.',
@@ -369,7 +372,7 @@ const p1: MealPlanDefinition = {
       'p1-sun-4',
       'Soya–vegetable pulao, moong dal and raita',
       [
-        { food: 'rice', g: 90 },
+        { food: 'rice', g: 105 },
         { food: 'soyaChunks', g: 30 },
         { food: 'mixedVeg', g: 120 },
         { food: 'oil', g: 8 },
@@ -387,12 +390,13 @@ const p1: MealPlanDefinition = {
   },
   substitutions: [
     { swap: 'Paneer (70–100 g)', with: 'Soya chunks (25–36 g dry) + 5 g ghee', note: 'Less than half the cost for the same protein.' },
-    { swap: 'Walnuts (Sunday)', with: 'Almonds or cashews (same weight)', note: 'Similar cost. Walnuts are the only one with meaningful omega-3 (ALA); the daily flaxseed already covers that.' },
-    { swap: 'Pumpkin seeds', with: 'Watermelon seeds or peanuts (same weight)', note: 'Peanuts cost about a fifth as much, with slightly less zinc.' },
+    { swap: 'Peanuts (Meal 1, Sunday)', with: 'Pumpkin seeds, almonds or walnuts (same weight)', note: 'About 5–8 times the price per gram (≈ +₹100–150/month). Nutritionally similar at these amounts; the daily flaxseed already covers omega-3 (ALA).' },
     { swap: 'Papaya', with: 'Guava when in season (mainly winter) or banana', note: 'Guava has even more vitamin C; banana is cheapest but has little.' },
     { swap: 'Sweet potato', with: 'Potato or extra rice (same carbs)' },
     { swap: 'Kala chana', with: 'Kabuli chana or rajma (same dry weight)' },
   ],
+  costNote:
+    'Your preferred foods (oats, sattu, papaya, paneer and sweet potato) cost more per meal than daliya, soya, banana and dal. Paneer is already down to about 100 g a week and the nuts and seeds are peanuts.',
   prepStrategy: [
     'Sunday (about 60 minutes): boil the week’s kala chana and freeze it in portions; soak whole moong for Tuesday; cook the Sunday dinner double for Monday’s lunch.',
     'Every evening: cook dinner as a double batch. Pack the second portion into a lunch box and refrigerate it immediately.',
@@ -412,7 +416,9 @@ const p1: MealPlanDefinition = {
 //    dairy + soya + pulses + cereals so the amino acids complement each other.
 //  • Low cost per gram of protein: soya chunks, milk, curd, peanuts, pulses.
 //  • Whole grains and pulses for fibre (target ~35 g), added gradually.
-//  • Flaxseed and walnuts for plant omega-3 (ALA); iodised salt for iodine.
+//  • Flaxseed for plant omega-3 (ALA); iodised salt for iodine.
+//  • The lowest-cost plan: daliya instead of oats, dairy ~500 g a day (ICMR
+//    suggests ~300 g per 2,000 kcal), paneer only twice a week.
 // ═════════════════════════════════════════════════════════════════════════════
 
 const p2: MealPlanDefinition = {
@@ -421,25 +427,23 @@ const p2: MealPlanDefinition = {
   shortName: 'Vegetarian',
   diet: 'Vegetarian',
   summary:
-    'Designed from the evidence rather than from your preferences. It relies on dairy, soya, pulses and whole grains for protein that is complete, cheap and digestible, with flaxseed for omega-3.',
+    'Designed from the evidence rather than from your preferences, and the cheapest of the four. It relies on dairy, soya, pulses and whole grains (including daliya) for protein that is complete, cheap and digestible, with flaxseed for omega-3.',
   meal1: m(
     'p2-m1',
-    'Overnight oats with milk, curd, peanuts, flax and fruit',
+    'Milk daliya with peanuts, flax and fruit',
     [
-      { food: 'oats', g: 60 },
+      { food: 'daliya', g: 70, note: 'dry weight' },
       { food: 'milk', g: 250 },
-      { food: 'curd', g: 100 },
-      { food: 'peanuts', g: 15, note: 'roasted, crushed' },
+      { food: 'peanuts', g: 20, note: 'roasted, crushed' },
       { food: 'flax', g: 8, note: 'ground' },
-      { food: 'papaya', g: 150, note: 'or banana / guava — whichever is cheapest that week' },
+      { food: 'papaya', g: 120, note: 'or banana / guava — whichever is cheapest that week' },
     ],
-    'At night, mix the oats, milk, curd and ground flax in a jar and refrigerate. In the morning, top with crushed roasted peanuts and the cubed papaya. No cooking.',
+    'Every second night, dry-roast 140 g daliya in a teaspoon of ghee from the pantry for 2 minutes, then pressure-cook it with 2½ cups of water (2 whistles). Keep half in the fridge. Each morning, warm one portion with the milk for 3 minutes and stir in the ground flax; top with crushed peanuts and cubed fruit.',
     {
-      why: 'No cooking needed and quick to eat, which suits late nights. Ground flax gives the plan’s main omega-3 (ALA) dose. Whole flax seeds pass through undigested.',
-      tutorials: ['overnightOats'],
-      minutes: 3,
-      flavour: 'Add a pinch of cinnamon or elaichi to the jar, and toast the week’s peanuts once with a pinch of salt.',
-      keeps: 'Keeps up to 2 days in the fridge. Add the peanuts and fruit in the morning so they stay fresh and crunchy.',
+      why: 'Daliya is whole wheat at about 40% of the price of oats, with similar protein and fibre. Cooking two days at once keeps mornings to a few minutes. Ground flax gives the plan’s main omega-3 (ALA) dose. Whole flax seeds pass through undigested.',
+      minutes: 6,
+      flavour: 'Roasting the daliya first gives it a nutty taste. Add elaichi or cinnamon with the milk, or make it savoury once in a while with jeera, vegetables and salt.',
+      keeps: 'Cooked daliya keeps 2 days in the fridge in a closed box. Add the peanuts and fruit just before eating.',
     },
   ),
   weekdayMeal3: m(
@@ -467,10 +471,10 @@ const p2: MealPlanDefinition = {
       [
         { food: 'rajma', g: 55, note: 'soaked 8–10 h' },
         { food: 'soyaChunks', g: 25 },
-        { food: 'rice', g: 85 },
+        { food: 'rice', g: 95 },
         { food: 'oil', g: 7 },
         { food: 'mixedVeg', g: 80 },
-        { food: 'curd', g: 150 },
+        { food: 'curd', g: 100 },
         { food: 'salad', g: 80 },
       ],
       'Soak the rajma overnight, discard the water, and pressure-cook it until fully soft (6–8 whistles). Undercooked kidney beans are unsafe and hard on digestion. Add soaked soya chunks to the masala.',
@@ -489,7 +493,7 @@ const p2: MealPlanDefinition = {
         { food: 'mixedVeg', g: 120 },
         { food: 'oil', g: 8 },
         { food: 'atta', g: 105, note: '3 rotis' },
-        { food: 'curd', g: 150 },
+        { food: 'curd', g: 100 },
         { food: 'rice', g: 40, note: 'or a 4th roti' },
       ],
       'Boil the soya chunks for 5 minutes, then squeeze out the water. Simmer them in an onion–tomato–curd gravy for 10 minutes.',
@@ -504,11 +508,11 @@ const p2: MealPlanDefinition = {
       'p2-d-wed',
       'Toor dal, rice, palak sabzi and curd',
       [
-        { food: 'toorDal', g: 60 },
+        { food: 'toorDal', g: 70 },
         { food: 'rice', g: 85 },
         { food: 'spinach', g: 150 },
         { food: 'oil', g: 8 },
-        { food: 'curd', g: 150 },
+        { food: 'curd', g: 100 },
         { food: 'peanuts', g: 15, note: 'in the sabzi' },
       ],
       'Pressure-cook the dal with turmeric (3 whistles) and finish with a jeera–garlic tadka. Sauté the spinach with garlic and crushed peanuts.',
@@ -524,11 +528,11 @@ const p2: MealPlanDefinition = {
       'Chole with roti and raita',
       [
         { food: 'kabuliChana', g: 50, note: 'soaked overnight' },
-        { food: 'soyaChunks', g: 15 },
+        { food: 'soyaChunks', g: 25 },
         { food: 'atta', g: 105, note: '3 rotis' },
         { food: 'oil', g: 8 },
         { food: 'mixedVeg', g: 60 },
-        { food: 'curd', g: 150 },
+        { food: 'curd', g: 100 },
         { food: 'salad', g: 80 },
       ],
       'Soak the chickpeas overnight, then pressure-cook them until very soft (5–6 whistles). Mash a few to thicken the gravy.',
@@ -541,15 +545,17 @@ const p2: MealPlanDefinition = {
     ),
     Friday: m(
       'p2-d-fri',
-      'Paneer–vegetable stir-fry with roti and dal',
+      'Paneer–soya vegetable stir-fry with roti and dal',
       [
-        { food: 'paneer', g: 70 },
+        { food: 'paneer', g: 40 },
+        { food: 'soyaChunks', g: 15, note: 'soaked, squeezed, stir-fried with the paneer' },
         { food: 'mixedVeg', g: 150 },
-        { food: 'oil', g: 6 },
-        { food: 'atta', g: 105, note: '3 rotis' },
+        { food: 'oil', g: 7 },
+        { food: 'atta', g: 70, note: '2 rotis' },
+        { food: 'rice', g: 40, note: 'or a 3rd roti' },
         { food: 'moongDal', g: 35 },
       ],
-      'Stir-fry the capsicum, onion and beans on high heat. Add the paneer cubes and spices for the last 3 minutes.',
+      'Stir-fry the capsicum, onion and beans on high heat. Add the soaked, squeezed soya chunks with the vegetables, and the paneer cubes and spices for the last 3 minutes.',
       {
         tutorials: ['paneerBhurji', 'dal'],
         minutes: 20,
@@ -598,12 +604,12 @@ const p2: MealPlanDefinition = {
       'p2-sat-4',
       'Dal makhani-style rajma–urad with rice and salad',
       [
-        { food: 'rajma', g: 50 },
-        { food: 'rice', g: 80 },
+        { food: 'rajma', g: 70 },
+        { food: 'rice', g: 90 },
         { food: 'ghee', g: 8 },
         { food: 'curd', g: 150 },
         { food: 'salad', g: 100 },
-        { food: 'paneer', g: 50, note: 'cubed into the dal' },
+        { food: 'soyaChunks', g: 15, note: 'granules, simmered in the dal' },
       ],
       'A weekend dal: slow-simmered rajma (or rajma + whole urad) finished with ghee, tomato and kasuri methi. Pressure-cook until creamy.',
       {
@@ -618,9 +624,9 @@ const p2: MealPlanDefinition = {
       'p2-sun-2',
       'Besan chilla with paneer, curd and fruit',
       [
-        { food: 'besan', g: 70 },
-        { food: 'paneer', g: 50 },
-        { food: 'oil', g: 8 },
+        { food: 'besan', g: 75 },
+        { food: 'paneer', g: 40 },
+        { food: 'oil', g: 10 },
         { food: 'mixedVeg', g: 60 },
         { food: 'curd', g: 150 },
         { food: 'guava', g: 120 },
@@ -634,17 +640,17 @@ const p2: MealPlanDefinition = {
     ),
     meal3: m(
       'p2-sun-3',
-      'Milk, roasted chana, peanuts and fruit',
+      'Banana–peanut milkshake with masala roasted chana',
       [
-        { food: 'milk', g: 250 },
-        { food: 'roastedChana', g: 40 },
-        { food: 'peanuts', g: 15 },
-        { food: 'seasonalFruit', g: 150 },
+        { food: 'milk', g: 250, note: 'chilled' },
+        { food: 'banana', g: 110 },
+        { food: 'peanuts', g: 20, note: 'roasted, blended in' },
+        { food: 'roastedChana', g: 35 },
       ],
-      'Same as the weekday afternoon meal, with a different fruit.',
+      'Blend the cold milk, banana and roasted peanuts for 30 seconds. Toss the roasted chana with chaat masala, lemon and chopped onion on the side.',
       {
-        minutes: 2,
-        flavour: 'Sprinkle the chana–peanut mix with chaat masala and lemon.',
+        minutes: 5,
+        flavour: 'A pinch of elaichi or cinnamon in the shake; a ripe, spotty banana makes it sweet enough without sugar.',
       },
     ),
     meal4: m(
@@ -672,18 +678,21 @@ const p2: MealPlanDefinition = {
     { swap: 'Soya chunks', with: 'Paneer (about twice the weight) or extra dal + curd', note: 'Soya is fine to eat daily at these amounts. Swap it if you simply prefer variety.' },
     { swap: 'Rajma / chole', with: 'Kala chana, lobia or whole masoor (same dry weight)' },
     { swap: 'Flaxseed', with: 'Walnuts (15 g)', note: 'Keeps the omega-3 (ALA) intake.' },
-    { swap: 'Rice', with: 'Roti, millet (jowar/bajra) or dalia (same dry weight)' },
+    { swap: 'Daliya (Meal 1)', with: 'Rolled oats (same weight), soaked overnight in the milk', note: 'No cooking, but ≈ ₹170/month more.' },
+    { swap: 'Rice', with: 'Roti, millet (jowar/bajra) or daliya (same dry weight)' },
     { swap: 'Peanuts', with: 'Any nut or seed (same weight)' },
   ],
+  costNote:
+    'This is the cheapest plan that still meets every target with some variety: daliya instead of oats, dairy at about 500 g a day, paneer twice a week. Going lower means cutting fruit or dairy below what the plan needs for vitamin C and calcium.',
   prepStrategy: [
     'Sunday: soak the rajma/chole for Mon and Thu (freeze cooked portions); cook the Sunday khichdi double for Monday.',
     'Evenings: cook dinner double. The extra portion is tomorrow’s lunch.',
-    'Nightly: make the overnight oats jar (2 minutes) and set curd.',
+    'Every second night: cook 2 days of daliya (about 12 minutes, mostly waiting). Nightly: set curd.',
     'Keep a jar of roasted chana–peanut mix at the office desk (it keeps for weeks), so Meal 3 only needs milk.',
   ],
   notes: [
     'Cheapest of the four plans per gram of protein.',
-    'Soya at these amounts (15–45 g dry a day) is well within intakes studied in humans, and there is no good evidence that it harms testosterone in men.',
+    'Soya at these amounts (15–45 g dry a day) is within the range eaten traditionally in East Asia, and a 2021 meta-analysis of 41 clinical studies found no effect on testosterone or oestrogen in men.',
   ],
 };
 
@@ -726,7 +735,7 @@ const p3: MealPlanDefinition = {
     [
       { food: 'egg', g: 50, note: '1 egg' },
       { food: 'roastedChana', g: 40 },
-      { food: 'papaya', g: 150, note: 'or another seasonal fruit' },
+      { food: 'papaya', g: 120, note: 'or another seasonal fruit' },
       { food: 'curd', g: 150, note: 'as chaas' },
       { food: 'peanuts', g: 15 },
     ],
@@ -750,7 +759,7 @@ const p3: MealPlanDefinition = {
         { food: 'oil', g: 8 },
         { food: 'mixedVeg', g: 80, note: 'onion–tomato masala' },
         { food: 'salad', g: 80 },
-        { food: 'curd', g: 150 },
+        { food: 'curd', g: 100 },
       ],
       'Soak the kala chana overnight, discard the water, and pressure-cook it for 5–6 whistles until soft. Simmer it with soaked soya chunks in an onion–tomato masala for 10 minutes. Cook double: half is tomorrow’s lunch.',
       {
@@ -768,8 +777,8 @@ const p3: MealPlanDefinition = {
         { food: 'mixedVeg', g: 120 },
         { food: 'oil', g: 8 },
         { food: 'atta', g: 105, note: '3 rotis' },
-        { food: 'curd', g: 150 },
-        { food: 'rice', g: 45, note: 'or a 4th roti' },
+        { food: 'curd', g: 100 },
+        { food: 'rice', g: 50, note: 'or a 4th roti' },
       ],
       'Boil the soya chunks for 5 minutes, then squeeze out the water. Simmer them in an onion–tomato–curd gravy.',
       {
@@ -785,9 +794,9 @@ const p3: MealPlanDefinition = {
       [
         { food: 'rajma', g: 50 },
         { food: 'soyaChunks', g: 15 },
-        { food: 'rice', g: 95 },
+        { food: 'rice', g: 100 },
         { food: 'oil', g: 7 },
-        { food: 'curd', g: 150 },
+        { food: 'curd', g: 100 },
         { food: 'salad', g: 80 },
       ],
       'Soak the rajma overnight, then pressure-cook it until fully soft before making the masala.',
@@ -802,12 +811,12 @@ const p3: MealPlanDefinition = {
       'p3-d-thu',
       'Paneer–peas sabzi with roti and dal',
       [
-        { food: 'paneer', g: 50 },
-        { food: 'soyaChunks', g: 8, note: 'granules, soaked — they blend into the gravy' },
+        { food: 'paneer', g: 30 },
+        { food: 'soyaChunks', g: 15, note: 'granules, soaked — they blend into the gravy' },
         { food: 'mixedVeg', g: 150 },
         { food: 'oil', g: 6 },
         { food: 'atta', g: 105, note: '3 rotis' },
-        { food: 'moongDal', g: 35 },
+        { food: 'moongDal', g: 45 },
       ],
       'A quick sabzi: onion, tomato and peas with paneer cubes, about 15 minutes. Cook double for Friday’s lunch.',
       {
@@ -888,7 +897,7 @@ const p3: MealPlanDefinition = {
       {
         tutorials: ['paneerTikka', 'dal'],
         minutes: 40,
-        flavour: 'Char the paneer on high heat. Finish the dal with a ghee–jeera–garlic tadka.',
+        flavour: 'Sear the paneer on high heat until it has brown spots (not black). Finish the dal with a ghee–jeera–garlic tadka.',
       },
     ),
   },
@@ -930,7 +939,7 @@ const p3: MealPlanDefinition = {
       'p3-sun-4',
       'Soya pulao with dal and raita',
       [
-        { food: 'rice', g: 85 },
+        { food: 'rice', g: 100 },
         { food: 'soyaChunks', g: 30 },
         { food: 'mixedVeg', g: 120 },
         { food: 'oil', g: 8 },
@@ -953,6 +962,8 @@ const p3: MealPlanDefinition = {
     { swap: 'Rajma / chole', with: 'Kala chana or lobia' },
     { swap: 'Flaxseed', with: 'Walnuts (10–15 g)' },
   ],
+  costNote:
+    'Eggs are good value for B12 and protein, but 21 a week cost about ₹630 a month, more than the soya and dal they replace. The plan also keeps oats, papaya and some paneer for taste.',
   prepStrategy: [
     'Eggs: 21 a week — 2 at Meal 1 every day, 1 at Meal 3 on weekdays, 2 in Friday’s bhurji. Boil 10 on Sunday night (Mon–Wed) and 9 on Wednesday night (Thu–Sun). Keep them unpeeled in the fridge and use within 7 days.',
     'Sunday: soak the kala chana for Monday and the rajma for Wednesday; cook the Sunday pulao double.',
@@ -1002,10 +1013,10 @@ const p4: MealPlanDefinition = {
     'p4-m3',
     'Curd, roasted chana–peanut mix, banana and papaya',
     [
-      { food: 'curd', g: 200 },
+      { food: 'curd', g: 150 },
       { food: 'roastedChana', g: 40 },
       { food: 'peanuts', g: 15, note: 'roasted' },
-      { food: 'papaya', g: 150, note: 'cubed; or guava when in season' },
+      { food: 'papaya', g: 100, note: 'cubed; or guava when in season' },
       { food: 'banana', g: 110 },
     ],
     'Curd in a sealed box, plus the chana–peanut mix and the fruit, all kept in the office fridge. Nothing to cook.',
@@ -1073,7 +1084,7 @@ const p4: MealPlanDefinition = {
         tutorials: ['fishCurry', 'dal'],
         packable: true,
         minutes: 30,
-        flavour: 'Rub the fish with turmeric, salt and a little mustard oil 15 minutes before frying. Finish the gravy with green chilli.',
+        flavour: 'Rub the fish with turmeric, salt and a little oil 15 minutes before frying. For a Bengali-style gravy, use ground mustard seed paste rather than mustard oil. Finish with green chilli.',
       },
     ),
     Thursday: m(
@@ -1164,7 +1175,7 @@ const p4: MealPlanDefinition = {
       {
         tutorials: ['grilledChicken', 'dal'],
         minutes: 30,
-        flavour: 'Marinate overnight if you can, then cook on high heat until the edges char. Serve with lemon and onion.',
+        flavour: 'Marinate overnight if you can (marinating also reduces the harmful compounds that form on grilled meat). Cook on medium-high heat, turning often, until browned and cooked through; cut off any blackened bits. Serve with lemon and onion.',
       },
     ),
   },
@@ -1179,7 +1190,6 @@ const p4: MealPlanDefinition = {
         { food: 'atta', g: 85, note: '2 parathas' },
         { food: 'ghee', g: 5 },
         { food: 'curd', g: 200 },
-        { food: 'peanuts', g: 15, note: 'roasted, in the bhurji or on the side' },
       ],
       'A weekend brunch. Scramble the eggs with onion, tomato and spices.',
       {
@@ -1195,9 +1205,9 @@ const p4: MealPlanDefinition = {
         { food: 'milk', g: 250 },
         { food: 'roastedChana', g: 35 },
         { food: 'peanuts', g: 15 },
-        { food: 'seasonalFruit', g: 150 },
+        { food: 'guava', g: 150, note: 'or the cheapest seasonal fruit' },
       ],
-      'A glass of milk (warm or cold) with a handful of roasted chana and peanuts and a piece of seasonal fruit. No cooking.',
+      'A glass of milk (warm or cold) with a handful of roasted chana and peanuts and a guava or other seasonal fruit. No cooking.',
       {
         minutes: 2,
         flavour: 'Sprinkle the chana–peanut mix with chaat masala and lemon.',
@@ -1205,9 +1215,10 @@ const p4: MealPlanDefinition = {
     ),
     meal4: m(
       'p4-sun-4',
-      'Chicken curry with roti and dal',
+      'Chicken–chana curry with roti and dal',
       [
-        { food: 'chicken', g: 90 },
+        { food: 'chicken', g: 60 },
+        { food: 'kabuliChana', g: 30, note: 'soaked, pressure-cooked' },
         { food: 'oil', g: 8 },
         { food: 'mixedVeg', g: 80 },
         { food: 'atta', g: 105, note: '3 rotis' },
@@ -1215,7 +1226,7 @@ const p4: MealPlanDefinition = {
         { food: 'salad', g: 80 },
         { food: 'curd', g: 120 },
       ],
-      'Cook double: the second portion is Monday’s lunch. Boil the week’s eggs tonight.',
+      'Simmer the chicken and pressure-cooked chickpeas together in one masala; the chana stretches the chicken and soaks up the gravy. Cook double: the second portion is Monday’s lunch. Boil the week’s eggs tonight.',
       {
         tutorials: ['chickenCurry', 'boiledEggs'],
         packable: true,
@@ -1229,6 +1240,8 @@ const p4: MealPlanDefinition = {
     { swap: 'Rohu / katla', with: 'Any local fish, or canned tuna/sardines', note: 'Oily fish (sardine/mackerel/bangda) gives more omega-3.' },
     { swap: 'Rajma', with: 'Chole or kala chana' },
   ],
+  costNote:
+    'Chicken and fish cost more per gram of protein than soya, pulses, eggs and dairy, so this plan cannot meet the same targets inside the budget without changing its character. Using Plan 3 on most days and this plan on some is another way to cut cost.',
   prepStrategy: [
     'Buy chicken twice a week (or freeze it in 110 g portions). Thaw it in the fridge overnight, not on the counter.',
     'Sunday: boil the eggs, soak the rajma for Friday, and cook the Sunday chicken curry double for Monday’s lunch.',

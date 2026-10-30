@@ -92,7 +92,7 @@ export function SettingsView() {
                 type="date"
                 value={settings.programStart}
                 onChange={(e) => e.target.value && update({ programStart: e.target.value })}
-                className="mt-1 h-10 w-full rounded-lg border border-line-strong bg-surface px-3 text-[15px]"
+                className="mt-1 h-10 w-full rounded-lg border border-line-strong bg-surface px-2 text-sm min-[360px]:px-3 min-[360px]:text-[15px]"
               />
             </label>
           </div>
@@ -107,7 +107,7 @@ export function SettingsView() {
         <div className="space-y-4">
           <div>
             <div className="mb-1 text-xs font-medium text-muted">Active meal plan</div>
-            <Segmented<PlanId> label="Active meal plan" value={settings.planId} onChange={(v) => update({ planId: v })} options={PLANS.map((p) => ({ value: p.def.id, label: p.def.shortName }))} />
+            <Segmented<PlanId> wrap label="Active meal plan" value={settings.planId} onChange={(v) => update({ planId: v })} options={PLANS.map((p) => ({ value: p.def.id, label: p.def.shortName }))} />
           </div>
           <div>
             <div className="mb-1 text-xs font-medium text-muted">Usual training time</div>

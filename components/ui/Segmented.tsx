@@ -21,6 +21,7 @@ export function Segmented<T extends string>({
   className,
   size = 'md',
   stretch,
+  wrap,
 }: {
   options: SegmentOption<T>[];
   value: T;
@@ -29,6 +30,8 @@ export function Segmented<T extends string>({
   className?: string;
   size?: 'sm' | 'md';
   stretch?: boolean;
+  /** Two per row on phones, one row from sm up. For option sets too wide to fit 320 px. */
+  wrap?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const onKey = (e: React.KeyboardEvent) => {
@@ -47,7 +50,7 @@ export function Segmented<T extends string>({
         role="tablist"
         aria-label={label}
         onKeyDown={onKey}
-        className={cn('inline-flex min-w-full gap-1 rounded-xl bg-slate-100 p-1 sm:min-w-0', stretch && 'flex w-full')}
+        className={cn('inline-flex min-w-full gap-1 rounded-xl bg-slate-100 p-1 sm:min-w-0', stretch && 'flex w-full', wrap && 'grid w-full grid-cols-2 sm:grid-cols-4')}
       >
         {options.map((o) => {
           const active = o.value === value;

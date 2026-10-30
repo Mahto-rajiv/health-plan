@@ -113,7 +113,7 @@ function TrainingCard({ today, week, deload, log }: { today: string; week: numbe
             {plan.kind === 'lift-optional' && <Badge tone="caution">Optional catch-up</Badge>}
           </div>
           <p className="mt-1 text-sm text-ink-2">{plan.note}</p>
-          <ol className="mt-3 grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
+          <ol className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
             {exercises.map((ex, i) => (
               <li key={ex.id} className="flex items-baseline justify-between gap-3 border-b border-line/70 py-1">
                 <span className="min-w-0 truncate text-ink">

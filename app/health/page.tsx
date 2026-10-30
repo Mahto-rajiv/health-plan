@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
-import { ClipboardList, FlaskConical, Pill, Scissors, Stethoscope } from 'lucide-react';
+import { ClipboardList, FlaskConical, Pill, Salad, Scissors, Stethoscope } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Badge, type BadgeTone } from '@/components/ui/Badge';
 import { Callout } from '@/components/ui/Callout';
 import { References } from '@/components/References';
-import { BLOOD_DATE, BLOOD_RESULTS, HAIR, HEALTH_DISCLAIMER, SUPPLEMENTS, SUPPLEMENT_NOTES, type ResultStatus, type Supplement } from '@/lib/data/health';
+import { BLOOD_DATE, BLOOD_RESULTS, DIET_COVERAGE, HAIR, HEALTH_DISCLAIMER, SUPPLEMENTS, SUPPLEMENT_NOTES, SUPPLEMENT_NOTE_REFS, type Coverage, type CoverageRow, type ResultStatus, type Supplement } from '@/lib/data/health';
+import { PLANS, planB12 } from '@/lib/meal-plans';
 import type { RefId } from '@/lib/data/references';
 
 export const metadata: Metadata = { title: 'Health' };
@@ -24,6 +25,14 @@ const VERDICT: Record<Supplement['verdict'], BadgeTone> = {
 };
 
 const LEVEL: Record<string, BadgeTone> = { Reasonable: 'good', Mixed: 'caution', Weak: 'neutral', Avoid: 'alert' };
+
+const COVERAGE: Record<Coverage, BadgeTone> = { 'Covered by diet': 'good', Close: 'caution', 'Not from diet': 'alert' };
+
+/** Average daily amount in each plan, computed from its foods. */
+function planAmount(key: NonNullable<CoverageRow['key']>, plan: (typeof PLANS)[number]): string {
+  const v = key === 'b12' ? planB12(plan) : plan.weeklyAverage[key];
+  return v < 10 ? v.toFixed(1) : Math.round(v).toLocaleString('en-IN');
+}
 
 export default function HealthPage() {
   const groups = [...new Set(BLOOD_RESULTS.map((r) => r.group))];
@@ -60,7 +69,7 @@ export default function HealthPage() {
             <div className="rounded-xl bg-violet-50/60 p-3">
               <div className="font-medium text-violet-900">Discuss with a doctor</div>
               <p className="mt-1 text-violet-950/80">
-                Hair thinning for 6 months (dermatologist), plus ferritin, zinc, folate and possibly MMA to complete the picture.
+                Hair thinning for 6 months (dermatologist), plus ferritin, zinc, folate and possibly active B12 to complete the picture.
               </p>
             </div>
           </div>
@@ -133,6 +142,43 @@ export default function HealthPage() {
         </Card>
 
         <Card>
+          <CardHeader
+            title="What your diet covers"
+            icon={<Salad size={18} />}
+            description="Daily need for adult Indian men (ICMR-NIN 2020) against each plan’s average day, computed from its foods. Supplements are only for what food can’t cover."
+          />
+          <ul className="divide-y divide-line rounded-xl border border-line">
+            {DIET_COVERAGE.map((c) => (
+              <li key={c.nutrient} className="grid gap-2 p-3 text-sm sm:grid-cols-[minmax(0,14rem)_1fr] sm:gap-5">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-medium text-ink">{c.nutrient}</span>
+                    <Badge tone={COVERAGE[c.coverage]}>{c.coverage}</Badge>
+                  </div>
+                  <div className="mt-0.5 text-xs text-muted">Need: {c.need}</div>
+                </div>
+                <div>
+                  {c.key && (
+                    <dl className="tabular mb-1.5 grid grid-cols-1 gap-x-4 gap-y-0.5 text-xs min-[400px]:grid-cols-2 sm:grid-cols-4">
+                      {PLANS.map((p) => (
+                        <div key={p.def.id} className="flex justify-between gap-2 sm:block">
+                          <dt className="text-muted">{p.def.shortName}</dt>
+                          <dd className="whitespace-nowrap font-medium text-ink">
+                            {planAmount(c.key!, p)} {c.unit}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
+                  <p className="text-ink-2">{c.note}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <References ids={['icmr2020', 'ifct', 'usdaFdc', 'odsIodine', 'odsOmega3']} />
+        </Card>
+
+        <Card>
           <CardHeader title="Supplements" icon={<Pill size={18} />} description="Food first. Only what your results, diet and goals justify." />
           <ul className="grid gap-3 lg:grid-cols-2">
             {SUPPLEMENTS.map((s) => (
@@ -149,6 +195,12 @@ export default function HealthPage() {
                 )}
                 <p className="mt-1.5 text-ink-2">{s.why}</p>
                 {s.cautions && <p className="mt-1.5 text-xs text-muted">{s.cautions}</p>}
+                {s.buy && (
+                  <p className="mt-1.5 text-xs text-muted">
+                    <span className="font-medium text-ink-2">Buying: </span>
+                    {s.buy}
+                  </p>
+                )}
                 {s.cost && <p className="mt-1.5 text-xs text-muted">Cost: {s.cost}</p>}
               </li>
             ))}
@@ -158,7 +210,7 @@ export default function HealthPage() {
               <li key={n}>{n}</li>
             ))}
           </ul>
-          <References ids={SUPPLEMENTS.flatMap((s) => s.refs) as RefId[]} />
+          <References ids={[...SUPPLEMENTS.flatMap((s) => s.refs), ...SUPPLEMENT_NOTE_REFS] as RefId[]} />
         </Card>
       </div>
     </>

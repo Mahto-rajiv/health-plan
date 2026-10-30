@@ -146,7 +146,7 @@ function PlanPicker({ value, onChange }: { value: PlanId; onChange: (id: PlanId)
               />
               <span className={cn('font-semibold', active ? 'text-accent-strong' : 'text-ink')}>{p.def.shortName}</span>
               <span className={cn('tabular text-xs', over ? 'text-amber-700' : 'text-muted')}>
-                ≈ {formatINR(roundTo(p.monthlyCost, 100))}/mo{over ? ' · over budget' : ''}
+                ≈ {formatINR(roundTo(p.monthlyCost, 100))}/mo{over ? ' · above target' : ''}
               </span>
             </label>
           );
@@ -211,7 +211,7 @@ function GroceryView({ planId }: { planId: PlanId }) {
         <CardHeader
           title="Budget"
           icon={<Wallet size={18} />}
-          description={`Target: ${formatINR(BUDGET_MIN)}–${formatINR(BUDGET_MAX)} a month. Food only — supplements are costed separately on the Health page.`}
+          description={`Target: ${formatINR(BUDGET_MIN)}–${formatINR(BUDGET_MAX)} a month where possible; health, nutrition and taste come first. Food only — supplements are costed separately on the Health page.`}
         />
         <div className="tabular grid grid-cols-2 gap-4 sm:grid-cols-3">
           <div>
@@ -237,12 +237,10 @@ function GroceryView({ planId }: { planId: PlanId }) {
           </div>
         </div>
         {over ? (
-          <Callout tone="caution" className="mt-4" title={`About ${formatINR(roundTo(gap, 50))} a month over budget`}>
-            Chicken and fish cost more per gram of protein than soya, pulses, eggs and dairy, so this plan
-            can&apos;t meet the same calorie and protein targets for under {formatINR(BUDGET_MAX)} without changing its
-            character. Your options: accept the extra cost, apply the swaps below
-            {swaps.length > 0 && <> (all of them together bring it to ≈ {formatINR(roundTo(allSwapsCost, 50))})</>}, or
-            use Plan 3 on most days and this plan on some.
+          <Callout tone="caution" className="mt-4" title={`About ${formatINR(roundTo(gap, 50))} a month above the target`}>
+            {plan.def.costNote}
+            {swaps.length > 0 && <> All the swaps below together bring it to ≈ {formatINR(roundTo(allSwapsCost, 50))}.</>}{' '}
+            Nutrition, food safety and taste are not cut to reach the target.
           </Callout>
         ) : (
           <Callout tone="good" className="mt-4" title={`Within the ${formatINR(BUDGET_MIN)}–${formatINR(BUDGET_MAX)} budget`}>
@@ -312,7 +310,10 @@ function GroceryView({ planId }: { planId: PlanId }) {
   );
 }
 
-const signed = (v: number) => `${v >= 0 ? '+' : '−'}${Math.abs(Math.round(v))}`;
+const signed = (v: number) => {
+  const r = Math.round(v);
+  return r === 0 ? '±0' : `${r > 0 ? '+' : '−'}${Math.abs(r)}`;
+};
 
 function ProteinValueCard() {
   return (

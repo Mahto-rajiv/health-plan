@@ -69,6 +69,8 @@ for (const def of MEAL_PLAN_DEFINITIONS) {
     check(n.protein >= 110 && n.protein <= 145, `${def.id} ${d.day}: protein ${Math.round(n.protein)} outside 110–145 g`);
     check(n.fat <= 100, `${def.id} ${d.day}: fat ${Math.round(n.fat)} > 100 g`);
     check(n.fiber >= 30, `${def.id} ${d.day}: fibre ${Math.round(n.fiber)} < 30 g`);
+    // Above ~70 g a day, bloating and lower mineral absorption become more likely, especially while fibre is being increased.
+    check(n.fiber <= 70, `${def.id} ${d.day}: fibre ${Math.round(n.fiber)} > 70 g`);
     const fv = d.meals.flatMap((m) => m.meal.items).filter((i) => FRUIT_VEG.includes(i.food)).reduce((s, i) => s + i.g, 0);
     check(fv >= 400, `${def.id} ${d.day}: fruit and vegetables ${fv} g < 400 g`);
     if (!d.isWeekend) {
@@ -106,7 +108,7 @@ for (const p of PLANS) {
   check(Math.abs(groceryWeekly - p.weeklyFoodCost) < 0.5, `${p.def.id}: grocery list cost ₹${groceryWeekly.toFixed(0)} ≠ meal cost ₹${p.weeklyFoodCost.toFixed(0)}`);
   check(Math.abs(p.monthlyCost - ((p.weeklyFoodCost * 30) / 7 + PANTRY_MONTHLY)) < 0.5, `${p.def.id}: monthly cost is not weekly × 30/7 + pantry`);
   check(p.eggsPerWeek <= 21, `${p.def.id}: ${p.eggsPerWeek} eggs/week is above the 3-a-day limit the plans use`);
-  if (p.monthlyCost > BUDGET_MAX) warnings.push(`${p.def.shortName}: ≈ ₹${Math.round(p.monthlyCost)}/month, ₹${Math.round(p.monthlyCost - BUDGET_MAX)} over the ₹${BUDGET_MAX} budget (shown on the site with costed swaps)`);
+  if (p.monthlyCost > BUDGET_MAX) warnings.push(`${p.def.shortName}: ≈ ₹${Math.round(p.monthlyCost)}/month, ₹${Math.round(p.monthlyCost - BUDGET_MAX)} above the ₹${BUDGET_MAX} target (allowed: the target is soft; shown on the site with costed swaps)`);
   console.log(
     `${p.def.shortName.padEnd(11)} kcal ${Math.round(p.ranges.kcal[0])}–${Math.round(p.ranges.kcal[1])} (avg ${Math.round(p.weeklyAverage.kcal)})  protein ${Math.round(p.ranges.protein[0])}–${Math.round(p.ranges.protein[1])} g  fibre ${Math.round(p.ranges.fiber[0])}–${Math.round(p.ranges.fiber[1])} g  eggs ${p.eggsPerWeek}/wk  ≈ ₹${Math.round(p.monthlyCost)}/month  ${ingredients} ingredients  ≤ ${weekdayMinutes} min/weekday`,
   );

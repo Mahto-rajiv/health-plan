@@ -137,6 +137,7 @@ export const HYDRATION = [
   'Training days: +500–750 ml around the session.',
   'Tea and coffee count toward fluids. Stop caffeine by ~3 PM so it doesn’t affect sleep.',
   'Use iodised salt for cooking (iodine). Don’t rely only on rock or pink salt.',
+  'Keep total salt to about 5 g a day (one level teaspoon, including what goes into cooking). Chaat masala, kala namak, pickles, papad and packaged namkeen all count.',
 ];
 
 // ─── Digestive comfort ────────────────────────────────────────────────────────
@@ -180,8 +181,11 @@ export const FOOD_SAFETY = {
     'Milk for home-set curd: packaged pasteurised milk can be used as it is; boil loose milk first and cool it to lukewarm before adding the starter.',
     'Rajma and other dry beans must be soaked and then boiled or pressure-cooked until completely soft. Raw or undercooked kidney beans contain a toxin that causes vomiting.',
     'Wash fruit and salad vegetables under running water before cutting them, and cut salad fresh rather than days ahead.',
+    'Cooking oil: use groundnut or rice-bran oil every day, and mustard oil only now and then for flavour (about a teaspoon a week). Most Indian mustard oil is 40–50% erucic acid; at the plans’ ~30 g of oil a day it would be far above the EFSA safe intake, which is based on heart effects in animals. Harm in people has not been shown, but there is no reason to take the risk daily.',
+    'Rice: for plain rice, cook it in plenty of water (about 6 cups per cup of rice) and drain it like pasta. That removes about 40% of the arsenic rice picks up from soil and water. Pulao and khichdi can’t be drained, which is one reason the plans keep rice to about one portion a day and alternate it with roti and daliya.',
+    'Chicken and fish: don’t blacken them. Charring meat on high heat forms compounds (HCAs and PAHs) linked to cancer in lab studies. Marinate, turn often and cut off burnt bits. Paneer and soya don’t form HCAs in meaningful amounts.',
   ],
-  refs: ['fssRice', 'fsisLeftovers', 'whoMycotoxins'] as RefId[],
+  refs: ['fssRice', 'fsisLeftovers', 'whoMycotoxins', 'efsaErucic', 'gill2021', 'gray2016', 'nciCookedMeat', 'whoSalt'] as RefId[],
 };
 
 // ─── Budget ───────────────────────────────────────────────────────────────────
@@ -192,5 +196,6 @@ export const BUDGET_NOTES = [
   'Prices are approximate (Oct 2026): milk, eggs, chicken, fruit, oats and soya were checked against current listings; the rest are local-shop estimates. Your local prices may differ by ±15%.',
   'Costs include every food in the plan plus ~₹300/month for spices, salt, tea, herbs and other basics. Cooking gas is not included.',
   'Produce is costed as bought, so peel, seeds and trimmings are paid for (e.g. ~30% of a papaya, ~35% of a banana). The yields used are typical approximations.',
-  'Biggest savers: set curd at home (≈ milk price), buy sattu, chana and dals loose, buy fruit in season, and swap some paneer for soya chunks.',
+  'Biggest savers: set curd at home (≈ milk price), buy soya chunks, sattu, chana and dals in 1 kg packs or loose, buy fruit in season, and swap some paneer for soya chunks.',
+  'Why not ₹3,000? A least-cost check on these prices found that the cheapest mix of these foods meeting the daily targets costs about ₹3,000 a month, but only with about 10 rotis, 45 g of soya and a bunch of spinach every day and almost no fruit or variety. Requiring basic variety (≥ 200 g fruit, ≥ 500 g dairy, a little paneer, ≤ 7 rotis) raises the floor to about ₹3,600. The plans cost more than that because they add the taste, variety and convenience that make a diet last for months.',
 ];
