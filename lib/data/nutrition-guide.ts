@@ -1,135 +1,128 @@
 import type { RefId } from './references';
 
 // ─── Daily targets ────────────────────────────────────────────────────────────
-// Energy: Mifflin-St Jeor BMR = 10×66 + 6.25×180 − 5×24 + 5 ≈ 1,670 kcal.
-// Desk job + 4 lifting sessions ≈ PAL 1.5–1.6 → maintenance ≈ 2,450–2,700 kcal.
-// A surplus of ~200–300 kcal (≈10%, the low end of the 10–20% advised for
-// novices by Iraki 2019) gives the plan target of ~2,700 kcal.
-// Your weight is currently stable, so your real maintenance is whatever you eat
-// now — the first 3–4 weeks of weigh-ins calibrate the estimate.
+// Energy: Mifflin-St Jeor BMR = 10×64 + 6.25×180 − 5×24 + 5 ≈ 1,650 kcal.
+// The equation is a cross-check only. The better evidence is your own history:
+// weight fell ~4 kg (68 → 64) in about 6 months on what you estimate is under
+// ~2,000 kcal and ~60 g protein a day. A loss of ~0.7 kg a month is roughly a
+// 150–200 kcal daily deficit, so maintenance before training was probably about
+// 2,000–2,100 kcal (an estimate). Four lifting sessions a week add roughly
+// 100–200 kcal a day on average. Phase targets live in lib/config.ts.
 
 export interface Target {
-  key: 'kcal' | 'protein' | 'carbs' | 'fat' | 'fiber' | 'water';
+  key: 'protein' | 'carbs' | 'fat' | 'fiber' | 'water' | 'salt';
   label: string;
-  value: number;
-  unit: string;
-  range: string;
+  value: string;
   basis: string;
   refs: RefId[];
 }
 
 export const TARGETS: Target[] = [
   {
-    key: 'kcal',
-    label: 'Calories',
-    value: 2700,
-    unit: 'kcal',
-    range: '2,600–2,800',
-    basis: 'Estimated maintenance ~2,450–2,700 kcal (BMR ≈ 1,670 × activity 1.5–1.6) plus a ~200–300 kcal surplus (≈10%, the low end of the 10–20% suggested for novices). The estimate is calibrated by your weight trend, not trusted blindly.',
-    refs: ['mifflin', 'frankenfield', 'faoEnergy', 'helms2023'],
-  },
-  {
     key: 'protein',
     label: 'Protein',
-    value: 125,
-    unit: 'g',
-    range: '110–135 g (1.6–2.0 g/kg)',
-    basis: 'Benefits for muscle gain plateau around 1.6 g/kg (upper confidence limit 2.2 g/kg). Spread across 4 meals of ~25–40 g. Well-planned vegetarian protein builds muscle as well as omnivorous protein at this intake.',
+    value: '~90 → ~105 → 110–125 g',
+    basis: `Rises with the phases from ~1.4 to 1.7–1.9 g/kg. Benefits for muscle gain level off around 1.6 g/kg (upper confidence limit 2.2 g/kg), so Phase 2 sits in the useful range without going beyond it. The plans spread it over 4 meals of about 12–49 g (Meal 3, the pre-workout meal, is the smallest at 12–20 g). Well-planned vegetarian protein builds muscle as well as omnivorous protein at this intake.`,
     refs: ['morton', 'schoenfeldAragon', 'heviaLarrain', 'devries'],
   },
   {
     key: 'carbs',
     label: 'Carbohydrate',
-    value: 340,
-    unit: 'g',
-    range: '310–370 g (~5 g/kg)',
-    basis: 'The remainder of your calories after protein and fat. Fuels training volume. Mostly whole grains, pulses, fruit and milk.',
-    refs: ['iraki', 'icmr2024'],
+    value: 'the rest of the energy',
+    basis: 'What is left after protein and fat; it fuels training. Carbohydrate in this app means AVAILABLE carbohydrate (starch and sugars), not counting fibre, as in the Indian food composition tables.',
+    refs: ['ifct', 'faoFoodEnergy'],
   },
   {
     key: 'fat',
     label: 'Fat',
-    value: 75,
-    unit: 'g',
-    range: '60–90 g (≤ 30% of calories)',
-    basis: 'ICMR-NIN and WHO advise ≤ 30% of energy from fat. Visible oil + ghee in the plans is ~15–25 g/day, under ICMR’s ~40 g limit for active men.',
+    value: '25–30% of energy',
+    basis: 'Inside the ICMR-NIN and WHO advice of ≤ 30% of energy from fat. Most of it comes from milk, curd, paneer and peanuts; visible oil is ~4–12 g per cooked meal.',
     refs: ['icmr2024', 'whoFats'],
   },
   {
     key: 'fiber',
     label: 'Fibre',
-    value: 45,
-    unit: 'g',
-    range: '≥ 30 g; the plans give ~40–65 g',
-    basis: 'WHO advises at least 25 g/day; ICMR’s figure is reported as ~40 g per 2,000 kcal. Traditional Indian vegetarian meals are naturally high in fibre, so increase it over 2–4 weeks with plenty of fluid.',
+    value: '≤ 35 → ≤ 40 → ≤ 50 g',
+    basis: 'Capped per phase so your gut can adjust: your intake has been low, and a sudden jump in fibre is a common cause of gas and bloating. Phase 2 still gives ~40–50 g, above the WHO minimum of 25 g.',
     refs: ['whoFats', 'icmr2020', 'niddkGas'],
   },
   {
     key: 'water',
     label: 'Fluids',
-    value: 3,
-    unit: 'L',
-    range: '2.5–3.5 L/day',
+    value: '2.5–3.5 L',
     basis: 'EFSA’s adequate intake for men is 2.5 L of total water a day; more on hot days and training days. Pale-yellow urine is a practical check.',
     refs: ['efsaWater', 'namWater', 'icmr2024'],
   },
+  {
+    key: 'salt',
+    label: 'Salt',
+    value: '~5 g, iodised',
+    basis: 'WHO advises under 5 g of salt a day (about one level teaspoon, including what goes into cooking). Use iodised salt: rock, pink and sea salt are usually not iodised.',
+    refs: ['whoSalt', 'odsIodine'],
+  },
 ];
 
+/** How kcal are computed everywhere in the app. */
+export const ENERGY_NOTE =
+  'Calories are calculated from the macros: 4 kcal per g of protein and of available carbohydrate, 9 per g of fat, and 2 per g of fibre (the FAO factor for fibre in mixed diets). Meal and day totals therefore always add up. Food-table values differ by a few percent for some foods; real food varies more than that.';
+
 export const ENERGY_MATH = [
-  { label: 'BMR (Mifflin-St Jeor)', value: '≈ 1,670 kcal' },
-  { label: 'Activity level (desk job + 4 lifts/week)', value: '× 1.5–1.6' },
-  { label: 'Estimated maintenance', value: '≈ 2,450–2,700 kcal' },
-  { label: 'Lean-gain surplus (≈10%)', value: '+200–300 kcal' },
-  { label: 'Plan target', value: '≈ 2,700 kcal (2,600–2,800)' },
+  { label: 'BMR (Mifflin-St Jeor, 64 kg, 180 cm, 24 y)', value: '≈ 1,650 kcal' },
+  { label: 'What you ate while losing ~0.7 kg a month (your estimate)', value: '< ~2,000 kcal' },
+  { label: 'Estimated maintenance before training (estimate)', value: '≈ 2,000–2,100 kcal' },
+  { label: 'Phase 0 · weeks 1–2 (stop the loss)', value: '≈ 2,200 kcal' },
+  { label: 'Phase 1 · weeks 3–4', value: '≈ 2,400 kcal' },
+  { label: 'Phase 2 · week 5 on (slow gain)', value: '2,550–2,700 kcal' },
 ];
 
 // ─── Weight-gain rules (shown on Nutrition + Progress) ───────────────────────
 
 export const GAIN_RULES = {
-  rate: '+0.5–1.0 kg per month (≈ 0.2–0.35% of body weight per week). After ~6 months, as beginner gains slow, +0.3–0.7 kg per month.',
+  rate: 'First stop the loss (Phase 0: weekly average within ±0.5 kg of your start). Then +0.5–1.0 kg per month (≈ 0.2–0.35% of body weight per week). After ~6 months, as beginner gains slow, +0.3–0.7 kg per month.',
   why: 'A review of off-season nutrition suggests 0.25–0.5% of body weight per week for novices. This plan sits in the lower half of that range because your goals are strength, health and a moderate physique, not maximum size. In trials, bigger surpluses mostly added fat, not more muscle. Beginners gain muscle well even on small surpluses, because training is the main driver.',
   refs: ['helms2023', 'garthe', 'iraki', 'slater', 'benito'] as RefId[],
-  timeline: 'At that rate, 66 → 72 kg (the first checkpoint) takes roughly 6–12 months, and 75 kg roughly 12–20 months. Weight gain slows after the first year — that is normal. Much of what you notice early will be strength and shape, not scale weight.',
-  target: '75 kg (BMI 23.1) is within the WHO “normal” range, but it sits right at the Asian action point of BMI 23. So the plan treats 72 kg as a checkpoint: pause, compare waist, photos and lifts, then decide whether 74–76 kg suits you.',
+  timeline: 'At that rate, 64 → 68 kg (your pre-loss weight and the first checkpoint) takes roughly 4–8 months after the loss has stopped. Much of what you notice early will be strength and shape, not scale weight.',
+  target: '68 kg is the first checkpoint: it is the weight you had before the loss. There, compare waist, photos and lifts, then decide whether to continue toward 75 kg (BMI 23.1, which sits at the Asian action point of BMI 23).',
   targetRefs: ['whoAsianBmi', 'misra'] as RefId[],
   decisions: [
-    { when: 'Rate 0.5–1.0 kg/month, waist stable or rising slowly, lifts improving', then: 'Continue — change nothing.' },
-    { when: 'Rate < 0.5 kg/month for 4+ weeks and you ate the plan most days', then: 'Add ~150 kcal (e.g. +200 ml milk or +1 roti) and re-check in 4 weeks.' },
+    { when: 'Phase 0 or 1, and the weekly average is still falling after 2 weeks although you ate the plan', then: 'Add ~200 kcal (move to the next phase early, or +350 ml milk) and tell a doctor about the unexplained weight loss.' },
+    { when: 'Phase 2: rate 0.5–1.0 kg/month, waist stable or rising slowly, lifts improving', then: 'Continue — change nothing.' },
+    { when: 'Phase 2: rate < 0.5 kg/month for 4+ weeks and you ate the plan most days', then: 'Add ~150 kcal (e.g. +250 ml milk or +1 roti) and re-check in 4 weeks.' },
     { when: 'Rate > 1.2 kg/month after the first month', then: 'Slow down: remove ~150 kcal (one roti or a third of the dinner rice).' },
     { when: 'Waist rising more than ~1 cm per kg gained', then: 'Slow down — more of the gain is fat than muscle.' },
-    { when: 'Waist reaches 85 cm', then: 'Maintain for 4–8 weeks (drop the surplus) and reassess.' },
-    { when: 'Waist reaches 90 cm (half your height; Asian-Indian cut-off)', then: 'Stop gaining. Maintain, or a short gentle cut if needed.' },
-    { when: 'Weight reaches ~72 kg', then: 'Checkpoint: maintain 4–6 weeks and reassess the 75 kg goal.' },
-    { when: 'Poor sleep, illness, exams or a heavy work stretch', then: 'Maintain instead of gaining until life settles.' },
+    { when: 'Waist reaches 47% of your height (85 cm at 180 cm)', then: 'Maintain for 4–8 weeks (drop the surplus) and reassess.' },
+    { when: 'Waist reaches half your height (90 cm at 180 cm, also the Asian-Indian cut-off for men)', then: 'Stop gaining. Maintain, or a short gentle cut if needed.' },
+    { when: 'Weight reaches 68 kg', then: 'Checkpoint: maintain 4–6 weeks and reassess the 75 kg goal.' },
+    { when: 'Poor sleep, illness or a heavy work stretch', then: 'Maintain instead of gaining until life settles.' },
   ],
   measure: [
     'Weigh 3–4 mornings a week after the toilet, before food or water. Compare weekly averages only — single weigh-ins swing by 0.5–1.5 kg.',
     'Waist weekly: tape at the navel, relaxed, after a normal exhale.',
-    'Photos every 4 weeks: same place, light and time.',
+    'Photos every 4 weeks: same place, light and time (keep them on your phone; the app stores only the date you took them).',
     'Lifts: the Progress page tracks estimated strength from your logged sets.',
   ],
 };
 
-// ─── Meal timing & training-day adjustments ──────────────────────────────────
+// ─── Meal timing on training days ─────────────────────────────────────────────
 
 export const TRAINING_DAY = {
-  evening: {
-    title: 'Evening training (default, ~7–8:30 PM)',
+  weekday: {
+    title: 'Weekday gym days (at the gym by 9:00 PM)',
     points: [
-      'Meal 3 at ~5 PM is your pre-workout meal: carbs + ~20 g protein, 2–3 hours before training.',
-      'Meal 4 after training is your post-workout meal. There’s no need to rush it — within ~1–2 hours is fine.',
-      'Drink ~500 ml water in the 2 hours before training and sip during the session.',
+      'Meal 3 at 6:15–6:45 PM is the pre-workout meal: mostly carbohydrate with 12–20 g protein, about 2–2.5 h before training.',
+      'Meal 4 when you get home (9:30–10:30 PM) is the post-workout meal. Within ~1–2 hours of training is fine.',
+      'Drink ~500 ml water between Meal 3 and the gym and sip during the session.',
+      'Dinner at 10:30 PM still leaves ~2 h before a 12:30 AM bedtime.',
     ],
   },
-  morning: {
-    title: 'Morning training (~7–8 AM)',
+  weekend: {
+    title: 'Saturday and Sunday (fixed sessions)',
     points: [
-      'Only choose mornings when you slept by ~11:30 PM. Waking at 6:30 after a 1 AM bedtime costs more than it gains.',
-      'Train first, then eat Meal 1 straight after — it is unchanged. Last night’s dinner fuels a morning session.',
-      'Most people lift fine for an hour after an overnight fast. If your sessions clearly suffer, go back to evening training rather than adding a fifth meal.',
+      'Train ~2–3 h after Meal 1, late morning; Meal 2 at ~1:30 PM is the post-workout meal.',
+      'If you train in the evening instead, use Meal 3 (~5 PM) as the pre-workout meal and Meal 4 after.',
     ],
   },
-  same: 'Calories and the four meals stay the same on training and rest days. Only the timing relative to the session changes — it keeps the system simple and the evidence for calorie cycling at this level is weak.',
+  same: 'Food is the same on training and rest days. Only the timing relative to the session changes; the evidence for calorie cycling at this level is weak and it would complicate the plan.',
 };
 
 export const HYDRATION = [
@@ -138,6 +131,7 @@ export const HYDRATION = [
   'Tea and coffee count toward fluids. Stop caffeine by ~3 PM so it doesn’t affect sleep.',
   'Use iodised salt for cooking (iodine). Don’t rely only on rock or pink salt.',
   'Keep total salt to about 5 g a day (one level teaspoon, including what goes into cooking). Chaat masala, kala namak, pickles, papad and packaged namkeen all count.',
+  'Fluids: 2.5–3.5 L a day in total.',
 ];
 
 // ─── Digestive comfort ────────────────────────────────────────────────────────
@@ -145,7 +139,7 @@ export const HYDRATION = [
 export const GUT = {
   intro: 'There is no diagnosed condition, so the plan doesn’t cut out nutritious foods. Instead it changes how they are prepared and how quickly fibre increases.',
   steps: [
-    { title: 'Ramp up over 2–4 weeks', body: 'Weeks 1–2: use the khichdi, moong dal and rice days more often, and half portions of chana/rajma. Week 3+: the full plan. Gas usually settles as your gut adapts.' },
+    { title: 'Ramp up with the phases', body: 'Fibre is capped at 35 g a day in weeks 1–2, 40 g in weeks 3–4 and 50 g from week 5, and soya and sattu are capped at 20 g and 25 g a day in Phase 0. The table below shows how Meals 1 and 3 grow. Gas usually settles as your gut adapts.' },
     { title: 'Soak, discard, pressure-cook', body: 'Soak chana, rajma and whole moong 8–16 h, throw away the soaking water and pressure-cook until very soft. Soaking and cooking reduce the gas-forming sugars (oligosaccharides).' },
     { title: 'Meal size', body: 'Four moderate meals are easier than two large ones. Eat lunch and dinner slowly; finish dinner 2–3 hours before bed.' },
     { title: 'Fluids with fibre', body: 'Fibre needs water. Spread 2.5–3.5 L across the day rather than drinking a lot at once with meals.' },
@@ -166,13 +160,15 @@ export const GUT = {
 // ─── Food safety ──────────────────────────────────────────────────────────────
 
 export const FOOD_SAFETY = {
-  /** Applied to every cooked-double dinner and its packed lunch. */
-  leftovers: 'Refrigerate the second portion within 2 hours of cooking, or within 1 hour on hot days (above ~32 °C). Eat it the next day, and reheat it until it is steaming hot all the way through.',
-  rice: 'Rice: spread the second portion out in the box so it cools within about 1 hour, refrigerate it, and eat it within 24 hours. Reheat it once only, until steaming hot. Eating it cold straight from the fridge is also fine.',
+  /** Added to every weekday office lunch. */
+  coldLunch: 'Cold-lunch rule: freeze a water bottle overnight and use an ice pack too (two cold sources); pack the box between them in the insulated bag; into the office fridge on arrival; eat it the same day.',
   office: [
-    'Keep the lunch box and Meal 3 in the office fridge from arrival until you eat. With no fridge, use an insulated bag with an ice pack.',
-    'Cooked chicken and fish, like rice, are eaten the next day, not later.',
-    'Without a microwave, choose the roti, paratha or pulao days for eating cold, and use an insulated box packed hot in the morning on the others.',
+    'Use two cold sources, as USDA advises: a water bottle frozen overnight and an ice pack, with the lunch box and Meal 3 between them in the insulated bag. Tests of insulated bags show that one cold source often does not keep food cold for 2 hours.',
+    'Cooked fillings (paneer, potato, soya, chicken, egg) are safest made the night before and chilled in the fridge. Morning-made parathas and rolls: cool them fully on a plate (~15 minutes) before boxing; hot food sealed in a box stays warm for hours.',
+    'On arrival (~2 h after leaving home), move both boxes to the office fridge. Perishable food should be out of the fridge for no more than 2 hours in total, or 1 hour above ~32 °C; on hot days the commute uses all of that. Without fridge space, eat the paneer, curd, egg and chicken meals by ~12:30 PM.',
+    'No rice, dal or gravy in the office lunch: it is eaten cold with no reheating, and cooked rice is the riskiest leftover (Bacillus cereus spores survive cooking).',
+    'Cooked chicken and egg fillings are made the night before or that morning and never kept longer than one day.',
+    'Leftover dinner at home: refrigerate within 2 hours (1 hour on hot days) and eat it the next day, reheated until steaming.',
   ],
   buying: [
     'Nuts, peanuts, roasted chana and sattu: buy from a shop with high turnover and keep them airtight, dry and cool. Throw away any that look mouldy, discoloured or shrivelled, or taste bitter — that is how aflatoxin contamination usually shows.',
@@ -185,7 +181,7 @@ export const FOOD_SAFETY = {
     'Rice: for plain rice, cook it in plenty of water (about 6 cups per cup of rice) and drain it like pasta. That removes about 40% of the arsenic rice picks up from soil and water. Pulao and khichdi can’t be drained, which is one reason the plans keep rice to about one portion a day and alternate it with roti and daliya.',
     'Chicken and fish: don’t blacken them. Charring meat on high heat forms compounds (HCAs and PAHs) linked to cancer in lab studies. Marinate, turn often and cut off burnt bits. Paneer and soya don’t form HCAs in meaningful amounts.',
   ],
-  refs: ['fssRice', 'fsisLeftovers', 'whoMycotoxins', 'efsaErucic', 'gill2021', 'gray2016', 'nciCookedMeat', 'whoSalt'] as RefId[],
+  refs: ['purdueBagLunch', 'fssRice', 'fsisLeftovers', 'whoMycotoxins', 'efsaErucic', 'gill2021', 'gray2016', 'nciCookedMeat', 'whoSalt'] as RefId[],
 };
 
 // ─── Budget ───────────────────────────────────────────────────────────────────
@@ -193,9 +189,9 @@ export const FOOD_SAFETY = {
 export const PANTRY_MONTHLY = 300; // spices, salt, tea, sugar, ginger-garlic, coriander, mint, curry leaves etc.
 
 export const BUDGET_NOTES = [
-  'Prices are approximate (Oct 2026): milk, eggs, chicken, fruit, oats and soya were checked against current listings; the rest are local-shop estimates. Your local prices may differ by ±15%.',
-  'Costs include every food in the plan plus ~₹300/month for spices, salt, tea, herbs and other basics. Cooking gas is not included.',
+  'All prices are estimates (Oct 2026), not quotes. A few were compared with online listings; the rest are local-shop estimates. Edit them in Settings → Prices and every cost in the app is recalculated.',
+  'Costs include every food in the plan plus ~₹300/month for spices, salt, tea, herbs and other basics. Cooking gas is not included. Supplements are costed separately on the Health page.',
   'Produce is costed as bought, so peel, seeds and trimmings are paid for (e.g. ~30% of a papaya, ~35% of a banana). The yields used are typical approximations.',
-  'Biggest savers: set curd at home (≈ milk price), buy soya chunks, sattu, chana and dals in 1 kg packs or loose, buy fruit in season, and swap some paneer for soya chunks.',
-  'Why not ₹3,000? A least-cost check on these prices found that the cheapest mix of these foods meeting the daily targets costs about ₹3,000 a month, but only with about 10 rotis, 45 g of soya and a bunch of spinach every day and almost no fruit or variety. Requiring basic variety (≥ 200 g fruit, ≥ 500 g dairy, a little paneer, ≤ 7 rotis) raises the floor to about ₹3,600. The plans cost more than that because they add the taste, variety and convenience that make a diet last for months.',
+  'Cost rule: when two foods are equivalent in nutrition and taste, the plan uses the cheaper one unless it has a safety or digestive downside. That is why it uses soya, dals and home-set curd, but sealed branded paneer and ghee rather than loose ones.',
+  'The cost rises with the phases because you eat more: Phase 2 is above the target; see the computed swaps to bring it down.',
 ];

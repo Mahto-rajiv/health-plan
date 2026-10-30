@@ -1,12 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { Repeat, ShoppingBasket, CalendarDays, ArrowLeftRight, Wallet, Scale } from 'lucide-react';
-import { PLANS, getPlan, budgetSwaps, PROTEIN_VALUE, BUDGET_MAX, BUDGET_MIN } from '@/lib/meal-plans';
+import Link from 'next/link';
+import { ShoppingBasket, CalendarDays, Wallet, Scale, Printer, ShieldCheck } from 'lucide-react';
+import { budgetSwaps, findPlan, ingredientValues, type ComputedPlan } from '@/lib/meal-plans';
 import { DAYS, type DayName, type PlanId } from '@/lib/data/meal-plans';
-import { TARGETS, BUDGET_NOTES, PANTRY_MONTHLY, FOOD_SAFETY } from '@/lib/data/nutrition-guide';
+import { BUDGET_NOTES, PANTRY_MONTHLY, FOOD_SAFETY, ENERGY_NOTE } from '@/lib/data/nutrition-guide';
+import { BUDGET, BUDGET_LABEL, DAILY, PHASES, PHASE_IDS, budgetStatus, type PhaseId } from '@/lib/config';
+import { PRICES_AS_OF } from '@/lib/data/prices';
 import { useSettings } from '@/lib/storage';
 import { useToday } from '@/lib/hooks';
+import { usePlans, usePrices } from '@/lib/plan-hooks';
+import { phaseOn } from '@/lib/phase';
 import { dayName } from '@/lib/dates';
 import { formatINR, roundTo, cn } from '@/lib/utils';
 import { roundKcal } from '@/lib/nutrition';
@@ -15,25 +20,51 @@ import { Segmented } from '@/components/ui/Segmented';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Callout } from '@/components/ui/Callout';
-import { ProgressBar } from '@/components/ui/Progress';
 import { MealCard } from '@/components/meals/MealCard';
 import { References } from '@/components/References';
 
 type View = 'day' | 'grocery' | 'prep';
 
+const STATUS_TONE = {
+  'below-target': 'text-emerald-700',
+  'within-target': 'text-emerald-700',
+  'above-target': 'text-amber-700',
+  'above-max': 'text-rose-700',
+} as const;
+
 export function MealPlansView() {
   const [settings, setSettings] = useSettings();
   const today = useToday();
+  const activePhase = phaseOn(settings, today);
+  const [pickedPhase, setPickedPhase] = useState<PhaseId | null>(null);
+  const phase = pickedPhase ?? activePhase;
+  const plans = usePlans(phase);
   const [pickedDay, setPickedDay] = useState<DayName | null>(null);
   const [view, setView] = useState<View>('day');
 
-  const plan = getPlan(settings.planId);
+  const plan = findPlan(plans, settings.planId);
   const day: DayName = pickedDay ?? (today ? dayName(today) : 'Monday');
   const computed = plan.days.find((d) => d.day === day)!;
+  const status = budgetStatus(plan.monthlyCost);
 
   return (
     <div className="space-y-5">
-      <PlanPicker value={plan.def.id} onChange={(id) => setSettings((s) => ({ ...s, planId: id }))} />
+      <div>
+        <div className="mb-1 text-xs font-medium text-muted">Phase</div>
+        <Segmented<string>
+          wrap
+          label="Phase"
+          value={String(phase)}
+          onChange={(v) => setPickedPhase(Number(v) as PhaseId)}
+          options={PHASE_IDS.map((p) => ({ value: String(p), label: `Phase ${p}${p === activePhase ? ' · now' : ''}` }))}
+        />
+        <p className="mt-1.5 text-xs text-muted">
+          Weeks {PHASES[phase].weeks[0]}
+          {PHASES[phase].weeks[1] ? `–${PHASES[phase].weeks[1]}` : '+'}: {PHASES[phase].goal}
+        </p>
+      </div>
+
+      <PlanPicker plans={plans} value={plan.def.id} onChange={(id) => setSettings((s) => ({ ...s, planId: id }))} />
 
       <Card className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -46,11 +77,7 @@ export function MealPlansView() {
           <PlanStat label="Calories / day" value={`${roundKcal(plan.ranges.kcal[0])}–${roundKcal(plan.ranges.kcal[1])}`} />
           <PlanStat label="Protein / day" value={`${Math.round(plan.ranges.protein[0])}–${Math.round(plan.ranges.protein[1])} g`} />
           <PlanStat label="Fibre / day" value={`${Math.round(plan.ranges.fiber[0])}–${Math.round(plan.ranges.fiber[1])} g`} />
-          <PlanStat
-            label="Est. cost / month"
-            value={formatINR(roundTo(plan.monthlyCost, 100))}
-            tone={plan.monthlyCost > BUDGET_MAX ? 'caution' : 'good'}
-          />
+          <PlanStat label="Est. cost / month" value={formatINR(roundTo(plan.monthlyCost, 100))} className={STATUS_TONE[status]} hint={BUDGET_LABEL[status]} />
         </div>
       </Card>
 
@@ -61,7 +88,7 @@ export function MealPlansView() {
         options={[
           { value: 'day', label: 'Daily meals' },
           { value: 'grocery', label: 'Groceries & cost' },
-          { value: 'prep', label: 'Prep & swaps' },
+          { value: 'prep', label: 'Prep & safety' },
         ]}
       />
 
@@ -95,12 +122,13 @@ export function MealPlansView() {
           </div>
 
           <Callout tone="info" title="The 4-meal structure">
-            Exactly four meals, no snacks. <strong>Meal 1</strong> is the same every day.{' '}
-            <strong>Meal 3</strong> is the same Monday–Friday; Saturday and Sunday each have their own. Weekday lunch
-            is the extra portion of last night&apos;s dinner (cook once, eat twice).
+            Exactly four meals, no snacks. <strong>Meal 1</strong> is the same every day (about 10 minutes).{' '}
+            <strong>Meal 2</strong> on weekdays is eaten cold at the office: no rice, dal, gravy or reheating.{' '}
+            <strong>Meal 3</strong> is the same Monday–Friday and is your pre-workout meal at 6:15–6:45 PM. Quantities step up
+            with each phase; the foods stay the same.
           </Callout>
 
-          <DayTotals totals={computed.totals} minutes={computed.activeMinutes} cost={computed.cost} />
+          <DayTotals totals={computed.totals} minutes={computed.activeMinutes} cost={computed.cost} phase={phase} />
 
           <div className="grid gap-4 xl:grid-cols-2">
             {computed.meals.map((pm, i) => (
@@ -108,26 +136,25 @@ export function MealPlansView() {
             ))}
           </div>
           <p className="text-xs text-muted">
-            Nutrient values are estimates from the Indian Food Composition Tables (2017) and USDA data. Weigh dry pulses
-            and grains a few times to calibrate your eye; after that, household measures are fine.
+            Nutrient values are estimates from the Indian Food Composition Tables (2017) and USDA data. {ENERGY_NOTE}
           </p>
         </section>
       )}
 
-      {view === 'grocery' && <GroceryView planId={plan.def.id} />}
-      {view === 'prep' && <PrepView planId={plan.def.id} />}
+      {view === 'grocery' && <GroceryView plan={plan} plans={plans} />}
+      {view === 'prep' && <PrepView plan={plan} />}
     </div>
   );
 }
 
-function PlanPicker({ value, onChange }: { value: PlanId; onChange: (id: PlanId) => void }) {
+function PlanPicker({ plans, value, onChange }: { plans: ComputedPlan[]; value: PlanId; onChange: (id: PlanId) => void }) {
   return (
     <fieldset>
       <legend className="sr-only">Meal plan</legend>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {PLANS.map((p) => {
+      <div className="grid grid-cols-1 gap-2 min-[400px]:grid-cols-3">
+        {plans.map((p) => {
           const active = p.def.id === value;
-          const over = p.monthlyCost > BUDGET_MAX;
+          const status = budgetStatus(p.monthlyCost);
           return (
             <label
               key={p.def.id}
@@ -136,17 +163,10 @@ function PlanPicker({ value, onChange }: { value: PlanId; onChange: (id: PlanId)
                 active ? 'border-accent bg-accent-soft' : 'border-line bg-surface hover:bg-slate-50',
               )}
             >
-              <input
-                type="radio"
-                name="meal-plan"
-                value={p.def.id}
-                checked={active}
-                onChange={() => onChange(p.def.id)}
-                className="sr-only"
-              />
+              <input type="radio" name="meal-plan" value={p.def.id} checked={active} onChange={() => onChange(p.def.id)} className="sr-only" />
               <span className={cn('font-semibold', active ? 'text-accent-strong' : 'text-ink')}>{p.def.shortName}</span>
-              <span className={cn('tabular text-xs', over ? 'text-amber-700' : 'text-muted')}>
-                ≈ {formatINR(roundTo(p.monthlyCost, 100))}/mo{over ? ' · above target' : ''}
+              <span className={cn('tabular text-xs', STATUS_TONE[status])}>
+                ≈ {formatINR(roundTo(p.monthlyCost, 100))}/mo · {BUDGET_LABEL[status]}
               </span>
             </label>
           );
@@ -156,62 +176,61 @@ function PlanPicker({ value, onChange }: { value: PlanId; onChange: (id: PlanId)
   );
 }
 
-function PlanStat({ label, value, tone }: { label: string; value: string; tone?: 'good' | 'caution' }) {
+function PlanStat({ label, value, className, hint }: { label: string; value: string; className?: string; hint?: string }) {
   return (
     <div>
       <div className="text-xs text-muted">{label}</div>
-      <div className={cn('font-semibold', tone === 'caution' ? 'text-amber-700' : tone === 'good' ? 'text-emerald-700' : 'text-ink')}>{value}</div>
+      <div className={cn('font-semibold text-ink', className)}>{value}</div>
+      {hint && <div className={cn('text-[11px]', className)}>{hint}</div>}
     </div>
   );
 }
 
-function DayTotals({ totals, minutes, cost }: { totals: Nutrients; minutes: number; cost: number }) {
+function DayTotals({ totals, minutes, cost, phase }: { totals: Nutrients; minutes: number; cost: number; phase: PhaseId }) {
+  const P = PHASES[phase];
+  const fatPct = ((totals.fat * 9) / totals.kcal) * 100;
   const rows = [
-    { t: TARGETS.find((x) => x.key === 'kcal')!, v: totals.kcal, fmt: (v: number) => `${roundKcal(v)}` },
-    { t: TARGETS.find((x) => x.key === 'protein')!, v: totals.protein, fmt: (v: number) => `${Math.round(v)}` },
-    { t: TARGETS.find((x) => x.key === 'carbs')!, v: totals.carbs, fmt: (v: number) => `${Math.round(v)}` },
-    { t: TARGETS.find((x) => x.key === 'fat')!, v: totals.fat, fmt: (v: number) => `${Math.round(v)}` },
-    { t: TARGETS.find((x) => x.key === 'fiber')!, v: totals.fiber, fmt: (v: number) => `${Math.round(v)}` },
+    { label: 'Calories', value: `${roundKcal(totals.kcal)}`, target: `${P.kcal[0].toLocaleString('en-IN')}–${P.kcal[1].toLocaleString('en-IN')}`, ok: totals.kcal >= P.kcal[0] && totals.kcal <= P.kcal[1] },
+    { label: 'Protein', value: `${Math.round(totals.protein)} g`, target: `${Math.round(P.protein[0])}–${Math.round(P.protein[1])} g`, ok: totals.protein >= P.protein[0] && totals.protein <= P.protein[1] },
+    { label: 'Fibre', value: `${Math.round(totals.fiber)} g`, target: `≤ ${P.fibreMax} g`, ok: totals.fiber <= P.fibreMax },
+    { label: 'Fat', value: `${Math.round(totals.fat)} g (${Math.round(fatPct)}%)`, target: `${DAILY.fatEnergy[0] * 100}–${DAILY.fatEnergy[1] * 100}% of energy`, ok: fatPct >= 24 && fatPct <= 31 },
+    { label: 'Carbs (available)', value: `${Math.round(totals.carbs)} g`, target: 'the rest', ok: true },
   ];
   return (
     <Card as="div" className="p-4">
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h3 className="text-sm font-semibold text-ink">Day total vs target</h3>
+        <h3 className="text-sm font-semibold text-ink">Day total vs {P.name.split(' · ')[0]} target</h3>
         <p className="tabular text-xs text-muted">
           ~{minutes} min hands-on cooking · food ≈ {formatINR(cost)}
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-3 lg:grid-cols-5">
-        {rows.map(({ t, v, fmt }) => (
-          <div key={t.key}>
-            <div className="tabular flex items-baseline justify-between gap-2 text-xs">
-              <span className="text-muted">{t.label}</span>
-              <span>
-                <span className="font-semibold text-ink">{fmt(v)}</span>
-                <span className="text-muted"> / {t.value.toLocaleString('en-IN')}{t.unit === 'kcal' ? '' : ` ${t.unit}`}</span>
-              </span>
-            </div>
-            <ProgressBar value={v} max={t.value} className="mt-1.5" label={`${t.label} vs target`} />
+      <dl className="tabular grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-3 lg:grid-cols-5">
+        {rows.map((r) => (
+          <div key={r.label} className="min-w-0">
+            <dt className="text-xs text-muted">{r.label}</dt>
+            <dd className={cn('text-sm font-semibold', r.ok ? 'text-ink' : 'text-amber-700')}>{r.value}</dd>
+            <dd className="text-[11px] text-muted">target {r.target}</dd>
           </div>
         ))}
-      </div>
+      </dl>
     </Card>
   );
 }
 
-function GroceryView({ planId }: { planId: PlanId }) {
-  const plan = getPlan(planId);
-  const over = plan.monthlyCost > BUDGET_MAX;
-  const swaps = budgetSwaps(plan);
-  const gap = plan.monthlyCost - BUDGET_MAX;
+function GroceryView({ plan, plans }: { plan: ComputedPlan; plans: ComputedPlan[] }) {
+  const prices = usePrices();
+  const status = budgetStatus(plan.monthlyCost);
+  const swaps = budgetSwaps(plan, prices);
+  const gap = plan.monthlyCost - BUDGET.targetMax;
   const allSwapsCost = plan.monthlyCost - swaps.reduce((s, x) => s + x.monthlySaving, 0);
+  const cheapest = Math.min(...plans.map((p) => p.costPer10gProtein));
   return (
     <section aria-label="Groceries and cost" className="space-y-4">
       <Card>
         <CardHeader
           title="Budget"
           icon={<Wallet size={18} />}
-          description={`Target: ${formatINR(BUDGET_MIN)}–${formatINR(BUDGET_MAX)} a month where possible; health, nutrition and taste come first. Food only — supplements are costed separately on the Health page.`}
+          description={`Target ${formatINR(BUDGET.targetMin)}–${formatINR(BUDGET.targetMax)} a month; acceptable range ${formatINR(BUDGET.min)}–${formatINR(BUDGET.max)}. Food only — supplements are costed on the Health page. Prices are estimates (${PRICES_AS_OF}); edit them in Settings.`}
         />
         <div className="tabular grid grid-cols-2 gap-4 sm:grid-cols-3">
           <div>
@@ -220,33 +239,57 @@ function GroceryView({ planId }: { planId: PlanId }) {
           </div>
           <div>
             <div className="text-xs text-muted">Per month (incl. {formatINR(PANTRY_MONTHLY)} basics)</div>
-            <div className={cn('text-lg font-semibold', over ? 'text-amber-700' : 'text-emerald-700')}>
-              ≈ {formatINR(roundTo(plan.monthlyCost, 100))}
-            </div>
-          </div>
-          <div className="col-span-2 sm:col-span-1">
-            <div className="text-xs text-muted">All four plans</div>
-            <ul className="mt-0.5 space-y-0.5 text-sm">
-              {PLANS.map((p) => (
-                <li key={p.def.id} className="flex justify-between gap-2">
-                  <span className={p.def.id === planId ? 'font-medium' : 'text-muted'}>{p.def.shortName}</span>
-                  <span className={p.monthlyCost > BUDGET_MAX ? 'text-amber-700' : ''}>≈ {formatINR(roundTo(p.monthlyCost, 100))}</span>
-                </li>
-              ))}
-            </ul>
+            <div className={cn('text-lg font-semibold', STATUS_TONE[status])}>≈ {formatINR(roundTo(plan.monthlyCost, 100))}</div>
+            <div className={cn('text-xs', STATUS_TONE[status])}>{BUDGET_LABEL[status]}</div>
           </div>
         </div>
-        {over ? (
+
+        <div className="mt-4 overflow-x-auto">
+          <table className="tabular w-full text-left text-sm">
+            <caption className="mb-1 text-left text-xs text-muted">All three plans in {PHASES[plan.phase].name.split(' · ')[0]}</caption>
+            <thead>
+              <tr className="border-b border-line text-xs text-muted">
+                <th scope="col" className="py-1.5 pr-2 font-medium">Plan</th>
+                <th scope="col" className="px-2 py-1.5 text-right font-medium">Per month</th>
+                <th scope="col" className="py-1.5 pl-2 text-right font-medium">₹ / 10 g protein</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {plans.map((p) => {
+                const st = budgetStatus(p.monthlyCost);
+                return (
+                  <tr key={p.def.id}>
+                    <th scope="row" className={cn('py-1.5 pr-2 font-normal', p.def.id === plan.def.id ? 'font-medium text-ink' : 'text-ink-2')}>
+                      {p.def.shortName}
+                    </th>
+                    <td className={cn('px-2 py-1.5 text-right', STATUS_TONE[st])}>
+                      ≈ {formatINR(roundTo(p.monthlyCost, 100))}
+                      <span className="block text-[11px]">{BUDGET_LABEL[st]}</span>
+                    </td>
+                    <td className="py-1.5 pl-2 text-right">
+                      ₹{p.costPer10gProtein.toFixed(1)}
+                      <span className="block text-[11px] text-muted">
+                        {p.costPer10gProtein > cheapest + 0.05 ? `+${Math.round((p.costPer10gProtein / cheapest - 1) * 100)}% vs cheapest` : 'cheapest'}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          <p className="mt-1 text-xs text-muted">
+            Same calorie, protein and micronutrient targets for all three; the non-veg plan is not healthier, it costs what it costs.
+          </p>
+        </div>
+
+        {status === 'above-target' || status === 'above-max' ? (
           <Callout tone="caution" className="mt-4" title={`About ${formatINR(roundTo(gap, 50))} a month above the target`}>
-            {plan.def.costNote}
-            {swaps.length > 0 && <> All the swaps below together bring it to ≈ {formatINR(roundTo(allSwapsCost, 50))}.</>}{' '}
-            Nutrition, food safety and taste are not cut to reach the target.
+            Mostly milk, curd and paneer: dairy is the low-fibre protein that lets the plans meet the protein target under the fibre caps.
+            {swaps.length > 0 && <> All the swaps below together bring it to ≈ {formatINR(roundTo(allSwapsCost, 50))}.</>}
           </Callout>
         ) : (
-          <Callout tone="good" className="mt-4" title={`Within the ${formatINR(BUDGET_MIN)}–${formatINR(BUDGET_MAX)} budget`}>
-            {BUDGET_MAX - plan.monthlyCost < 250
-              ? 'Only just — local prices can easily be 10–15% higher, so keep the swaps below in mind.'
-              : 'Prices vary by city and season, so use the swaps below if your local prices are higher.'}
+          <Callout tone="good" className="mt-4" title={`Within the ${formatINR(BUDGET.targetMin)}–${formatINR(BUDGET.targetMax)} target`}>
+            Prices vary by city and season; edit them in Settings and the totals update.
           </Callout>
         )}
         {swaps.length > 0 && (
@@ -257,9 +300,7 @@ function GroceryView({ planId }: { planId: PlanId }) {
                 <li key={s.id} className="rounded-lg bg-slate-50 px-3 py-2">
                   <div className="flex flex-col justify-between gap-0.5 sm:flex-row sm:items-baseline">
                     <span className="font-medium text-ink">{s.label}</span>
-                    <span className="tabular shrink-0 text-xs font-medium text-emerald-700">
-                      saves ≈ {formatINR(roundTo(s.monthlySaving, 10))}/month
-                    </span>
+                    <span className="tabular shrink-0 text-xs font-medium text-emerald-700">saves ≈ {formatINR(roundTo(s.monthlySaving, 10))}/month</span>
                   </div>
                   <p className="tabular mt-0.5 text-xs text-muted">
                     {s.note} Change per day: {signed(s.proteinDeltaPerDay)} g protein, {signed(s.kcalDeltaPerDay)} kcal.
@@ -305,7 +346,7 @@ function GroceryView({ planId }: { planId: PlanId }) {
         </div>
       </Card>
 
-      <ProteinValueCard />
+      <IngredientValueCard />
     </section>
   );
 }
@@ -315,49 +356,59 @@ const signed = (v: number) => {
   return r === 0 ? '±0' : `${r > 0 ? '+' : '−'}${Math.abs(r)}`;
 };
 
-function ProteinValueCard() {
+function IngredientValueCard() {
+  const prices = usePrices();
+  const rows = ingredientValues(prices);
   return (
     <Card>
       <CardHeader
         title="Protein for your money"
         icon={<Scale size={18} />}
-        description="What 20 g of protein costs from each food at the prices used in these plans, cheapest first. Below each food: the amount, calories and fibre that come with it."
+        description="Main ingredients, cheapest protein first: cost of a typical serving and of 10 g of protein, with the calories and fibre that come with that protein."
       />
-      <ol className="divide-y divide-line text-sm sm:grid sm:grid-cols-2 sm:gap-x-8 sm:divide-y-0">
-        {PROTEIN_VALUE.map((p, i) => (
-          <li key={p.food} className="tabular flex items-baseline justify-between gap-3 border-line py-2 sm:border-b">
-            <span className="min-w-0">
-              <span className="block text-ink">
-                <span className="mr-1.5 text-xs text-muted">{i + 1}.</span>
-                {p.name}
-              </span>
-              <span className="block text-xs text-muted">
-                {p.food === 'egg' ? `${(p.gramsFor20g / 50).toFixed(1)} eggs` : `${roundTo(p.gramsFor20g, 5)} ${p.food === 'milk' ? 'ml' : 'g'}`}
-                {' · '}
-                {roundTo(p.kcalFor20g, 10)} kcal · {Math.round(p.fiberFor20g)} g fibre
-              </span>
-            </span>
-            <span className="shrink-0 font-semibold text-ink">{formatINR(p.costFor20g)}</span>
-          </li>
-        ))}
-      </ol>
+      <div className="overflow-x-auto">
+        <table className="tabular w-full min-w-[30rem] text-left text-sm">
+          <thead>
+            <tr className="border-b border-line text-xs text-muted">
+              <th scope="col" className="py-1.5 pr-2 font-medium">Food</th>
+              <th scope="col" className="px-2 py-1.5 font-medium">Serving</th>
+              <th scope="col" className="px-2 py-1.5 text-right font-medium">₹ / serving</th>
+              <th scope="col" className="px-2 py-1.5 text-right font-medium">₹ / 10 g protein</th>
+              <th scope="col" className="py-1.5 pl-2 text-right font-medium">kcal · fibre per 10 g</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {rows.map((r) => (
+              <tr key={r.food}>
+                <th scope="row" className="py-1.5 pr-2 font-normal text-ink">{r.name}</th>
+                <td className="px-2 py-1.5 text-xs text-muted">{r.serving}</td>
+                <td className="px-2 py-1.5 text-right">{formatINR(r.costPerServing)}</td>
+                <td className="px-2 py-1.5 text-right font-semibold">₹{r.costPer10gProtein.toFixed(1)}</td>
+                <td className="py-1.5 pl-2 text-right text-xs text-muted">
+                  {Math.round(r.kcalPer10gProtein)} kcal · {r.fiberPer10gProtein.toFixed(1)} g
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-muted">
-        <li>Weights are dry for pulses, grains and soya, and raw edible portion for chicken and fish (bones and skin excluded).</li>
+        <li>Weights are dry for pulses, grains and soya, and raw edible portion for chicken and fish.</li>
         <li>
-          Cheap is not the only test. Grains and pulses each lack some amino acids, so the plans combine them (dal with
-          roti or rice) and add dairy. Calories also matter: peanuts and seeds bring a lot of fat with their protein.
+          Cheap is not the only test. Pulses bring a lot of fibre with their protein, which is why the plans cap them early on and
+          lean on dairy; grains and pulses also complement each other’s amino acids.
         </li>
+        <li>Paneer and ghee: buy sealed, branded packs. They carry an FSSAI licence number, ingredients and a use-by date; loose ones are cheaper but their quality and freshness can’t be checked.</li>
       </ul>
     </Card>
   );
 }
 
-function PrepView({ planId }: { planId: PlanId }) {
-  const plan = getPlan(planId);
+function PrepView({ plan }: { plan: ComputedPlan }) {
   return (
-    <section aria-label="Preparation and substitutions" className="grid gap-4 lg:grid-cols-2">
+    <section aria-label="Preparation and safety" className="grid gap-4 lg:grid-cols-2">
       <Card>
-        <CardHeader title="Preparation strategy" icon={<CalendarDays size={18} />} description="Light weekend prep plus cook once, eat twice." />
+        <CardHeader title="Weekly preparation" icon={<CalendarDays size={18} />} description="What to do ahead, so weekday mornings stay short." />
         <ol className="space-y-3 text-sm">
           {plan.def.prepStrategy.map((s, i) => (
             <li key={s} className="flex gap-3">
@@ -366,44 +417,37 @@ function PrepView({ planId }: { planId: PlanId }) {
             </li>
           ))}
         </ol>
-        <div className="mt-4 rounded-xl bg-slate-50 p-3 text-xs text-ink-2">
-          <p className="mb-1 font-medium text-ink">Leftovers and the office lunch</p>
-          <ul className="list-disc space-y-1 pl-4">
-            {[FOOD_SAFETY.leftovers, FOOD_SAFETY.rice, ...FOOD_SAFETY.office].map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-          <p className="mb-1 mt-3 font-medium text-ink">Buying and storing ingredients</p>
-          <ul className="list-disc space-y-1 pl-4">
-            {FOOD_SAFETY.buying.map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Link
+            href={`/meal-plans/cards?plan=${plan.def.id}&phase=${plan.phase}`}
+            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-line-strong px-3 text-sm font-medium text-ink hover:bg-slate-50"
+          >
+            <Printer size={16} aria-hidden /> Printable dinner cooking cards
+          </Link>
         </div>
-        <References ids={FOOD_SAFETY.refs} />
+        {plan.def.notes.length > 0 && (
+          <ul className="mt-4 list-disc space-y-1 pl-5 text-sm text-ink-2">
+            {plan.def.notes.map((n) => (
+              <li key={n}>{n}</li>
+            ))}
+          </ul>
+        )}
       </Card>
       <Card>
-        <CardHeader title="Substitutions" icon={<ArrowLeftRight size={18} />} description="Swap like for like to keep the totals similar." />
-        <ul className="divide-y divide-line text-sm">
-          {plan.def.substitutions.map((s) => (
-            <li key={s.swap} className="py-2.5">
-              <div className="flex flex-wrap items-center gap-x-2">
-                <span className="font-medium text-ink">{s.swap}</span>
-                <span className="text-muted">→</span>
-                <span className="text-ink-2">{s.with}</span>
-              </div>
-              {s.note && <p className="mt-0.5 text-xs text-muted">{s.note}</p>}
-            </li>
+        <CardHeader title="Food safety" icon={<ShieldCheck size={18} />} description="The office lunch travels ~2 h and is eaten cold." />
+        <p className="mb-1 text-sm font-medium text-ink">Office lunch</p>
+        <ul className="list-disc space-y-1 pl-5 text-sm text-ink-2">
+          {FOOD_SAFETY.office.map((t) => (
+            <li key={t}>{t}</li>
           ))}
         </ul>
-        <div className="mt-4 space-y-2">
-          {plan.def.notes.map((n) => (
-            <p key={n} className="flex gap-2 text-sm text-ink-2">
-              <Repeat size={14} className="mt-1 shrink-0 text-accent" aria-hidden />
-              {n}
-            </p>
+        <p className="mb-1 mt-4 text-sm font-medium text-ink">Buying and storing ingredients</p>
+        <ul className="list-disc space-y-1 pl-5 text-sm text-ink-2">
+          {FOOD_SAFETY.buying.map((t) => (
+            <li key={t}>{t}</li>
           ))}
-        </div>
+        </ul>
+        <References ids={FOOD_SAFETY.refs} />
       </Card>
     </section>
   );

@@ -9,7 +9,7 @@ export default function MealPlansPage() {
     <>
       <PageHeader
         title="Meal plans"
-        description="Four complete 7-day plans with the same targets, built differently. Pick the one you'll actually follow. Your choice drives the dashboard."
+        description="Three 7-day plans (vegetarian, vegetarian + eggs, non-vegetarian) built to the same targets, with quantities for each phase. Your choice drives the dashboard."
       />
       <MealPlansView />
     </>

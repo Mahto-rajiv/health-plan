@@ -1,9 +1,9 @@
-import { Clock, Repeat, Briefcase, CookingPot, Timer } from 'lucide-react';
+import { Clock, Repeat, Briefcase, Timer, CookingPot, Snowflake } from 'lucide-react';
 import { FOODS, type Nutrients } from '@/lib/data/foods';
 import { MEAL_SLOTS, type PlannedMeal } from '@/lib/data/meal-plans';
 import { cookingTutorials } from '@/lib/data/tutorials';
 import { formatQuantity, itemNutrients, roundKcal } from '@/lib/nutrition';
-import { mealMinutes, storageAdvice } from '@/lib/meal-plans';
+import { storageAdvice } from '@/lib/meal-plans';
 import { formatINR } from '@/lib/utils';
 import { Badge } from '../ui/Badge';
 import { Disclosure } from '../ui/Disclosure';
@@ -12,8 +12,7 @@ import { TutorialLinks } from '../ui/ExternalLink';
 const TAGS = {
   'fixed-daily': { label: 'Same every day', tone: 'accent', Icon: Repeat },
   'fixed-weekday': { label: 'Same Mon–Fri', tone: 'accent', Icon: Repeat },
-  leftover: { label: "Last night's dinner, packed", tone: 'info', Icon: Briefcase },
-  'cook-double': { label: 'Cook double → tomorrow’s lunch', tone: 'neutral', Icon: CookingPot },
+  'office-lunch': { label: 'Eaten cold at the office', tone: 'info', Icon: Briefcase },
 } as const;
 
 export function MacroLine({ n, compact }: { n: Nutrients; compact?: boolean }) {
@@ -40,7 +39,6 @@ export function MealCard({ planned, totals, cost }: { planned: PlannedMeal; tota
   const { meal, slot, time, tag } = planned;
   const t = tag ? TAGS[tag] : null;
   const tutorials = cookingTutorials(meal.tutorials);
-  const minutes = mealMinutes(planned);
   const storage = storageAdvice(planned);
   return (
     <article className="rounded-2xl border border-line bg-surface">
@@ -66,8 +64,20 @@ export function MealCard({ planned, totals, cost }: { planned: PlannedMeal; tota
         <div className="tabular mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted">
           <span className="inline-flex items-center gap-1">
             <Timer size={12} aria-hidden />
-            {minutes === 0 ? 'No cooking today' : `~${minutes} min hands-on`}
+            {meal.activeMin} min hands-on · {meal.totalMin} min total
           </span>
+          {meal.pots > 0 && (
+            <span className="inline-flex items-center gap-1">
+              <CookingPot size={12} aria-hidden />
+              {meal.pots} pot{meal.pots === 1 ? '' : 's'}
+            </span>
+          )}
+          {!meal.requiresReheat && tag === 'office-lunch' && (
+            <span className="inline-flex items-center gap-1">
+              <Snowflake size={12} aria-hidden />
+              no reheating
+            </span>
+          )}
           <span>≈ {formatINR(cost)} a serving</span>
         </div>
       </header>
@@ -94,19 +104,39 @@ export function MealCard({ planned, totals, cost }: { planned: PlannedMeal; tota
       </ul>
 
       <div className="space-y-2 p-3">
-        <Disclosure summary="Preparation, flavour, storage & nutrients">
+        <Disclosure summary="Preparation, swaps, storage & nutrients">
           <div className="space-y-3">
-            <p>{meal.prep}</p>
-            {meal.why && <p className="text-muted">{meal.why}</p>}
-            {meal.flavour && (
+            {meal.dayBefore && (
               <p>
-                <span className="font-medium text-ink">More flavour: </span>
-                {meal.flavour}
+                <span className="font-medium text-ink">Day before: </span>
+                {meal.dayBefore}
               </p>
+            )}
+            <ol className="list-decimal space-y-1 pl-5">
+              {meal.steps.map((s) => (
+                <li key={s}>{s}</li>
+              ))}
+            </ol>
+            {meal.why && <p className="text-muted">{meal.why}</p>}
+            <p>
+              <span className="font-medium text-ink">Flavour: </span>
+              {meal.flavour}
+            </p>
+            {meal.substitutions.length > 0 && (
+              <div>
+                <p className="font-medium text-ink">Swaps</p>
+                <ul className="list-disc space-y-0.5 pl-4">
+                  {meal.substitutions.map((s) => (
+                    <li key={s.swap}>
+                      {s.swap} → {s.with}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
             {storage.length > 0 && (
               <div>
-                <p className="font-medium text-ink">Storage</p>
+                <p className="font-medium text-ink">Storage and safety</p>
                 <ul className="list-disc space-y-0.5 pl-4">
                   {storage.map((s) => (
                     <li key={s}>{s}</li>
@@ -114,12 +144,13 @@ export function MealCard({ planned, totals, cost }: { planned: PlannedMeal; tota
                 </ul>
               </div>
             )}
-            <dl className="tabular grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+            <dl className="tabular grid grid-cols-2 gap-2 text-xs sm:grid-cols-5">
               {[
                 ['Iron', `${totals.iron.toFixed(1)} mg`],
                 ['Calcium', `${Math.round(totals.calcium)} mg`],
                 ['Zinc', `${totals.zinc.toFixed(1)} mg`],
                 ['Vitamin C', `${Math.round(totals.vitC)} mg`],
+                ['Vitamin B12', `${totals.b12.toFixed(1)} µg`],
               ].map(([k, v]) => (
                 <div key={k} className="rounded-lg bg-slate-50 px-2.5 py-1.5">
                   <dt className="text-muted">{k}</dt>

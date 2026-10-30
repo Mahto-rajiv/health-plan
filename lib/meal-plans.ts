@@ -1,17 +1,19 @@
-import { FOODS, type Food, type FoodId, type GroceryCategory, type Nutrients } from './data/foods';
+import { FOODS, type FoodId, type GroceryCategory, type Nutrients } from './data/foods';
 import { MEAL_PLAN_DEFINITIONS, buildWeek, type PlanId, type PlannedDay, type PlannedMeal, type MealPlanDefinition } from './data/meal-plans';
+import { DEFAULT_PRICE_TABLE, type PriceTable } from './data/prices';
 import { FOOD_SAFETY, PANTRY_MONTHLY } from './data/nutrition-guide';
+import { PHASE_IDS, type PhaseId } from './config';
 import { boughtGrams, itemCost, itemsCost, itemsNutrients, sumNutrients } from './nutrition';
 
-// Everything here is computed once at module load from the plan definitions,
-// so totals can never drift from the foods listed.
+// Everything here is computed from the plan definitions and a price table, so
+// totals can never drift from the foods listed or the prices in Settings.
 
 export interface ComputedDay extends PlannedDay {
   totals: Nutrients;
   cost: number;
   mealTotals: Nutrients[];
   mealCosts: number[];
-  /** Hands-on cooking minutes that day. A packed lunch was cooked the night before, so it counts 0. */
+  /** Hands-on cooking minutes that day. */
   activeMinutes: number;
 }
 
@@ -28,11 +30,14 @@ export interface GroceryLine {
 
 export interface ComputedPlan {
   def: MealPlanDefinition;
+  phase: PhaseId;
   days: ComputedDay[];
   weeklyAverage: Nutrients;
   ranges: Record<'kcal' | 'protein' | 'fiber', [number, number]>;
   weeklyFoodCost: number;
   monthlyCost: number;
+  /** ₹ per 10 g of protein across the whole plan (food only, pantry excluded). */
+  costPer10gProtein: number;
   grocery: { category: GroceryCategory; lines: GroceryLine[] }[];
   eggsPerWeek: number;
 }
@@ -51,7 +56,7 @@ const CATEGORY_ORDER: GroceryCategory[] = [
 // Fresh foods: never suggest that one pack "lasts weeks".
 const PERISHABLE = new Set<FoodId>([
   'milk', 'curd', 'paneer', 'banana', 'papaya', 'guava', 'seasonalFruit', 'lemon',
-  'sweetPotato', 'beetroot', 'mixedVeg', 'spinach', 'salad', 'chicken', 'fish',
+  'sweetPotato', 'beetroot', 'mixedVeg', 'spinach', 'salad', 'potato', 'chicken', 'fish',
 ]);
 
 /** How many shop units a week needs, or how long one unit lasts — for low-waste buying. */
@@ -68,7 +73,7 @@ function packHint(food: FoodId, weeklyGrams: number): string {
 }
 
 function formatAmount(food: FoodId, grams: number): string {
-  if (food === 'banana') return `${Math.round(grams / FOODS.banana.buyUnit.grams * 12)} bananas`;
+  if (food === 'banana') return `${Math.round((grams / FOODS.banana.buyUnit.grams) * 12)} bananas`;
   if (food === 'egg') return `${Math.round(grams / 50)} eggs`;
   if (food === 'milk') return `${(grams / 1000).toFixed(1)} L`;
   if (food === 'curd') return `${(grams / 1000).toFixed(1)} L milk`;
@@ -76,37 +81,32 @@ function formatAmount(food: FoodId, grams: number): string {
   return `${Math.round(grams / 10) * 10} g`;
 }
 
-export const mealMinutes = (pm: PlannedMeal) => (pm.tag === 'leftover' ? 0 : pm.meal.minutes);
+export const mealMinutes = (pm: PlannedMeal) => pm.meal.activeMin;
 
-/** Storage advice for a planned meal: its own note plus the leftovers rule if it is cooked ahead. */
+/** Storage and food-safety advice for a planned meal. */
 export function storageAdvice(pm: PlannedMeal): string[] {
   const out = pm.meal.keeps ? [pm.meal.keeps] : [];
-  if (pm.tag === 'leftover' || pm.tag === 'cook-double') {
-    out.push(pm.meal.items.some((i) => i.food === 'rice') ? FOOD_SAFETY.rice : FOOD_SAFETY.leftovers);
-  }
+  if (pm.tag === 'office-lunch') out.push(FOOD_SAFETY.coldLunch);
   return out;
 }
 
-function computePlan(def: MealPlanDefinition): ComputedPlan {
-  const week = buildWeek(def);
+export function computePlan(def: MealPlanDefinition, phase: PhaseId, prices: PriceTable = DEFAULT_PRICE_TABLE): ComputedPlan {
+  const week = buildWeek(def, phase);
   const days: ComputedDay[] = week.map((d) => {
     const items = d.meals.flatMap((m) => m.meal.items);
     return {
       ...d,
       totals: itemsNutrients(items),
-      cost: itemsCost(items),
+      cost: itemsCost(items, prices),
       mealTotals: d.meals.map((m) => itemsNutrients(m.meal.items)),
-      mealCosts: d.meals.map((m) => itemsCost(m.meal.items)),
+      mealCosts: d.meals.map((m) => itemsCost(m.meal.items, prices)),
       activeMinutes: d.meals.reduce((s, m) => s + mealMinutes(m), 0),
     };
   });
 
   const weekly = sumNutrients(days.map((d) => d.totals));
   const weeklyAverage = Object.fromEntries(Object.entries(weekly).map(([k, v]) => [k, v / 7])) as unknown as Nutrients;
-  const range = (k: keyof Nutrients): [number, number] => [
-    Math.min(...days.map((d) => d.totals[k])),
-    Math.max(...days.map((d) => d.totals[k])),
-  ];
+  const range = (k: keyof Nutrients): [number, number] => [Math.min(...days.map((d) => d.totals[k])), Math.max(...days.map((d) => d.totals[k]))];
 
   const grams = new Map<FoodId, number>();
   for (const d of week) for (const pm of d.meals) for (const it of pm.meal.items) grams.set(it.food, (grams.get(it.food) ?? 0) + it.g);
@@ -121,7 +121,7 @@ function computePlan(def: MealPlanDefinition): ComputedPlan {
       weeklyGrams: bought,
       buy: formatAmount(food, bought),
       pack: packHint(food, bought),
-      weeklyCost: itemCost({ food, g }),
+      weeklyCost: itemCost({ food, g }, prices),
     };
   });
   const grocery = CATEGORY_ORDER.map((category) => ({
@@ -132,26 +132,33 @@ function computePlan(def: MealPlanDefinition): ComputedPlan {
   const weeklyFoodCost = days.reduce((s, d) => s + d.cost, 0);
   return {
     def,
+    phase,
     days,
     weeklyAverage,
     ranges: { kcal: range('kcal'), protein: range('protein'), fiber: range('fiber') },
     weeklyFoodCost,
     monthlyCost: (weeklyFoodCost * 30) / 7 + PANTRY_MONTHLY,
+    costPer10gProtein: (weeklyFoodCost / weekly.protein) * 10,
     grocery,
     eggsPerWeek: Math.round((grams.get('egg') ?? 0) / 50),
   };
 }
 
-export const PLANS: ComputedPlan[] = MEAL_PLAN_DEFINITIONS.map(computePlan);
-
-export function getPlan(id: PlanId): ComputedPlan {
-  return PLANS.find((p) => p.def.id === id) ?? PLANS[0];
+/** All plans for one phase. */
+export function computePlans(phase: PhaseId, prices: PriceTable = DEFAULT_PRICE_TABLE): ComputedPlan[] {
+  return MEAL_PLAN_DEFINITIONS.map((def) => computePlan(def, phase, prices));
 }
 
-// ─── Budget ───────────────────────────────────────────────────────────────────
+/** Plans at default prices, by phase. Computed on demand so client bundles don't pay for it at load. */
+export function defaultPlans(): Record<PhaseId, ComputedPlan[]> {
+  return Object.fromEntries(PHASE_IDS.map((ph) => [ph, computePlans(ph)])) as Record<PhaseId, ComputedPlan[]>;
+}
 
-export const BUDGET_MIN = 3000;
-export const BUDGET_MAX = 4000;
+export function findPlan(plans: ComputedPlan[], id: PlanId): ComputedPlan {
+  return plans.find((p) => p.def.id === id) ?? plans[0];
+}
+
+// ─── Budget swaps ─────────────────────────────────────────────────────────────
 
 interface SwapRule {
   id: string;
@@ -162,6 +169,8 @@ interface SwapRule {
   to: { food: FoodId; perGram: number }[];
   /** Share of the original grams that is swapped (0.5 = half of it). */
   share: number;
+  /** Phases where the swap would break a phase cap. */
+  notInPhases?: PhaseId[];
 }
 
 // Protein-matched where the food is a main protein source, weight-matched otherwise.
@@ -169,53 +178,39 @@ const SWAP_RULES: SwapRule[] = [
   {
     id: 'paneer-soya',
     label: 'Replace half the paneer with soya chunks',
-    note: 'Protein-matched (100 g paneer ≈ 36 g dry soya + 1 tsp ghee).',
+    note: 'Protein-matched (100 g paneer ≈ 36 g dry soya + 1 tsp ghee). Not offered in Phase 0, where soya is capped at 20 g a day.',
     from: ['paneer'],
     to: [
       { food: 'soyaChunks', perGram: 0.36 },
       { food: 'ghee', perGram: 0.05 },
     ],
     share: 0.5,
-  },
-  {
-    id: 'nuts-peanuts',
-    label: 'Replace almonds, walnuts and seeds with peanuts',
-    note: 'Same weight. Keep the flaxseed for omega-3 (ALA); pumpkin seeds are the richer zinc source.',
-    from: ['almonds', 'walnuts', 'cashews', 'pumpkinSeeds', 'watermelonSeeds'],
-    to: [{ food: 'peanuts', perGram: 1 }],
-    share: 1,
+    notInPhases: [0],
   },
   {
     id: 'oats-daliya',
     label: 'Use daliya (broken wheat) instead of oats',
-    note: 'Same dry weight; also a whole grain with similar protein and fibre. It needs cooking: ~10 minutes, or 2 whistles in a pressure cooker, so make 2 days’ worth at once. Oats lower LDL cholesterol slightly more, which matters little with your normal lipids.',
+    note: 'Same dry weight, similar protein and fibre. It needs ~15 minutes, so cook 2 days’ worth at once (Meal 1 then takes more than 10 minutes on the cooking day).',
     from: ['oats'],
     to: [{ food: 'daliya', perGram: 1 }],
     share: 1,
   },
   {
-    id: 'fruit-banana',
-    label: 'Make half the papaya, guava and other fruit bananas',
-    note: 'Same edible weight. Banana has much less vitamin C (≈ 9 mg vs 60 mg per 100 g for papaya), so keep the lemon on dals and switch back to guava or papaya when they are cheap.',
-    from: ['papaya', 'guava', 'seasonalFruit'],
+    id: 'papaya-banana',
+    label: 'Make half the papaya bananas',
+    note: 'Same edible weight. Banana has much less vitamin C (≈ 9 mg vs 60 mg per 100 g), so switch back when papaya or guava is cheap.',
+    from: ['papaya'],
     to: [{ food: 'banana', perGram: 1 }],
     share: 0.5,
   },
   {
     id: 'chicken-soya',
     label: 'Replace half the chicken with soya chunks',
-    note: 'Protein-matched (100 g raw chicken ≈ 43 g dry soya). Cook it in the same curry or tikka masala.',
+    note: 'Protein-matched (100 g raw chicken ≈ 43 g dry soya). Cook it in the same masala.',
     from: ['chicken'],
     to: [{ food: 'soyaChunks', perGram: 0.43 }],
     share: 0.5,
-  },
-  {
-    id: 'fish-soya',
-    label: 'Make one of the three fish portions soya chunks instead',
-    note: 'Protein-matched (110 g fish ≈ 36 g dry soya). Keep at least one fish meal a week for EPA/DHA.',
-    from: ['fish'],
-    to: [{ food: 'soyaChunks', perGram: 0.33 }],
-    share: 1 / 3,
+    notInPhases: [0],
   },
 ];
 
@@ -228,15 +223,15 @@ export interface BudgetSwap {
   kcalDeltaPerDay: number;
 }
 
-/** Savings are computed from the plan's actual weekly quantities, not estimated. */
-export function budgetSwaps(plan: ComputedPlan): BudgetSwap[] {
+/** Savings are computed from the plan's actual weekly quantities and the current prices. */
+export function budgetSwaps(plan: ComputedPlan, prices: PriceTable = DEFAULT_PRICE_TABLE): BudgetSwap[] {
   const items = plan.days.flatMap((d) => d.meals.flatMap((m) => m.meal.items));
-  return SWAP_RULES.map((rule) => {
+  return SWAP_RULES.filter((rule) => !rule.notInPhases?.includes(plan.phase)).map((rule) => {
     const original = items.filter((it) => rule.from.includes(it.food));
     const replacement = original.flatMap((it) => rule.to.map((t) => ({ food: t.food, g: it.g * t.perGram })));
     const before = itemsNutrients(original);
     const after = itemsNutrients(replacement);
-    const saving = (itemsCost(original) - itemsCost(replacement)) * rule.share;
+    const saving = (itemsCost(original, prices) - itemsCost(replacement, prices)) * rule.share;
     return {
       id: rule.id,
       label: rule.label,
@@ -250,40 +245,53 @@ export function budgetSwaps(plan: ComputedPlan): BudgetSwap[] {
     .sort((a, b) => b.monthlySaving - a.monthlySaving);
 }
 
-// ─── Micronutrient coverage ───────────────────────────────────────────────────
+// ─── Ingredient value ─────────────────────────────────────────────────────────
 
-/** Average vitamin B12 per day (µg) from the plan's food, before cooking losses. */
-export function planB12(plan: ComputedPlan): number {
-  const items = plan.days.flatMap((d) => d.meals.flatMap((m) => m.meal.items));
-  return items.reduce((s, it) => s + ((FOODS[it.food] as Food).b12 ?? 0) * (it.g / 100), 0) / 7;
-}
-
-// ─── Protein value ────────────────────────────────────────────────────────────
-
-const PROTEIN_FOODS: FoodId[] = [
-  'soyaChunks', 'peanuts', 'sattu', 'roastedChana', 'kalaChana', 'moongWhole', 'moongDal', 'toorDal', 'rajma',
-  'besan', 'atta', 'oats', 'egg', 'milk', 'curd', 'paneer', 'chicken', 'fish', 'pumpkinSeeds', 'almonds',
+/** The ~15 main ingredients, with the serving the plans typically use. */
+export const MAIN_INGREDIENTS: { food: FoodId; serving: number; label: string }[] = [
+  { food: 'soyaChunks', serving: 30, label: '30 g dry' },
+  { food: 'moongDal', serving: 40, label: '40 g dry' },
+  { food: 'toorDal', serving: 40, label: '40 g dry' },
+  { food: 'rajma', serving: 50, label: '50 g dry' },
+  { food: 'kalaChana', serving: 50, label: '50 g dry' },
+  { food: 'sattu', serving: 30, label: '30 g' },
+  { food: 'besan', serving: 70, label: '70 g (2 chillas)' },
+  { food: 'peanuts', serving: 15, label: '15 g' },
+  { food: 'atta', serving: 70, label: '70 g (2 rotis)' },
+  { food: 'oats', serving: 60, label: '60 g dry' },
+  { food: 'rice', serving: 100, label: '100 g raw' },
+  { food: 'milk', serving: 250, label: '250 ml' },
+  { food: 'curd', serving: 150, label: '150 g' },
+  { food: 'paneer', serving: 80, label: '80 g' },
+  { food: 'egg', serving: 100, label: '2 eggs' },
+  { food: 'chicken', serving: 100, label: '100 g raw, edible' },
+  { food: 'fish', serving: 100, label: '100 g raw, edible' },
 ];
 
-export interface ProteinValue {
+export interface IngredientValue {
   food: FoodId;
   name: string;
-  /** Grams (or ml) of the food needed for 20 g of protein. */
-  gramsFor20g: number;
-  costFor20g: number;
-  kcalFor20g: number;
-  fiberFor20g: number;
+  serving: string;
+  costPerServing: number;
+  proteinPerServing: number;
+  costPer10gProtein: number;
+  kcalPer10gProtein: number;
+  fiberPer10gProtein: number;
 }
 
-export const PROTEIN_VALUE: ProteinValue[] = PROTEIN_FOODS.map((food) => {
-  const f = FOODS[food];
-  const g = (20 / f.per100.protein) * 100;
-  return {
-    food,
-    name: f.name,
-    gramsFor20g: g,
-    costFor20g: itemCost({ food, g }),
-    kcalFor20g: (f.per100.kcal * g) / 100,
-    fiberFor20g: (f.per100.fiber * g) / 100,
-  };
-}).sort((a, b) => a.costFor20g - b.costFor20g);
+export function ingredientValues(prices: PriceTable = DEFAULT_PRICE_TABLE): IngredientValue[] {
+  return MAIN_INGREDIENTS.map(({ food, serving, label }) => {
+    const n = itemsNutrients([{ food, g: serving }]);
+    const per10 = 10 / n.protein;
+    return {
+      food,
+      name: FOODS[food].name,
+      serving: label,
+      costPerServing: itemCost({ food, g: serving }, prices),
+      proteinPerServing: n.protein,
+      costPer10gProtein: itemCost({ food, g: serving }, prices) * per10,
+      kcalPer10gProtein: n.kcal * per10,
+      fiberPer10gProtein: n.fiber * per10,
+    };
+  }).sort((a, b) => a.costPer10gProtein - b.costPer10gProtein);
+}
