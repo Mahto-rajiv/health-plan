@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
     "links": "tsx scripts/check-links.ts",
-    "plans:report": "tsx scripts/eval-plans.ts"
+    "plans:report": "tsx scripts/eval-plans.ts",
+    "food-data": "tsx scripts/food-data/build.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",
