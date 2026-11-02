@@ -2,18 +2,18 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { BedDouble, Check, ChevronRight, Clock, Dumbbell, MoonStar, Scale, TrendingUp, Utensils, CheckCircle2, ListTodo } from 'lucide-react';
-import { useBodyLog, useCheckIns, useMealLog, useSettings, useWorkoutLog } from '@/lib/storage';
+import { Check, ChevronRight, Clock, Dumbbell, MoonStar, Scale, TrendingUp, Utensils, ListTodo } from 'lucide-react';
+import { useBodyLog, useCheckIns, useMealLog, useSettings } from '@/lib/storage';
 import { useToday } from '@/lib/hooks';
 import { addDays, dayName, longDate, programWeek, shortDate, weekStart } from '@/lib/dates';
-import { SESSIONS, WEEK_PLAN } from '@/lib/data/training';
+import { SESSIONS, WEEK_PLAN, WEEKDAY_GYM_CUTOFF } from '@/lib/data/training';
 import { DAYS, MEAL_SLOTS } from '@/lib/data/meal-plans';
 import { PHASES } from '@/lib/config';
 import { useActivePlan } from '@/lib/plan-hooks';
 import { assessToday } from '@/lib/phase';
 import { roundKcal, sumNutrients } from '@/lib/nutrition';
-import { activeExercises, estimateMinutes, plannedFor, todayTraining } from '@/lib/training';
-import { DOCTOR_WEIGHT_LOSS, averageSleep, rollingAverage, strengthSeries } from '@/lib/progress';
+import { activeExercises, estimateMinutes, plannedFor, sessionsFor, setsFor } from '@/lib/training';
+import { DOCTOR_WEIGHT_LOSS, averageSleep, rollingAverage } from '@/lib/progress';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -46,7 +46,6 @@ export function DashboardView() {
 
 function Dashboard({ today }: { today: string }) {
   const [settings] = useSettings();
-  const [log] = useWorkoutLog();
   const week = programWeek(settings.programStart, today);
   const deload = settings.deloadWeek === weekStart(today);
   const name = settings.firstName?.trim();
@@ -70,11 +69,10 @@ function Dashboard({ today }: { today: string }) {
       </header>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <TrainingCard today={today} week={week} deload={deload} log={log} />
+        <TrainingCard today={today} week={week} deload={deload} />
         <WeightCard />
         <MealsCard today={today} />
         <WeekCard today={today} />
-        <StrengthCard />
         <RecoveryCard today={today} />
         <TonightCard today={today} />
       </div>
@@ -82,10 +80,11 @@ function Dashboard({ today }: { today: string }) {
   );
 }
 
-function TrainingCard({ today, week, deload, log }: { today: string; week: number; deload: boolean; log: ReturnType<typeof useWorkoutLog>[0] }) {
-  const plan = todayTraining(log, today);
-  const s = plan.sessionId && plan.kind !== 'late' ? SESSIONS[plan.sessionId] : null;
-  const exercises = s ? activeExercises(s.id, week, deload) : [];
+function TrainingCard({ today, week, deload }: { today: string; week: number; deload: boolean }) {
+  const options = sessionsFor(today);
+  const s = SESSIONS[options[0]];
+  const exercises = activeExercises(s.id, week, deload);
+  const weekday = s.slot === 'weekday';
   return (
     <Card className="lg:col-span-2">
       <CardHeader
@@ -97,50 +96,40 @@ function TrainingCard({ today, week, deload, log }: { today: string; week: numbe
           </Link>
         }
       />
-      {plan.kind === 'done' && s ? (
-        <div className="flex items-start gap-3 rounded-xl bg-emerald-50/70 p-4">
-          <CheckCircle2 className="mt-0.5 shrink-0 text-emerald-600" size={20} aria-hidden />
-          <div>
-            <div className="font-semibold text-emerald-950">{s.short} completed</div>
-            <p className="text-sm text-emerald-950/80">Good work. Eat Meal 4, stretch for a few minutes, and protect tonight&apos;s sleep.</p>
-          </div>
-        </div>
-      ) : s ? (
-        <div>
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h3 className="text-lg font-semibold text-ink">{s.name}</h3>
-            <span className="text-sm text-muted">≈ {estimateMinutes(s.id, week, deload)} min</span>
-            {plan.kind === 'flex' && (
-              <Badge tone="caution">
-                <Clock size={12} aria-hidden /> at the gym by 9 PM
-              </Badge>
-            )}
-          </div>
-          <p className="mt-1 text-sm text-ink-2">{plan.note}</p>
-          <ol className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
-            {exercises.map((ex, i) => (
-              <li key={ex.id} className="flex items-baseline justify-between gap-3 border-b border-line/70 py-1">
-                <span className="min-w-0 truncate text-ink">
-                  <span className="tabular mr-2 text-xs text-muted">{i + 1}</span>
-                  {ex.name}
-                </span>
-                <span className="tabular shrink-0 text-xs text-muted">{ex.reps}</span>
-              </li>
-            ))}
-          </ol>
-          <ButtonLink href="/training" variant="primary" className="mt-4 w-full sm:w-auto">
-            Start workout
-          </ButtonLink>
-        </div>
-      ) : (
-        <div className="flex items-start gap-3 rounded-xl bg-slate-50 p-4">
-          <BedDouble className="mt-0.5 shrink-0 text-muted" size={20} aria-hidden />
-          <div>
-            <div className="font-semibold text-ink">{plan.kind === 'late' ? 'Skip tonight' : 'No session today'}</div>
-            <p className="text-sm text-ink-2">{plan.note}</p>
-          </div>
-        </div>
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h3 className="text-lg font-semibold text-ink">{options.length > 1 ? options.map((id) => SESSIONS[id].short).join(' or ') : s.name}</h3>
+        <span className="text-sm text-muted">≈ {estimateMinutes(s.id, week, deload)} min</span>
+        {weekday && (
+          <Badge tone="caution">
+            <Clock size={12} aria-hidden /> at the gym by {WEEKDAY_GYM_CUTOFF.label}
+          </Badge>
+        )}
+      </div>
+      <p className="mt-1 text-sm text-ink-2">
+        {options.length > 1
+          ? 'Do the one you haven’t done this week. If you can’t get to the gym in time, walk 20–30 min instead.'
+          : weekday
+            ? 'If you can’t get to the gym in time, skip it and walk 20–30 min. Don’t make it up later.'
+            : WEEK_PLAN[dayName(today)].detail}
+      </p>
+      {options.length === 1 && (
+        <ol className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
+          {exercises.map((ex, i) => (
+            <li key={ex.id} className="flex items-baseline justify-between gap-3 border-b border-line/70 py-1">
+              <span className="min-w-0 truncate text-ink">
+                <span className="tabular mr-2 text-xs text-muted">{i + 1}</span>
+                {ex.name}
+              </span>
+              <span className="tabular shrink-0 text-xs text-muted">
+                {setsFor(ex, week, deload)} × {ex.reps}
+              </span>
+            </li>
+          ))}
+        </ol>
       )}
+      <ButtonLink href="/training" variant="primary" className="mt-4 w-full sm:w-auto">
+        See warm-up and workout
+      </ButtonLink>
     </Card>
   );
 }
@@ -319,13 +308,10 @@ function MealsCard({ today }: { today: string }) {
 }
 
 function WeekCard({ today }: { today: string }) {
-  const [log] = useWorkoutLog();
   const [meals] = useMealLog();
   const [checkins] = useCheckIns();
   const ws = weekStart(today);
   const dates = DAYS.map((_, i) => addDays(ws, i));
-  const lifted = new Set(log.filter((w) => weekStart(w.date) === ws).map((w) => w.date));
-  const sessions = log.filter((w) => weekStart(w.date) === ws).length;
   let eaten = 0;
   let possible = 0;
   for (const d of dates) {
@@ -340,7 +326,6 @@ function WeekCard({ today }: { today: string }) {
       <ol className="grid grid-cols-7 gap-1" aria-label="Training days this week">
         {dates.map((d) => {
           const planned = WEEK_PLAN[dayName(d)].type === 'lift-fixed';
-          const done = lifted.has(d);
           const isToday = d === today;
           return (
             <li key={d} className="flex flex-col items-center gap-1">
@@ -348,22 +333,18 @@ function WeekCard({ today }: { today: string }) {
               <span
                 className={cn(
                   'flex size-7 items-center justify-center rounded-full border text-[10px]',
-                  done ? 'border-emerald-500 bg-emerald-500 text-white' : planned ? 'border-line-strong text-muted' : 'border-dashed border-line text-transparent',
-                  isToday && !done && 'border-accent',
+                  planned ? 'border-line-strong text-muted' : 'border-dashed border-line text-muted',
+                  isToday && 'border-accent',
                 )}
-                title={done ? 'Lifted' : planned ? 'Fixed session' : 'Flexible weekday session or walk'}
+                title={planned ? 'Fixed session' : 'Flexible weekday session or walk'}
               >
-                {done ? <Check size={14} aria-hidden /> : planned ? 'L' : 'f'}
+                {planned ? 'L' : 'f'}
               </span>
             </li>
           );
         })}
       </ol>
-      <dl className="tabular mt-4 grid grid-cols-3 gap-2 text-center">
-        <div className="rounded-lg bg-slate-50 p-2">
-          <dt className="text-[11px] text-muted">Sessions</dt>
-          <dd className="text-lg font-semibold text-ink">{sessions}/4</dd>
-        </div>
+      <dl className="tabular mt-4 grid grid-cols-2 gap-2 text-center">
         <div className="rounded-lg bg-slate-50 p-2">
           <dt className="text-[11px] text-muted">Meals</dt>
           <dd className="text-lg font-semibold text-ink">{possible ? Math.round((eaten / possible) * 100) : 0}%</dd>
@@ -374,45 +355,6 @@ function WeekCard({ today }: { today: string }) {
         </div>
       </dl>
       <p className="mt-3 text-xs text-muted">Target: 4 sessions (Saturday, Sunday and two flexible weekday ones; 3 is fine), at least 80% of meals as planned, and 150+ minutes of moderate activity a week including walking. L = fixed, f = flexible.</p>
-    </Card>
-  );
-}
-
-function StrengthCard() {
-  const [log] = useWorkoutLog();
-  const series = useMemo(() => strengthSeries(log), [log]);
-  const any = series.some((s) => s.points.length);
-  return (
-    <Card>
-      <CardHeader title="Strength" icon={<Dumbbell size={18} />} description="Estimated 1RM from your best set" action={<Link href="/progress" className="inline-flex min-h-8 items-center text-sm text-accent hover:underline">Charts</Link>} />
-      {any ? (
-        <ul className="tabular divide-y divide-line text-sm">
-          {series.map((s) => {
-            const first = s.points[0]?.e1rm;
-            const last = s.points[s.points.length - 1]?.e1rm;
-            return (
-              <li key={s.id} className="flex items-center justify-between gap-3 py-2">
-                <span className="min-w-0 truncate text-ink">{s.name.split(' (')[0]}</span>
-                {last !== undefined ? (
-                  <span className="shrink-0">
-                    <span className="font-semibold text-ink">{last} kg</span>
-                    {first !== undefined && s.points.length > 1 && (
-                      <span className={cn('ml-2 text-xs', last - first >= 0 ? 'text-emerald-700' : 'text-amber-700')}>
-                        {last - first >= 0 ? '+' : ''}
-                        {Math.round((last - first) * 10) / 10}
-                      </span>
-                    )}
-                  </span>
-                ) : (
-                  <span className="text-xs text-muted">not logged</span>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
-        <p className="text-sm text-muted">Log your first workout and your main lifts will appear here. The Progress page shows an example of what to expect.</p>
-      )}
     </Card>
   );
 }
@@ -435,7 +377,6 @@ function RecoveryCard({ today }: { today: string }) {
 }
 
 function TonightCard({ today }: { today: string }) {
-  const [log] = useWorkoutLog();
   const todayName = dayName(today);
   const tomorrow = addDays(today, 1);
   const tomorrowName = dayName(tomorrow);
@@ -453,7 +394,7 @@ function TonightCard({ today }: { today: string }) {
   if (dinner.meal.dayBefore) tasks.push(`For tomorrow’s dinner: ${dinner.meal.dayBefore.charAt(0).toLowerCase()}${dinner.meal.dayBefore.slice(1)}`);
   tasks.push('Set curd from milk for tomorrow.');
   if (todayName === 'Sunday') tasks.push(plan.def.prepStrategy[0]);
-  const tomorrowTraining = plannedFor(log, tomorrow);
+  const tomorrowTraining = plannedFor(tomorrow);
   return (
     <Card>
       <CardHeader title="Tonight & tomorrow" icon={<ListTodo size={18} />} />

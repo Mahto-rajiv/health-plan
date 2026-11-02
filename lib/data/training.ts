@@ -52,12 +52,11 @@ export interface Exercise {
   /** Load increment once the top of the rep range is reached on all sets. */
   increment: string;
   cues: string[];
-  alternatives?: string;
+  /** Same muscles, different equipment: use it when the machine or bench is taken. */
+  alternative: string;
   tutorials?: ExerciseTutorialId[];
-  /** Main lift → tracked on the strength chart. */
+  /** Main strength lift (longer rest, lighter sets before it). */
   isMainLift?: boolean;
-  /** Logged as time/distance rather than kg × reps. */
-  unit?: 'reps' | 'seconds' | 'metres';
   /** Shown only from this week onward (e.g. jumps after technique is learned). */
   fromWeek?: number;
   /** Done one side at a time, so each set takes twice as long. */
@@ -168,6 +167,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'bench',
         name: 'Barbell bench press',
         muscles: 'Chest, front of shoulders, triceps',
+        alternative: 'Dumbbell bench press, same sets and reps. Or the Smith machine bench press.',
         sets: { learn: 3, build: 3 },
         reps: '5–8',
         repRange: [5, 8],
@@ -189,6 +189,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'row',
         name: 'Barbell row',
         muscles: 'Upper back, lats (sides of the back), back of shoulders',
+        alternative: 'Chest-supported dumbbell row, or the seated cable row. Use these too if your lower back is tired.',
         sets: { learn: 3, build: 3 },
         reps: '8–10',
         repRange: [8, 10],
@@ -203,13 +204,13 @@ export const SESSIONS: Record<SessionId, Session> = {
           'Pull the bar to your lower ribs, elbows first.',
           'Don’t jerk the weight up with your hips.',
         ],
-        alternatives: 'If your lower back is tired, use a chest-supported dumbbell row or a row machine.',
         tutorials: ['barbellRow'],
       },
       {
         id: 'db-ohp',
         name: 'Seated dumbbell shoulder press',
         muscles: 'Shoulders, triceps',
+        alternative: 'Shoulder press machine.',
         sets: { learn: 2, build: 3 },
         reps: '8–12',
         repRange: [8, 12],
@@ -222,6 +223,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'pulldown',
         name: 'Lat pulldown',
         muscles: 'Lats (sides of the back), biceps',
+        alternative: 'Assisted pull-up machine, or a one-arm dumbbell row.',
         sets: { learn: 2, build: 3 },
         reps: '8–12',
         repRange: [8, 12],
@@ -235,6 +237,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'lateral-a',
         name: 'Dumbbell lateral raise',
         muscles: 'Side of the shoulders',
+        alternative: 'One-arm cable lateral raise, or the lateral raise machine.',
         sets: { learn: 2, build: 3 },
         reps: '12–20',
         repRange: [12, 20],
@@ -248,6 +251,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'pushdown',
         name: 'Triceps rope pushdown (superset with curl)',
         muscles: 'Triceps',
+        alternative: 'Overhead dumbbell triceps extension (one dumbbell, both hands), or a straight-bar cable pushdown.',
         sets: { learn: 2, build: 2 },
         reps: '10–15',
         repRange: [10, 15],
@@ -261,6 +265,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'curl',
         name: 'Dumbbell curl',
         muscles: 'Biceps',
+        alternative: 'Cable curl, or EZ-bar curl.',
         sets: { learn: 2, build: 2 },
         reps: '10–15',
         repRange: [10, 15],
@@ -288,6 +293,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'box-jump',
         name: 'Box jump (low box)',
         muscles: 'Power, safe landings',
+        alternative: 'No box free? Squat jumps on the floor, 3 × 3, landing softly.',
         sets: { learn: 0, build: 3 },
         reps: '3',
         repRange: [3, 3],
@@ -302,6 +308,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'squat',
         name: 'Barbell back squat',
         muscles: 'Front of thighs, glutes, inner thighs',
+        alternative: 'Smith machine squat, or the hack squat machine. Same sets and reps.',
         sets: { learn: 3, build: 3 },
         reps: '5–8',
         repRange: [5, 8],
@@ -322,6 +329,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'rdl',
         name: 'Romanian deadlift',
         muscles: 'Hamstrings (back of thighs), glutes, back',
+        alternative: 'Dumbbell Romanian deadlift, same sets and reps.',
         sets: { learn: 3, build: 3 },
         reps: '8–10',
         repRange: [8, 10],
@@ -341,6 +349,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'leg-press',
         name: 'Leg press',
         muscles: 'Front of thighs, glutes',
+        alternative: 'Hack squat machine, or a dumbbell goblet squat.',
         sets: { learn: 2, build: 2 },
         reps: '10–15',
         repRange: [10, 15],
@@ -354,6 +363,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'leg-curl',
         name: 'Seated or lying leg curl',
         muscles: 'Hamstrings (back of thighs)',
+        alternative: 'The other leg curl machine (seated or lying), or stability-ball leg curls.',
         sets: { learn: 2, build: 3 },
         reps: '10–15',
         repRange: [10, 15],
@@ -367,6 +377,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'calf-a',
         name: 'Standing calf raise',
         muscles: 'Calves',
+        alternative: 'Calf raise on the leg press machine, or the Smith machine standing calf raise.',
         sets: { learn: 2, build: 2 },
         reps: '10–15',
         repRange: [10, 15],
@@ -380,6 +391,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'dead-bug',
         name: 'Dead bug → ab-wheel rollout',
         muscles: 'Core (stops your lower back from arching)',
+        alternative: 'Front plank, 2 × 30–45 s. Needs no equipment.',
         sets: { learn: 2, build: 2 },
         reps: '6–10 per side',
         repRange: [6, 10],
@@ -406,6 +418,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'ohp',
         name: 'Standing barbell overhead press',
         muscles: 'Shoulders, triceps, upper back',
+        alternative: 'Standing or seated dumbbell shoulder press, same sets and reps.',
         sets: { learn: 2, build: 3 },
         reps: '5–8',
         repRange: [5, 8],
@@ -424,6 +437,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'pullup',
         name: 'Pull-up (assisted until you get 3 × 5)',
         muscles: 'Lats (sides of the back), biceps, upper back',
+        alternative: 'Lat pulldown, same sets and reps.',
         sets: { learn: 2, build: 3 },
         reps: '5–10',
         repRange: [5, 10],
@@ -437,7 +451,6 @@ export const SESSIONS: Record<SessionId, Session> = {
           'Pull your chest up to the bar.',
           'Lower slowly, in about 2–3 s.',
         ],
-        alternatives: 'Use an assisted pull-up machine or a band. Log the help as negative kg (e.g. −25).',
         tutorials: ['pullUp'],
         isMainLift: true,
       },
@@ -445,6 +458,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'incline-db',
         name: 'Incline dumbbell press',
         muscles: 'Upper chest, front of shoulders, triceps',
+        alternative: 'Incline Smith machine press, or the incline chest press machine.',
         sets: { learn: 2, build: 2 },
         reps: '8–12',
         repRange: [8, 12],
@@ -458,6 +472,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'face-pull',
         name: 'Face pull',
         muscles: 'Back of shoulders, small shoulder muscles',
+        alternative: 'Reverse fly machine (rear delt), or a bent-over dumbbell reverse fly.',
         sets: { learn: 2, build: 2 },
         reps: '12–20',
         repRange: [12, 20],
@@ -485,6 +500,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'deadlift',
         name: 'Trap-bar deadlift (or conventional)',
         muscles: 'Back of the body, thighs, grip',
+        alternative: 'No trap bar? A normal barbell deadlift, same sets and reps. No bar or platform free? Heavy dumbbell Romanian deadlift.',
         sets: { learn: 2, build: 3 },
         reps: '4–6',
         repRange: [4, 6],
@@ -497,7 +513,6 @@ export const SESSIONS: Record<SessionId, Session> = {
           'Push the floor away. Hips and shoulders rise together.',
           'Let the bar settle on the floor between reps. No bouncing.',
         ],
-        alternatives: 'No trap bar? Use a normal barbell deadlift with the same sets and reps.',
         tutorials: ['trapBarDeadlift', 'deadlift'],
         isMainLift: true,
       },
@@ -505,6 +520,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'split-squat',
         name: 'Bulgarian split squat',
         muscles: 'Front of thighs, glutes, balance',
+        alternative: 'Dumbbell reverse lunges, or walking lunges.',
         sets: { learn: 2, build: 2 },
         reps: '8–12 per leg',
         repRange: [8, 12],
@@ -519,6 +535,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'hip-thrust',
         name: 'Barbell hip thrust',
         muscles: 'Glutes',
+        alternative: 'Smith machine hip thrust, or the hip thrust / glute bridge machine. No bench free? Barbell glute bridge on the floor.',
         sets: { learn: 2, build: 2 },
         reps: '8–12',
         repRange: [8, 12],
@@ -533,6 +550,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'calf-b',
         name: 'Seated calf raise',
         muscles: 'Calves (lower part)',
+        alternative: 'Standing calf raise machine, or a calf raise on the leg press.',
         sets: { learn: 2, build: 2 },
         reps: '12–15',
         repRange: [12, 15],
@@ -546,6 +564,7 @@ export const SESSIONS: Record<SessionId, Session> = {
         id: 'knee-raise',
         name: 'Hanging knee raise',
         muscles: 'Core, grip',
+        alternative: 'Knee raise on the captain’s chair (dip station), or lying reverse crunch on a bench.',
         sets: { learn: 2, build: 2 },
         reps: '8–12',
         repRange: [8, 12],
@@ -562,7 +581,7 @@ export const SESSIONS: Record<SessionId, Session> = {
   },
 };
 
-/** Order used for the strength chart and "log a different session". */
+/** Order the sessions are listed in on the Program tab. */
 export const SESSION_ORDER: SessionId[] = ['lowerA', 'upperA', 'lowerB', 'upperB'];
 
 export type DayType = 'lift-fixed' | 'lift-flex' | 'rest';
@@ -608,7 +627,6 @@ export const GLOSSARY: { term: string; meaning: string }[] = [
   { term: 'Hip hinge', meaning: 'Bending forward by pushing the hips back, with a flat back (as in the Romanian deadlift).' },
   { term: 'Brace', meaning: 'Take a big breath and tighten your stomach, as if about to be poked. Hold it during the rep.' },
   { term: 'Full range of motion', meaning: 'Moving the joint as far as you can with good form, e.g. a deep squat.' },
-  { term: 'e1RM', meaning: 'Estimated one-rep max: the most you could lift once, worked out from a set of several reps. Used only to show the trend.' },
 ];
 
 export interface Phase {

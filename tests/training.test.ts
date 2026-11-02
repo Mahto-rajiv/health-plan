@@ -2,11 +2,8 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { FLEX_WINDOWS, SESSIONS, SESSION_ORDER } from '../lib/data/training';
 import { EXERCISE_TUTORIALS } from '../lib/data/tutorials';
-import { activeExercises, sessionTime, TIME_MODEL, todayTraining, warmupMinutes } from '../lib/training';
-import type { WorkoutRecord } from '../lib/storage';
+import { activeExercises, plannedFor, sessionsFor, sessionTime, TIME_MODEL, warmupMinutes } from '../lib/training';
 
-const rec = (date: string, sessionId: WorkoutRecord['sessionId']): WorkoutRecord => ({ id: date + sessionId, date, sessionId, sets: {}, completedAt: `${date}T21:00:00` });
-const at = (h: number, m = 0) => new Date(2026, 10, 4, h, m);
 // Week of Monday 2 Nov 2026.
 const MON = '2026-11-02', TUE = '2026-11-03', WED = '2026-11-04', THU = '2026-11-05', FRI = '2026-11-06', SAT = '2026-11-07', SUN = '2026-11-08';
 
@@ -109,27 +106,32 @@ describe('sessions', () => {
 
 describe('schedule', () => {
   it('Saturday is Lower A and Sunday is Upper A', () => {
-    assert.equal(todayTraining([], SAT, at(10)).sessionId, 'lowerA');
-    assert.equal(todayTraining([], SUN, at(10)).sessionId, 'upperA');
+    assert.deepEqual(sessionsFor(SAT), ['lowerA']);
+    assert.deepEqual(sessionsFor(SUN), ['upperA']);
   });
 
-  it('a weekday session is offered only before 9:00 PM', () => {
-    assert.equal(todayTraining([], TUE, at(20, 30)).kind, 'flex');
-    assert.equal(todayTraining([], TUE, at(21, 1)).kind, 'late');
-  });
-
-  it('never two sessions in one day', () => {
-    assert.equal(todayTraining([rec(TUE, 'lowerB')], TUE, at(18)).kind, 'done');
-  });
-
-  it('Lower B only Mon–Wed, Upper B only Tue–Fri; a missed one is skipped, not made up', () => {
-    assert.equal(todayTraining([], MON, at(18)).sessionId, 'lowerB');
+  it('Lower B only Mon–Wed, Upper B only Tue–Fri; Tue and Wed offer both', () => {
+    assert.deepEqual(sessionsFor(MON), ['lowerB']);
+    assert.deepEqual(sessionsFor(TUE), ['lowerB', 'upperB']);
+    assert.deepEqual(sessionsFor(WED), ['lowerB', 'upperB']);
+    assert.deepEqual(sessionsFor(THU), ['upperB']);
+    assert.deepEqual(sessionsFor(FRI), ['upperB']);
     assert.ok(!FLEX_WINDOWS.upperB.includes('Monday'));
-    // Lower B missed Mon–Wed: Thursday offers Upper B, never Lower B.
-    assert.equal(todayTraining([], THU, at(18)).sessionId, 'upperB');
-    // Both done: Friday is a rest day, no extra session.
-    assert.equal(todayTraining([rec(TUE, 'lowerB'), rec(WED, 'upperB')], FRI, at(18)).kind, 'rest');
-    // Upper B missed all week: Saturday is still Lower A, not Upper B.
-    assert.equal(todayTraining([rec(MON, 'lowerB')], SAT, at(10)).sessionId, 'lowerA');
+  });
+
+  it('tomorrow line names the session(s) and the 9 PM cut-off on weekdays', () => {
+    assert.match(plannedFor(SAT), /Lower A/);
+    assert.equal(plannedFor(TUE), 'Lower B or Upper B if you can be at the gym by 9:00 PM');
+  });
+});
+
+describe('alternatives', () => {
+  it('every exercise has a swap that names a different exercise', () => {
+    for (const s of Object.values(SESSIONS)) {
+      for (const ex of s.exercises) {
+        assert.ok(ex.alternative.trim().length >= 10, `${ex.id}: no alternative`);
+        assert.ok(!ex.alternative.toLowerCase().startsWith(ex.name.toLowerCase()), `${ex.id}: alternative is the same exercise`);
+      }
+    }
   });
 });

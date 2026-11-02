@@ -141,12 +141,10 @@ export function ProgramDetails() {
                       <span className="font-medium text-ink">Progress: </span>
                       {ex.increment}.
                     </p>
-                    {ex.alternatives && (
-                      <p className="mt-1">
-                        <span className="font-medium text-ink">Alternative: </span>
-                        {ex.alternatives}
-                      </p>
-                    )}
+                    <p className="mt-1">
+                      <span className="font-medium text-ink">Machine or bench taken? </span>
+                      {ex.alternative}
+                    </p>
                     {links.length > 0 ? (
                       <TutorialLinks tutorials={links} className="mt-3" />
                     ) : (
@@ -159,6 +157,8 @@ export function ProgramDetails() {
           </Card>
         );
       })}
+
+      <ProgressionGuide />
     </div>
   );
 }
@@ -170,7 +170,7 @@ export function ScheduleRules() {
         <CardHeader
           title="Missed sessions and real life"
           icon={<CalendarClock size={18} />}
-          description="Consistency over perfection. The Today tab applies these rules automatically."
+          description="Consistency over perfection. The Today tab shows the sessions these rules allow on each day."
         />
         <p className="mb-3 rounded-xl bg-accent-soft/60 p-3 text-sm font-medium text-ink">{MISSED_SESSION_RULE}</p>
         <ul className="space-y-3">
@@ -282,7 +282,7 @@ export function CardioMobility() {
   );
 }
 
-export function ProgressionGuide() {
+function ProgressionGuide() {
   return (
     <>
       <Card>

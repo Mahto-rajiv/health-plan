@@ -1,23 +1,20 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Plus, Trash2, Scale, Ruler, Dumbbell, CalendarCheck, Utensils, Compass, Camera } from 'lucide-react';
-import { useBodyLog, useMealLog, useSettings, useWorkoutLog, type BodyEntry } from '@/lib/storage';
+import { Plus, Trash2, Scale, Ruler, Utensils, Compass, Camera } from 'lucide-react';
+import { useBodyLog, useMealLog, useSettings, type BodyEntry } from '@/lib/storage';
 import { useToday } from '@/lib/hooks';
 import { addDays, daysBetween, shortDate } from '@/lib/dates';
-import { DOCTOR_WEIGHT_LOSS, mealAdherence, recalledWeights, rollingAverage, sessionsPerWeek, strengthSeries, waistLimits, weeklyAverages, MAIN_LIFTS, type GainStatus } from '@/lib/progress';
+import { DOCTOR_WEIGHT_LOSS, mealAdherence, recalledWeights, rollingAverage, waistLimits, weeklyAverages, type GainStatus } from '@/lib/progress';
 import { assessToday } from '@/lib/phase';
-import { SAMPLE_BODY, SAMPLE_END, SAMPLE_MEALS, SAMPLE_WORKOUTS } from '@/lib/data/sample';
+import { SAMPLE_BODY, SAMPLE_END, SAMPLE_MEALS } from '@/lib/data/sample';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge, type BadgeTone } from '@/components/ui/Badge';
 import { Callout } from '@/components/ui/Callout';
-import { Segmented } from '@/components/ui/Segmented';
 import { SampleBadge } from '@/components/SampleNotice';
 import { TrendChart, BarsChart } from '@/components/charts';
 import { cn } from '@/lib/utils';
-
-const LIFT_LABELS: Record<string, string> = { bench: 'Bench', squat: 'Squat', ohp: 'Overhead press', pullup: 'Pull-up', deadlift: 'Deadlift' };
 
 const STATUS_TONE: Record<GainStatus, BadgeTone> = {
   'not-enough-data': 'neutral',
@@ -35,12 +32,9 @@ export function ProgressView() {
   const today = useToday();
   const [settings] = useSettings();
   const [body, setBody] = useBodyLog();
-  const [workouts] = useWorkoutLog();
   const [meals] = useMealLog();
-  const [lift, setLift] = useState(MAIN_LIFTS[0].id);
 
   const bodySample = body.filter((e) => e.weightKg !== undefined && !e.recalled).length < 2;
-  const liftSample = workouts.length < 2;
   const mealSample = Object.keys(meals).length < 3;
 
   const bodyData = bodySample ? SAMPLE_BODY : body;
@@ -59,13 +53,6 @@ export function ProgressView() {
   );
   const assessment = useMemo(() => assessToday(bodyData, settings, today ?? SAMPLE_END), [bodyData, settings, today]);
 
-  const strength = useMemo(() => strengthSeries(liftSample ? SAMPLE_WORKOUTS : workouts), [liftSample, workouts]);
-  const liftPoints = (strength.find((s) => s.id === lift)?.points ?? []).map((p) => ({ ...p, label: shortDate(p.date) }));
-
-  const consistency = useMemo(
-    () => sessionsPerWeek(liftSample ? SAMPLE_WORKOUTS : workouts, 12, liftSample ? SAMPLE_END : refDate).map((w) => ({ ...w, label: shortDate(w.weekStart) })),
-    [liftSample, workouts, refDate],
-  );
   const adherence = useMemo(
     () => mealAdherence(mealSample ? SAMPLE_MEALS : meals, 12, mealSample ? SAMPLE_END : refDate).map((w) => ({ ...w, label: shortDate(w.weekStart), pct: w.pct ?? 0 })),
     [mealSample, meals, refDate],
@@ -149,22 +136,6 @@ export function ProgressView() {
             ]}
             series={[{ key: 'waist', name: 'Waist', color: '#0f766e', dots: true }]}
           />
-        </ChartCard>
-        <ChartCard
-          title="Strength"
-          icon={<Dumbbell size={18} />}
-          sample={liftSample}
-          description="Estimated 1-rep max from your best logged set (Epley). It shows the trend; don't treat it as a max test. Pull-ups count assistance as negative kg."
-        >
-          <Segmented size="sm" label="Lift" value={lift} onChange={setLift} options={MAIN_LIFTS.map((l) => ({ value: l.id, label: LIFT_LABELS[l.id] ?? l.name }))} className="mb-3" />
-          {liftPoints.length ? (
-            <TrendChart data={liftPoints} xKey="label" unit=" kg" series={[{ key: 'e1rm', name: 'Est. 1RM', color: '#0f766e', dots: true }]} />
-          ) : (
-            <p className="py-10 text-center text-sm text-muted">No sets logged for this lift yet.</p>
-          )}
-        </ChartCard>
-        <ChartCard title="Training consistency" icon={<CalendarCheck size={18} />} sample={liftSample} description="Lifting sessions per week (target line: 4). Three is a good week too.">
-          <BarsChart data={consistency} xKey="label" barKey="sessions" name="Sessions" target={4} max={5} />
         </ChartCard>
         <Card>
           <CardHeader title="Progress photos" icon={<Camera size={18} />} description="Every 4 weeks: same place, light, time and clothes. Photos stay on your phone; tick “photo taken” when you log a weigh-in." />

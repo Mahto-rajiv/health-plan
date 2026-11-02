@@ -1,7 +1,5 @@
-import type { BodyEntry, CheckInLog, MealLog, WorkoutRecord } from './storage';
+import type { BodyEntry, CheckInLog, MealLog } from './storage';
 import { addDays, daysBetween, weekStart } from './dates';
-import { SESSIONS, SESSION_ORDER } from './data/training';
-import { bestE1rm } from './training';
 import { DAILY, type PhaseId } from './config';
 
 // ─── Weight decision system ───────────────────────────────────────────────────
@@ -277,17 +275,7 @@ export function assessGain(entries: BodyEntry[], opts: AssessOptions): GainAsses
 
 export const DOCTOR_WEIGHT_LOSS = 'Discuss unexplained weight loss with a doctor, especially if you are eating the plan, or if you also have tiredness, fever, night sweats, or changes in appetite or bowel habit.';
 
-// ─── Training & nutrition adherence ───────────────────────────────────────────
-
-export function sessionsPerWeek(log: WorkoutRecord[], weeks: number, today: string) {
-  const out: { weekStart: string; sessions: number }[] = [];
-  const thisWeek = weekStart(today);
-  for (let i = weeks - 1; i >= 0; i--) {
-    const ws = addDays(thisWeek, -7 * i);
-    out.push({ weekStart: ws, sessions: log.filter((w) => weekStart(w.date) === ws).length });
-  }
-  return out;
-}
+// ─── Nutrition adherence ───────────────────────────────────────────
 
 export function mealAdherence(meals: MealLog, weeks: number, today: string) {
   const out: { weekStart: string; pct: number | null }[] = [];
@@ -308,20 +296,6 @@ export function mealAdherence(meals: MealLog, weeks: number, today: string) {
     out.push({ weekStart: ws, pct: days ? Math.round((eaten / (days * 4)) * 100) : null });
   }
   return out;
-}
-
-export const MAIN_LIFTS = SESSION_ORDER.flatMap((id) =>
-  SESSIONS[id].exercises.filter((e) => e.isMainLift).map((e) => ({ id: e.id, name: e.name })),
-);
-
-export function strengthSeries(log: WorkoutRecord[]) {
-  const sorted = [...log].sort((a, b) => a.date.localeCompare(b.date));
-  return MAIN_LIFTS.map((lift) => ({
-    ...lift,
-    points: sorted
-      .map((w) => ({ date: w.date, e1rm: Math.round(bestE1rm(w.sets[lift.id] ?? []) * 10) / 10 }))
-      .filter((p) => p.e1rm > 0),
-  }));
 }
 
 export function averageSleep(checkins: CheckInLog, today: string, days = 7) {
