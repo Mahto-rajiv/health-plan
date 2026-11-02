@@ -153,6 +153,12 @@ export function sessionTime(sessionId: SessionId, week: number, deload = false):
   return { warmup, exercises, ramp, finisher: s.finisherMin, total };
 }
 
+/** Average logged length of full (not short) sessions of this type, or null if none were timed. */
+export function loggedMinutes(log: WorkoutRecord[], sessionId: SessionId): number | null {
+  const times = log.filter((w) => w.sessionId === sessionId && !w.short && w.minutes).map((w) => w.minutes!);
+  return times.length ? Math.round(times.reduce((a, b) => a + b, 0) / times.length) : null;
+}
+
 /** Session length rounded to the nearest minute, for display. */
 export function estimateMinutes(sessionId: SessionId, week: number, deload = false): number {
   return Math.round(sessionTime(sessionId, week, deload).total);

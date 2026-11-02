@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CheckCircle2, Flame, ListChecks, Scissors } from 'lucide-react';
 import { SESSIONS, type SessionId } from '@/lib/data/training';
 import { KEYS, readStore, writeStore, removeStore, type LoggedSet, type WorkoutDraft, type WorkoutRecord } from '@/lib/storage';
-import { activeExercises, lastPerformance, rirFor, setsFor } from '@/lib/training';
+import { activeExercises, estimateMinutes, lastPerformance, loggedMinutes, rirFor, setsFor } from '@/lib/training';
 import { Button } from '../ui/Button';
 import { ProgressBar } from '../ui/Progress';
 import { ExerciseLogCard } from './ExerciseLogCard';
@@ -43,6 +43,7 @@ export function WorkoutLogger({
     return freshSets(sessionId, week, deload);
   });
   const [short, setShort] = useState(false);
+  const [minutes, setMinutes] = useState('');
   const [rest, setRest] = useState<RestRequest | null>(null);
 
   // Persist the in-progress workout (debounced) so a reload or tab switch loses nothing.
@@ -87,6 +88,7 @@ export function WorkoutLogger({
       sessionId,
       sets: kept,
       short: short || undefined,
+      ...(Number(minutes) > 0 ? { minutes: Math.round(Number(minutes)) } : {}),
       completedAt: new Date().toISOString(),
     };
     removeStore(KEYS.draft);
@@ -144,6 +146,23 @@ export function WorkoutLogger({
         <span className="font-medium text-ink">Finish: </span>
         {session.finisher}
       </div>
+
+      <label className="block rounded-2xl border border-line bg-surface p-4 text-sm text-ink-2">
+        <span className="font-medium text-ink">How long did it take? </span>
+        Minutes from the start of the warm-up to the last set (optional). The plan estimates {estimateMinutes(sessionId, week, deload)} min
+        {loggedMinutes(log, sessionId) ? `; your average so far is ${loggedMinutes(log, sessionId)} min` : ''}. Logging real times shows whether the
+        estimate is right.
+        <input
+          type="number"
+          inputMode="numeric"
+          min={5}
+          max={180}
+          value={minutes}
+          onChange={(e) => setMinutes(e.target.value)}
+          className="mt-2 block w-28 rounded-lg border border-line bg-canvas px-3 py-2 text-ink"
+          aria-label="Session minutes"
+        />
+      </label>
 
       <Button size="lg" className="w-full" onClick={complete} disabled={done === 0}>
         <CheckCircle2 size={18} aria-hidden />

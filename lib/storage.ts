@@ -54,6 +54,8 @@ export interface WorkoutRecord {
   sessionId: SessionId;
   sets: Record<string, LoggedSet[]>;
   short?: boolean;
+  /** Real session length, warm-up included, if logged (Round 3: checks the time estimate). */
+  minutes?: number;
   completedAt: string;
 }
 

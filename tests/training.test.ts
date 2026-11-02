@@ -17,13 +17,15 @@ describe('sessions', () => {
   for (const id of SESSION_ORDER) {
     const s = SESSIONS[id];
     if (s.slot === 'weekday') {
-      it(`${id}: ≤ 5 exercises and ≤ 45 min in every week, deload included`, () => {
+      // Budget 42 min, not the 45-min cap: the time constants (40 s a set, 1 min setup) are estimates,
+      // not timed, so the plan keeps a 3-min (~7%) buffer (Round 3).
+      it(`${id}: ≤ 5 exercises and ≤ 42 min (3-min buffer under the 45-min cap) in every week, deload included`, () => {
         for (const week of WEEKS) {
           for (const deload of [false, true]) {
             const t = sessionTime(id, week, deload);
             const n = activeExercises(id, week, deload).length;
             assert.ok(n <= 5, `${id} week ${week}${deload ? ' deload' : ''}: ${n} exercises`);
-            assert.ok(t.total <= 45, `${id} week ${week}${deload ? ' deload' : ''}: ${t.total.toFixed(1)} min > 45 (${JSON.stringify(t)})`);
+            assert.ok(t.total <= 42, `${id} week ${week}${deload ? ' deload' : ''}: ${t.total.toFixed(1)} min > 42 (${JSON.stringify(t)})`);
           }
         }
       });
@@ -40,12 +42,12 @@ describe('sessions', () => {
 
   it('session time is the sum of its parts, using the stated constants', () => {
     // Upper B week 3 by hand: warm-up 10; OHP 3×(40+180)s + 1 = 12; pull-up 3×(40+150)s + 1 + 1 lighter set = 11.5;
-    // incline 2×(40+120)s + 1 = 6.33; face pull 2×(40+60)s + 1 = 4.33; no finisher.
+    // incline 2×(40+120)s + 1 = 6.33; face pull paired with the incline press (Round 3), so only its work: 2×40 s = 1.33; no finisher.
     assert.deepEqual(TIME_MODEL, { workSec: 40, perSideWorkSec: 80, setupMin: 1, rampSetMin: 1 });
     const t = sessionTime('upperB', 3);
     assert.equal(t.warmup, 10);
     assert.equal(t.finisher, 0);
-    assert.ok(Math.abs(t.total - (10 + 12 + 11.5 + 380 / 60 + 260 / 60)) < 1e-9, String(t.total));
+    assert.ok(Math.abs(t.total - (10 + 12 + 11.5 + 380 / 60 + 80 / 60)) < 1e-9, String(t.total));
     for (const sid of SESSION_ORDER) {
       const st = sessionTime(sid, 3);
       const sum = st.warmup + st.exercises.reduce((a, e) => a + e.minutes, 0) + st.finisher;
