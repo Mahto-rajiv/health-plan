@@ -9,7 +9,7 @@ export default function TrainingPage() {
     <>
       <PageHeader
         title="Training"
-        description="4 sessions a week for a beginner: Saturday and Sunday are fixed, plus two short weekday sessions if you can be at the gym by 9 PM. Strength first, then muscle, fitness and mobility. Missed sessions are skipped, not made up."
+        description="4 sessions a week for a beginner. Saturday and Sunday are fixed. Two short weekday sessions happen only if you can be at the gym by 9 PM. Every session starts with a warm-up. Missed sessions are skipped, not made up."
       />
       <TrainingView />
     </>

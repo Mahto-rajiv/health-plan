@@ -6,10 +6,7 @@ import { SESSIONS, type SessionId } from '@/lib/data/training';
 import { KEYS, readStore, writeStore, removeStore, type LoggedSet, type WorkoutDraft, type WorkoutRecord } from '@/lib/storage';
 import { activeExercises, lastPerformance, rirFor, setsFor } from '@/lib/training';
 import { Button } from '../ui/Button';
-import { Disclosure } from '../ui/Disclosure';
 import { ProgressBar } from '../ui/Progress';
-import { TutorialLinks } from '../ui/ExternalLink';
-import { EXERCISE_TUTORIALS, type Tutorial } from '@/lib/data/tutorials';
 import { ExerciseLogCard } from './ExerciseLogCard';
 import { RestTimer, type RestRequest } from './RestTimer';
 
@@ -96,8 +93,6 @@ export function WorkoutLogger({
     onComplete(record);
   };
 
-  const warmupTutorials = [...(EXERCISE_TUTORIALS.warmUp as Tutorial[])];
-
   return (
     <div className="space-y-4">
       <div className="sticky top-14 z-20 -mx-4 border-b border-line bg-canvas/95 px-4 py-2.5 backdrop-blur lg:top-0 lg:mx-0 lg:rounded-xl lg:border lg:bg-surface">
@@ -121,25 +116,14 @@ export function WorkoutLogger({
           {short ? 'Short version on' : 'Short on time? First 3 only'}
         </Button>
         {deload && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-800">Deload week: ~10% lighter, half the sets</span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-800">Easy (deload) week: about 10% lighter, half the sets</span>
         )}
         {week <= 2 && !deload && (
           <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800">
-            <Flame size={12} aria-hidden /> Learning phase: stop 3–4 reps short
+            <Flame size={12} aria-hidden /> Learning weeks: stop with 3–4 good reps left
           </span>
         )}
       </div>
-
-      <Disclosure summary="Warm-up (8–10 min)">
-        <ol className="list-decimal space-y-1 pl-5">
-          {session.warmup.map((w) => (
-            <li key={w}>{w}</li>
-          ))}
-        </ol>
-        <div className="mt-3">
-          <TutorialLinks tutorials={warmupTutorials} />
-        </div>
-      </Disclosure>
 
       <div className="grid gap-4 xl:grid-cols-2">
         {shown.map((ex, i) => (

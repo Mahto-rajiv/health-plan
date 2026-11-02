@@ -88,7 +88,7 @@ export function todayTraining(log: WorkoutRecord[], iso: string, now: Date = new
   return {
     kind: 'flex',
     sessionId: id,
-    note: `Go only if you can be at the gym by ${WEEKDAY_GYM_CUTOFF.label} (it closes at 10). ${SESSIONS[id].minutes}, 5 exercises. If not, skip it — don’t double up later.`,
+    note: `Go only if you can be at the gym by ${WEEKDAY_GYM_CUTOFF.label} (it closes at 10). ${SESSIONS[id].minutes}, ${SESSIONS[id].exercises.length} exercises. If not, skip it. Don’t make it up later.`,
   };
 }
 
@@ -103,18 +103,59 @@ export function nextChance(iso: string, id: 'lowerB' | 'upperB'): string {
 }
 
 /**
- * Estimated session length in minutes: ~11 min warm-up (5 min cardio, drills,
- * ramp-up sets), each working set's work time and rest, and the weekend finisher.
+ * Numbers behind every session-length estimate. Change them here and the
+ * Program tab, Today view, dashboard and tests all follow.
  */
+export const TIME_MODEL = {
+  /** Time to do one set (a normal set of 5–15 reps). */
+  workSec: 40,
+  /** One-side-at-a-time sets (e.g. split squat) take twice as long. */
+  perSideWorkSec: 80,
+  /** Loading plates, moving to the next station, setting the seat: once per exercise. */
+  setupMin: 1,
+  /** One lighter set before a later heavy lift (do it, change the plates). */
+  rampSetMin: 1,
+} as const;
+
+export interface SessionTime {
+  /** Sum of the warm-up steps. */
+  warmup: number;
+  /** Per exercise: sets × (work + rest) + setup + lighter sets. */
+  exercises: { id: string; sets: number; minutes: number; rampSets: number }[];
+  /** All lighter sets before later lifts (already inside `exercises`). */
+  ramp: number;
+  finisher: number;
+  total: number;
+}
+
+export const warmupMinutes = (sessionId: SessionId) => SESSIONS[sessionId].warmup.reduce((t, s) => t + s.minutes, 0);
+
+/**
+ * Session length, step by step (unrounded minutes):
+ * warm-up steps + Σ exercise [sets × (work + rest) + setup + lighter sets] + finisher.
+ * Rest is counted after every set. A superset partner adds only its work time
+ * (its rest and setup are shared with the exercise it is paired with).
+ */
+export function sessionTime(sessionId: SessionId, week: number, deload = false): SessionTime {
+  const s = SESSIONS[sessionId];
+  const exercises = activeExercises(sessionId, week, deload).map((ex) => {
+    const sets = setsFor(ex, week, deload);
+    const work = ex.perSide ? TIME_MODEL.perSideWorkSec : TIME_MODEL.workSec;
+    const rampSets = ex.rampSets ?? 0;
+    const minutes = ex.supersetWith
+      ? (sets * work) / 60
+      : (sets * (work + ex.restSec)) / 60 + TIME_MODEL.setupMin + rampSets * TIME_MODEL.rampSetMin;
+    return { id: ex.id, sets, minutes, rampSets };
+  });
+  const warmup = warmupMinutes(sessionId);
+  const ramp = exercises.reduce((t, e) => t + e.rampSets * TIME_MODEL.rampSetMin, 0);
+  const total = warmup + exercises.reduce((t, e) => t + e.minutes, 0) + s.finisherMin;
+  return { warmup, exercises, ramp, finisher: s.finisherMin, total };
+}
+
+/** Session length rounded to the nearest minute, for display. */
 export function estimateMinutes(sessionId: SessionId, week: number, deload = false): number {
-  const WARMUP_MIN = 11;
-  // Weekend sessions end with ~10 min of easy cardio and stretching.
-  const FINISHER_MIN = SESSIONS[sessionId].slot === 'weekend' ? 10 : 0;
-  const sec = activeExercises(sessionId, week, deload).reduce((total, ex) => {
-    const work = ex.perSide ? 80 : 40;
-    return total + setsFor(ex, week, deload) * (work + ex.restSec);
-  }, 0);
-  return Math.round(WARMUP_MIN + FINISHER_MIN + sec / 60);
+  return Math.round(sessionTime(sessionId, week, deload).total);
 }
 
 /** What the schedule says for a date (used by the dashboard's "tomorrow"). */
@@ -155,8 +196,8 @@ export function progressionHint(ex: Exercise, last: { sets: LoggedSet[] } | null
   if (!sets.length) return null;
   const kg = sets[0].kg;
   const allTop = sets.length >= targetSets && sets.every((s) => (s.reps ?? 0) >= ex.repRange[1]);
-  if (allTop && kg !== null) return `Hit the top of the range last time — add load (${ex.increment}).`;
-  if (kg !== null) return `Same load (${kg} kg); try to add a rep to any set.`;
+  if (allTop && kg !== null) return `You hit the top of the rep range last time. Add weight: ${ex.increment}.`;
+  if (kg !== null) return `Same weight (${kg} kg). Try to add a rep to any set.`;
   return 'Try to add a rep to any set.';
 }
 

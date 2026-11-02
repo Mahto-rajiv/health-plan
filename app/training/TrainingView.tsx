@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/Button';
 import { Callout } from '@/components/ui/Callout';
 import { WorkoutLogger } from '@/components/training/WorkoutLogger';
 import { ProgramDetails, ScheduleRules, CardioMobility, ProgressionGuide } from './TrainingContent';
+import { WarmupSteps } from './WarmupSteps';
 
 type Tab = 'today' | 'week' | 'program' | 'cardio' | 'progression';
 
@@ -23,10 +24,26 @@ export function TrainingView() {
   const [tab, setTab] = useState<Tab>('today');
   return (
     <div className="space-y-5">
+      {/* Phones: all five tabs visible in a 2-column grid (a scrolling row hid the last ones at 320 px). */}
       <Segmented<Tab>
         label="Training sections"
         value={tab}
         onChange={setTab}
+        wrap
+        className="sm:hidden"
+        options={[
+          { value: 'today', label: 'Today' },
+          { value: 'week', label: 'Week' },
+          { value: 'program', label: 'Program' },
+          { value: 'cardio', label: 'Cardio & mobility' },
+          { value: 'progression', label: 'Progression' },
+        ]}
+      />
+      <Segmented<Tab>
+        label="Training sections"
+        value={tab}
+        onChange={setTab}
+        className="hidden sm:block"
         options={[
           { value: 'today', label: 'Today' },
           { value: 'week', label: 'Week & rescheduling' },
@@ -74,7 +91,7 @@ function TodayTab() {
           <span>{longDate(today)}</span>
           <span aria-hidden>·</span>
           <span>Program week {week}</span>
-          {deload && <Badge tone="info">Deload week</Badge>}
+          {deload && <Badge tone="info">Deload (easy) week</Badge>}
         </div>
         <div className="mt-2 flex items-start gap-3">
           {plan.kind === 'done' ? (
@@ -91,7 +108,7 @@ function TodayTab() {
               {plan.kind === 'done'
                 ? `Done: ${SESSIONS[plan.sessionId!].short}`
                 : plan.kind === 'fixed' || plan.kind === 'flex'
-                  ? `${SESSIONS[plan.sessionId!].name} · ≈ ${estimateMinutes(plan.sessionId!, week, deload)} min`
+                  ? `${SESSIONS[plan.sessionId!].name} · about ${estimateMinutes(plan.sessionId!, week, deload)} min`
                   : plan.kind === 'late'
                     ? 'Skip tonight'
                     : WEEK_PLAN[dayName(today)].label}
@@ -113,11 +130,13 @@ function TodayTab() {
 
       {justSaved && (
         <Callout tone="good" title={`${SESSIONS[justSaved.sessionId].short} saved`}>
-          {Object.values(justSaved.sets).flat().length} sets logged. Eat Meal 4 within the next hour or two and get to bed by 12:30 AM.
+          {Object.values(justSaved.sets).flat().length} sets logged. Eat Meal 4 in the next hour or two. Be in bed by 12:30 AM.
         </Callout>
       )}
 
       {!sessionId && (plan.kind === 'rest' || plan.kind === 'late') && <OffDayPanel today={today} />}
+
+      {sessionId && <WarmupSteps key={`warmup-${sessionId}-${today}`} sessionId={sessionId} week={week} deload={deload} checkable />}
 
       {sessionId && (
         <WorkoutLogger key={`${sessionId}-${today}`} sessionId={sessionId} date={today} week={week} deload={deload} log={log} onComplete={save} />
@@ -164,7 +183,7 @@ function OffDayPanel({ today }: { today: string }) {
             </li>
           ))}
         </ul>
-        <p className="mt-2 text-xs text-muted">Video tutorials for each are under Cardio &amp; mobility.</p>
+        <p className="mt-2 text-xs text-muted">Videos for each are in the Cardio &amp; mobility tab.</p>
       </Card>
     </div>
   );
@@ -202,7 +221,7 @@ function WeekTab() {
       <Card>
         <CardHeader
           title="Your week"
-          description={`Saturday and Sunday are fixed. Lower B (Mon–Wed) and Upper B (Tue–Fri) happen only if you can be at the gym by ${WEEKDAY_GYM_CUTOFF.label}; one session a day at most.`}
+          description={`Saturday and Sunday are fixed. Lower B (Mon–Wed) and Upper B (Tue–Fri) happen only if you can be at the gym by ${WEEKDAY_GYM_CUTOFF.label}. One session a day at most.`}
           action={today ? <Badge tone={thisWeek.length >= 4 ? 'good' : 'neutral'}>{thisWeek.length}/4 this week</Badge> : null}
         />
         <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
