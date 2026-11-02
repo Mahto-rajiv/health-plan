@@ -4,10 +4,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
   "m1-veg": {
     "milk": [
       [
-        370,
-        370,
-        370,
-        370
+        385,
+        385,
+        385,
+        385
       ],
       [
         420,
@@ -24,10 +24,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "oats": [
       [
-        35,
-        35,
-        35,
-        35
+        40,
+        40,
+        40,
+        40
       ],
       [
         35,
@@ -104,16 +104,16 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "sunflowerSeeds": [
       [
-        9,
-        9,
-        9,
-        9
+        6,
+        6,
+        6,
+        6
       ],
       [
-        20,
-        20,
-        20,
-        20
+        18,
+        18,
+        18,
+        18
       ],
       [
         20,
@@ -124,20 +124,20 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "slot:fruit1": [
       [
-        110,
-        110,
-        110,
-        100
-      ],
-      [
         100,
         100,
-        100,
+        140,
         100
       ],
       [
         110,
-        160,
+        100,
+        110,
+        100
+      ],
+      [
+        120,
+        120,
         100,
         100
       ]
@@ -152,16 +152,16 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         35
       ],
       [
-        35,
-        35,
-        35,
-        35
+        40,
+        40,
+        40,
+        40
       ],
       [
-        35,
-        35,
-        35,
-        35
+        45,
+        45,
+        45,
+        45
       ]
     ],
     "sattu": [
@@ -192,16 +192,16 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         5
       ],
       [
-        5,
-        5,
-        5,
-        5
+        7,
+        7,
+        7,
+        7
       ],
       [
-        5,
-        5,
-        5,
-        5
+        6,
+        6,
+        6,
+        6
       ]
     ],
     "curd": [
@@ -218,30 +218,30 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         315
       ],
       [
-        290,
-        290,
-        290,
-        290
+        315,
+        315,
+        315,
+        315
       ]
     ],
     "slot:salad": [
       [
         40,
-        40,
+        80,
         40,
         40
       ],
       [
         40,
-        80,
-        40,
+        100,
+        100,
         40
       ],
       [
         100,
         80,
-        80,
-        100
+        100,
+        120
       ]
     ],
     "lemon": [
@@ -274,10 +274,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         290
       ],
       [
-        285,
-        285,
-        285,
-        285
+        310,
+        310,
+        310,
+        310
       ],
       [
         315,
@@ -290,14 +290,14 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
       [
         80,
         200,
-        180,
+        150,
         90
       ],
       [
         80,
         130,
         100,
-        110
+        120
       ],
       [
         80,
@@ -348,22 +348,22 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "sunflowerSeeds": [
       [
+        1,
+        1,
+        1,
+        1
+      ],
+      [
         0,
         0,
         0,
         0
       ],
       [
-        5,
-        5,
-        5,
-        5
-      ],
-      [
-        19,
-        19,
-        19,
-        19
+        11,
+        11,
+        11,
+        11
       ]
     ]
   },
@@ -376,10 +376,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         25
       ],
       [
-        30,
-        30,
-        30,
-        30
+        25,
+        25,
+        25,
+        25
       ],
       [
         25,
@@ -390,22 +390,22 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "rice": [
       [
-        135,
-        135,
-        135,
-        135
+        130,
+        130,
+        130,
+        130
       ],
       [
-        175,
-        175,
-        175,
-        175
+        165,
+        165,
+        165,
+        165
       ],
       [
-        175,
-        175,
-        175,
-        175
+        165,
+        165,
+        165,
+        165
       ]
     ],
     "soyaChunks": [
@@ -416,10 +416,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         15
       ],
       [
-        25,
-        25,
-        25,
-        25
+        30,
+        30,
+        30,
+        30
       ],
       [
         60,
@@ -431,20 +431,20 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     "slot:sabzi": [
       [
         60,
-        200,
+        180,
         180,
         180
       ],
       [
         60,
-        140,
+        200,
         200,
         160
       ],
       [
         60,
         200,
-        160,
+        140,
         200
       ]
     ],
@@ -462,10 +462,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         9
       ],
       [
-        9,
-        9,
-        9,
-        9
+        11,
+        11,
+        11,
+        11
       ]
     ],
     "curd": [
@@ -476,16 +476,16 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         245
       ],
       [
-        195,
-        195,
-        195,
-        195
+        200,
+        200,
+        200,
+        200
       ],
       [
-        175,
-        175,
-        175,
-        175
+        190,
+        190,
+        190,
+        190
       ]
     ]
   },
@@ -498,16 +498,16 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         50
       ],
       [
-        85,
-        85,
-        85,
-        85
+        90,
+        90,
+        90,
+        90
       ],
       [
-        115,
-        115,
-        115,
-        115
+        125,
+        125,
+        125,
+        125
       ]
     ],
     "paneer": [
@@ -518,30 +518,30 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         50
       ],
       [
-        60,
-        60,
-        60,
-        60
+        50,
+        50,
+        50,
+        50
       ],
       [
-        55,
-        55,
-        55,
-        55
+        50,
+        50,
+        50,
+        50
       ]
     ],
     "onion": [
       [
-        25,
-        25,
-        25,
-        25
+        15,
+        15,
+        15,
+        15
       ],
       [
-        45,
-        45,
-        45,
-        45
+        15,
+        15,
+        15,
+        15
       ],
       [
         45,
@@ -558,10 +558,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         40
       ],
       [
-        40,
-        40,
-        40,
-        40
+        15,
+        15,
+        15,
+        15
       ],
       [
         40,
@@ -592,10 +592,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "oil": [
       [
-        6,
-        6,
-        6,
-        6
+        2,
+        2,
+        2,
+        2
       ],
       [
         2,
@@ -612,10 +612,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "curd": [
       [
-        160,
-        160,
-        160,
-        160
+        175,
+        175,
+        175,
+        175
       ],
       [
         175,
@@ -624,20 +624,20 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         175
       ],
       [
-        150,
-        150,
-        150,
-        150
+        175,
+        175,
+        175,
+        175
       ]
     ]
   },
   "w-khichdi": {
     "rice": [
       [
-        120,
-        120,
-        120,
-        120
+        125,
+        125,
+        125,
+        125
       ],
       [
         125,
@@ -646,10 +646,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         125
       ],
       [
-        110,
-        110,
-        110,
-        110
+        100,
+        100,
+        100,
+        100
       ]
     ],
     "moongDal": [
@@ -660,35 +660,35 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         40
       ],
       [
-        40,
-        40,
-        40,
-        40
+        50,
+        50,
+        50,
+        50
       ],
       [
-        60,
-        60,
-        60,
-        60
+        70,
+        70,
+        70,
+        70
       ]
     ],
     "slot:sabzi": [
       [
-        100,
+        80,
         180,
-        160,
+        180,
         200
       ],
       [
         60,
         200,
         200,
-        140
+        160
       ],
       [
-        140,
+        100,
         200,
-        160,
+        120,
         200
       ]
     ],
@@ -714,10 +714,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "curd": [
       [
-        335,
-        335,
-        335,
-        335
+        305,
+        305,
+        305,
+        305
       ],
       [
         350,
@@ -776,16 +776,16 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "onion": [
       [
-        50,
-        50,
-        50,
-        50
+        65,
+        65,
+        65,
+        65
       ],
       [
-        90,
-        90,
-        90,
-        90
+        95,
+        95,
+        95,
+        95
       ],
       [
         95,
@@ -808,10 +808,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         45
       ],
       [
-        50,
-        50,
-        50,
-        50
+        60,
+        60,
+        60,
+        60
       ]
     ],
     "oil": [
@@ -836,22 +836,22 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "curd": [
       [
-        270,
-        270,
-        270,
-        270
+        225,
+        225,
+        225,
+        225
       ],
       [
-        195,
-        195,
-        195,
-        195
+        240,
+        240,
+        240,
+        240
       ],
       [
-        120,
-        120,
-        120,
-        120
+        165,
+        165,
+        165,
+        165
       ]
     ]
   },
@@ -864,10 +864,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         20
       ],
       [
-        30,
-        30,
-        30,
-        30
+        20,
+        20,
+        20,
+        20
       ],
       [
         20,
@@ -898,50 +898,50 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "slot:greens": [
       [
-        180,
-        160,
-        160,
-        300
+        150,
+        140,
+        140,
+        280
       ],
       [
-        100,
-        130,
-        150,
-        200
-      ],
-      [
-        100,
+        110,
         150,
         160,
-        240
+        210
+      ],
+      [
+        110,
+        170,
+        170,
+        250
       ]
     ],
     "rice": [
       [
-        145,
-        145,
-        145,
-        145
+        150,
+        150,
+        150,
+        150
+      ],
+      [
+        175,
+        175,
+        175,
+        175
       ],
       [
         165,
         165,
         165,
         165
-      ],
-      [
-        155,
-        155,
-        155,
-        155
       ]
     ],
     "oil": [
       [
-        4,
-        4,
-        4,
-        4
+        2,
+        2,
+        2,
+        2
       ],
       [
         2,
@@ -958,10 +958,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "curd": [
       [
-        245,
-        245,
-        245,
-        245
+        235,
+        235,
+        235,
+        235
       ],
       [
         245,
@@ -992,10 +992,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         35
       ],
       [
-        55,
-        55,
-        55,
-        55
+        70,
+        70,
+        70,
+        70
       ]
     ],
     "soyaChunks": [
@@ -1012,10 +1012,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         20
       ],
       [
-        45,
-        45,
-        45,
-        45
+        50,
+        50,
+        50,
+        50
       ]
     ],
     "slot:sabzi": [
@@ -1027,49 +1027,49 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
       ],
       [
         40,
-        120,
+        140,
         140,
         120
       ],
       [
-        120,
+        80,
         140,
-        140,
+        60,
         140
       ]
     ],
     "oil": [
       [
-        9,
-        9,
-        9,
-        9
-      ],
-      [
-        9,
-        9,
-        9,
-        9
-      ],
-      [
         5,
         5,
         5,
         5
+      ],
+      [
+        16,
+        16,
+        16,
+        16
+      ],
+      [
+        11,
+        11,
+        11,
+        11
       ]
     ],
     "curd": [
       [
-        295,
-        295,
-        295,
-        295
+        345,
+        345,
+        345,
+        345
       ],
       [
-        275,
-        275,
-        275,
-        275
+        190,
+        190,
+        190,
+        190
       ],
       [
         350,
@@ -1088,10 +1088,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         70
       ],
       [
-        85,
-        85,
-        85,
-        85
+        100,
+        100,
+        100,
+        100
       ],
       [
         50,
@@ -1102,36 +1102,36 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "rice": [
       [
-        115,
-        115,
-        115,
-        115
+        110,
+        110,
+        110,
+        110
       ],
       [
-        145,
-        145,
-        145,
-        145
+        140,
+        140,
+        140,
+        140
       ],
       [
-        130,
-        130,
-        130,
-        130
+        120,
+        120,
+        120,
+        120
       ]
     ],
     "potato": [
       [
-        40,
-        40,
-        40,
-        40
+        45,
+        45,
+        45,
+        45
       ],
       [
-        60,
-        60,
-        60,
-        60
+        25,
+        25,
+        25,
+        25
       ],
       [
         140,
@@ -1142,22 +1142,22 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "oil": [
       [
-        8,
-        8,
-        8,
-        8
+        10,
+        10,
+        10,
+        10
       ],
       [
-        8,
-        8,
-        8,
-        8
+        5,
+        5,
+        5,
+        5
       ],
       [
-        6,
-        6,
-        6,
-        6
+        5,
+        5,
+        5,
+        5
       ]
     ],
     "curd": [
@@ -1168,10 +1168,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         150
       ],
       [
-        150,
-        150,
-        150,
-        150
+        195,
+        195,
+        195,
+        195
       ],
       [
         210,
@@ -1196,18 +1196,18 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         70
       ],
       [
-        130,
-        130,
-        130,
-        130
+        140,
+        140,
+        140,
+        140
       ]
     ],
     "potato": [
       [
-        85,
-        85,
-        85,
-        85
+        55,
+        55,
+        55,
+        55
       ],
       [
         95,
@@ -1244,6 +1244,12 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "oil": [
       [
+        4,
+        4,
+        4,
+        4
+      ],
+      [
         6,
         6,
         6,
@@ -1254,32 +1260,26 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         4,
         4,
         4
-      ],
-      [
-        4,
-        4,
-        4,
-        4
       ]
     ],
     "curd": [
       [
-        285,
-        285,
-        285,
-        285
+        250,
+        250,
+        250,
+        250
       ],
       [
-        315,
-        315,
-        315,
-        315
+        230,
+        230,
+        230,
+        230
       ],
       [
-        315,
-        315,
-        315,
-        315
+        310,
+        310,
+        310,
+        310
       ]
     ]
   },
@@ -1306,10 +1306,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "rice": [
       [
-        105,
-        105,
-        105,
-        105
+        120,
+        120,
+        120,
+        120
       ],
       [
         145,
@@ -1332,10 +1332,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         40
       ],
       [
-        60,
-        60,
-        60,
-        60
+        85,
+        85,
+        85,
+        85
       ],
       [
         110,
@@ -1347,7 +1347,7 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     "slot:salad": [
       [
         60,
-        140,
+        100,
         140,
         140
       ],
@@ -1359,8 +1359,8 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
       ],
       [
         60,
-        100,
         80,
+        60,
         140
       ]
     ],
@@ -1372,10 +1372,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         2
       ],
       [
-        6,
-        6,
-        6,
-        6
+        3,
+        3,
+        3,
+        3
       ],
       [
         2,
@@ -1392,16 +1392,16 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         245
       ],
       [
-        170,
-        170,
-        170,
-        170
+        245,
+        245,
+        245,
+        245
       ],
       [
-        235,
-        235,
-        235,
-        235
+        245,
+        245,
+        245,
+        245
       ]
     ]
   },
@@ -1448,10 +1448,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "soyaChunks": [
       [
-        10,
-        10,
-        10,
-        10
+        15,
+        15,
+        15,
+        15
       ],
       [
         30,
@@ -1469,18 +1469,18 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     "slot:sabzi": [
       [
         80,
+        60,
+        60,
+        60
+      ],
+      [
+        60,
         140,
-        100,
-        60
+        120,
+        80
       ],
       [
-        80,
-        120,
-        120,
-        60
-      ],
-      [
-        180,
+        160,
         200,
         200,
         200
@@ -1488,30 +1488,30 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "oil": [
       [
-        8,
-        8,
-        8,
-        8
+        2,
+        2,
+        2,
+        2
       ],
       [
-        10,
-        10,
-        10,
-        10
+        9,
+        9,
+        9,
+        9
       ],
       [
-        8,
-        8,
-        8,
-        8
+        9,
+        9,
+        9,
+        9
       ]
     ],
     "curd": [
       [
-        225,
-        225,
-        225,
-        225
+        315,
+        315,
+        315,
+        315
       ],
       [
         225,
@@ -1520,20 +1520,20 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         225
       ],
       [
-        280,
-        280,
-        280,
-        280
+        300,
+        300,
+        300,
+        300
       ]
     ]
   },
   "w-poha-chaas": {
     "poha": [
       [
-        25,
-        25,
-        25,
-        25
+        30,
+        30,
+        30,
+        30
       ],
       [
         25,
@@ -1570,10 +1570,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "onion": [
       [
-        40,
-        40,
-        40,
-        40
+        30,
+        30,
+        30,
+        30
       ],
       [
         30,
@@ -1590,36 +1590,36 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "oil": [
       [
+        7,
+        7,
+        7,
+        7
+      ],
+      [
+        5,
+        5,
+        5,
+        5
+      ],
+      [
         4,
         4,
         4,
         4
-      ],
-      [
-        5,
-        5,
-        5,
-        5
-      ],
-      [
-        5,
-        5,
-        5,
-        5
       ]
     ],
     "curd": [
       [
-        345,
-        345,
-        345,
-        345
+        230,
+        230,
+        230,
+        230
       ],
       [
-        285,
-        285,
-        285,
-        285
+        290,
+        290,
+        290,
+        290
       ],
       [
         350,
@@ -1672,10 +1672,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "rice": [
       [
-        95,
-        95,
-        95,
-        95
+        80,
+        80,
+        80,
+        80
       ],
       [
         120,
@@ -1693,18 +1693,18 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     "slot:salad": [
       [
         60,
-        60,
-        60,
-        80
-      ],
-      [
-        60,
-        80,
+        140,
         60,
         60
       ],
       [
-        120,
+        100,
+        60,
+        60,
+        60
+      ],
+      [
+        140,
         140,
         140,
         120
@@ -1724,18 +1724,18 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         4
       ],
       [
-        6,
-        6,
-        6,
-        6
+        4,
+        4,
+        4,
+        4
       ]
     ],
     "curd": [
       [
-        150,
-        150,
-        150,
-        150
+        210,
+        210,
+        210,
+        210
       ],
       [
         150,
@@ -1760,16 +1760,16 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         30
       ],
       [
-        45,
-        45,
-        45,
-        45
+        55,
+        55,
+        55,
+        55
       ],
       [
-        95,
-        95,
-        95,
-        95
+        105,
+        105,
+        105,
+        105
       ]
     ],
     "rice": [
@@ -1796,28 +1796,28 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
       [
         60,
         140,
+        80,
+        100
+      ],
+      [
+        60,
+        140,
         60,
         120
       ],
       [
         60,
         140,
-        80,
-        80
-      ],
-      [
-        120,
         140,
-        140,
-        140
+        100
       ]
     ],
     "oil": [
       [
-        9,
-        9,
-        9,
-        9
+        6,
+        6,
+        6,
+        6
       ],
       [
         5,
@@ -1840,26 +1840,26 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         105
       ],
       [
+        180,
+        180,
+        180,
+        180
+      ],
+      [
         220,
         220,
         220,
         220
-      ],
-      [
-        245,
-        245,
-        245,
-        245
       ]
     ]
   },
   "w-banana-shake-chana": {
     "milk": [
       [
-        445,
-        445,
-        445,
-        445
+        440,
+        440,
+        440,
+        440
       ],
       [
         455,
@@ -1876,16 +1876,16 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "banana": [
       [
-        120,
-        120,
-        120,
-        120
+        115,
+        115,
+        115,
+        115
       ],
       [
-        145,
-        145,
-        145,
-        145
+        140,
+        140,
+        140,
+        140
       ],
       [
         150,
@@ -1970,27 +1970,27 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         25
       ],
       [
-        25,
-        25,
-        25,
-        25
+        20,
+        20,
+        20,
+        20
       ]
     ],
     "slot:sabzi": [
       [
-        140,
-        200,
-        200,
-        140
-      ],
-      [
-        80,
         180,
-        160,
+        200,
+        200,
         160
       ],
       [
+        80,
         160,
+        180,
+        100
+      ],
+      [
+        180,
         200,
         200,
         200
@@ -2010,10 +2010,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         145
       ],
       [
-        130,
-        130,
-        130,
-        130
+        120,
+        120,
+        120,
+        120
       ]
     ],
     "oil": [
@@ -2024,16 +2024,16 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         14
       ],
       [
-        13,
-        13,
-        13,
-        13
+        12,
+        12,
+        12,
+        12
       ],
       [
-        14,
-        14,
-        14,
-        14
+        12,
+        12,
+        12,
+        12
       ]
     ],
     "curd": [
@@ -2050,10 +2050,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         75
       ],
       [
-        65,
-        65,
-        65,
-        65
+        140,
+        140,
+        140,
+        140
       ]
     ]
   },
@@ -2072,10 +2072,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         200
       ],
       [
-        160,
-        160,
-        160,
-        160
+        135,
+        135,
+        135,
+        135
       ]
     ],
     "oats": [
@@ -2086,10 +2086,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         45
       ],
       [
-        50,
-        50,
-        50,
-        50
+        45,
+        45,
+        45,
+        45
       ],
       [
         45,
@@ -2166,35 +2166,35 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         11
       ],
       [
-        15,
-        15,
-        15,
-        15
+        14,
+        14,
+        14,
+        14
       ],
       [
-        17,
-        17,
-        17,
-        17
+        20,
+        20,
+        20,
+        20
       ]
     ],
     "slot:fruit1": [
       [
         100,
         100,
-        100,
+        140,
         100
       ],
       [
-        110,
+        150,
+        140,
         120,
-        100,
         110
       ],
       [
-        140,
-        190,
-        110,
+        120,
+        200,
+        120,
         100
       ]
     ]
@@ -2208,16 +2208,16 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         55
       ],
       [
-        95,
-        95,
-        95,
-        95
+        85,
+        85,
+        85,
+        85
       ],
       [
-        120,
-        120,
-        120,
-        120
+        135,
+        135,
+        135,
+        135
       ]
     ],
     "egg": [
@@ -2248,10 +2248,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         15
       ],
       [
-        20,
-        20,
-        20,
-        20
+        15,
+        15,
+        15,
+        15
       ],
       [
         35,
@@ -2268,10 +2268,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         25
       ],
       [
-        20,
-        20,
-        20,
-        20
+        25,
+        25,
+        25,
+        25
       ],
       [
         25,
@@ -2308,10 +2308,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         7
       ],
       [
-        6,
-        6,
-        6,
-        6
+        8,
+        8,
+        8,
+        8
       ],
       [
         4,
@@ -2334,10 +2334,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         75
       ],
       [
-        115,
-        115,
-        115,
-        115
+        90,
+        90,
+        90,
+        90
       ]
     ]
   },
@@ -2376,30 +2376,30 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         175
       ],
       [
-        180,
-        180,
-        180,
-        180
+        175,
+        175,
+        175,
+        175
       ]
     ],
     "slot:sabzi": [
       [
         140,
-        240,
+        200,
         220,
         240
       ],
       [
-        100,
-        200,
-        220,
-        200
+        120,
+        240,
+        240,
+        220
       ],
       [
-        100,
+        120,
         240,
         200,
-        220
+        240
       ]
     ],
     "oil": [
@@ -2430,16 +2430,16 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         90
       ],
       [
-        130,
-        130,
-        130,
-        130
-      ],
-      [
         95,
         95,
         95,
         95
+      ],
+      [
+        120,
+        120,
+        120,
+        120
       ]
     ]
   },
@@ -2466,10 +2466,10 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "rice": [
       [
-        170,
-        170,
-        170,
-        170
+        180,
+        180,
+        180,
+        180
       ],
       [
         180,
@@ -2487,20 +2487,20 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     "slot:salad": [
       [
         160,
-        200,
-        180,
-        200
-      ],
-      [
-        120,
-        140,
-        140,
-        200
-      ],
-      [
+        80,
         100,
+        200
+      ],
+      [
         140,
+        200,
+        200,
+        200
+      ],
+      [
         140,
+        100,
+        80,
         200
       ]
     ],
@@ -2532,16 +2532,16 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         120
       ],
       [
-        130,
-        130,
-        130,
-        130
+        125,
+        125,
+        125,
+        125
       ],
       [
-        135,
-        135,
-        135,
-        135
+        120,
+        120,
+        120,
+        120
       ]
     ]
   },
@@ -2554,16 +2554,16 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         60
       ],
       [
-        85,
-        85,
-        85,
-        85
+        80,
+        80,
+        80,
+        80
       ],
       [
-        125,
-        125,
-        125,
-        125
+        130,
+        130,
+        130,
+        130
       ]
     ],
     "chicken": [
@@ -2574,45 +2574,39 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         50
       ],
       [
-        55,
-        55,
-        55,
-        55
+        70,
+        70,
+        70,
+        70
       ],
       [
-        40,
-        40,
-        40,
-        40
+        80,
+        80,
+        80,
+        80
       ]
     ],
     "slot:salad": [
       [
-        40,
+        60,
         40,
         40,
         60
       ],
       [
-        100,
+        120,
         40,
-        40,
+        60,
         120
       ],
       [
         120,
-        60,
+        40,
         40,
         40
       ]
     ],
     "oil": [
-      [
-        8,
-        8,
-        8,
-        8
-      ],
       [
         9,
         9,
@@ -2620,35 +2614,19 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         9
       ],
       [
-        5,
-        5,
-        5,
-        5
+        12,
+        12,
+        12,
+        12
+      ],
+      [
+        6,
+        6,
+        6,
+        6
       ]
     ],
     "curd": [
-      [
-        85,
-        85,
-        85,
-        85
-      ],
-      [
-        125,
-        125,
-        125,
-        125
-      ],
-      [
-        255,
-        255,
-        255,
-        255
-      ]
-    ]
-  },
-  "d-fish-curry-rice": {
-    "fish": [
       [
         70,
         70,
@@ -2656,10 +2634,32 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         70
       ],
       [
-        50,
-        50,
-        50,
-        50
+        60,
+        60,
+        60,
+        60
+      ],
+      [
+        65,
+        65,
+        65,
+        65
+      ]
+    ]
+  },
+  "d-fish-curry-rice": {
+    "fish": [
+      [
+        80,
+        80,
+        80,
+        80
+      ],
+      [
+        80,
+        80,
+        80,
+        80
       ],
       [
         90,
@@ -2670,16 +2670,16 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "rice": [
       [
-        125,
-        125,
-        125,
-        125
+        135,
+        135,
+        135,
+        135
       ],
       [
-        165,
-        165,
-        165,
-        165
+        180,
+        180,
+        180,
+        180
       ],
       [
         140,
@@ -2690,42 +2690,42 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
     ],
     "slot:sabzi": [
       [
-        100,
-        200,
-        200,
-        200
-      ],
-      [
-        200,
-        200,
-        200,
-        200
-      ],
-      [
-        180,
-        100,
         120,
-        80
+        200,
+        200,
+        200
+      ],
+      [
+        200,
+        200,
+        200,
+        200
+      ],
+      [
+        200,
+        200,
+        180,
+        200
       ]
     ],
     "oil": [
-      [
-        8,
-        8,
-        8,
-        8
-      ],
-      [
-        8,
-        8,
-        8,
-        8
-      ],
       [
         7,
         7,
         7,
         7
+      ],
+      [
+        11,
+        11,
+        11,
+        11
+      ],
+      [
+        2,
+        2,
+        2,
+        2
       ]
     ],
     "curd": [
@@ -2736,16 +2736,16 @@ export const QUANTITIES: Record<string, Record<string, number[][]>> = {
         45
       ],
       [
+        60,
+        60,
+        60,
+        60
+      ],
+      [
         155,
         155,
         155,
         155
-      ],
-      [
-        135,
-        135,
-        135,
-        135
       ]
     ]
   }

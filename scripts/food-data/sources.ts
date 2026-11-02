@@ -25,6 +25,8 @@
 //   1,000 IU supplement on the Health page.
 // • Iodine is in neither table; it comes from iodised salt.
 
+import type { NutrientKey } from '../../lib/data/nutrient-keys';
+
 export interface FoodSource {
   /** IFCT 2017 food code(s). A list is averaged. */
   ifct?: string | string[];
@@ -34,10 +36,22 @@ export interface FoodSource {
   b12?: string | 0;
   /** USDA NDB number whose "refuse" gives the edible share of the food as bought. */
   refuse?: string;
+  /** USDA SR28 NDB number of the closest equivalent food, used only by the plausibility test
+   *  (tests/food-data.test.ts) to catch transcription and unit errors. Defaults to `refuse`. */
+  check?: string;
   /** Edible share when no USDA refuse value fits (marked as an approximation in the app). */
   edibleApprox?: number;
   /** Single nutrients filled from an IFCT food when the main (USDA) source has none. */
   fillFromIfct?: Partial<Record<'biotin', string>>;
+  /** Cells corrected from the printed IFCT 2017 PDF where the npm package mistyped them,
+   *  in the package's units (g per 100 g; enerc in kJ). Each one is cited in `note`. */
+  pdf?: Record<string, number>;
+  /** Nutrients IFCT 2017 did not analyse for this food (blank in the PDF, 0 in the package).
+   *  Filled from the `check` USDA food and labelled. Zeros that look like this are also
+   *  caught automatically (see "zero rule" in build.ts). */
+  notAnalysed?: NutrientKey[];
+  /** IFCT zeros checked against the PDF and kept as real zeros. */
+  zeroConfirmed?: NutrientKey[];
   /** Why this match was chosen, and its limits. */
   note: string;
 }
@@ -46,36 +60,43 @@ export const SOURCES: Record<string, FoodSource> = {
   // Dairy
   milk: { usda: '01211', fillFromIfct: { biotin: 'L002' }, note: 'USDA whole milk, 3.25% fat, no added vitamins A or D. Toned milk is 3.0% fat (FSSAI), so fat is ~8% high. IFCT has only whole cow and buffalo milk; biotin (missing in USDA) is from IFCT cow milk.' },
   curd: { usda: '01116', fillFromIfct: { biotin: 'L002' }, note: 'USDA plain whole-milk yogurt. IFCT has no curd; biotin (missing in USDA) is from IFCT cow milk, the milk it is set from.' },
-  paneer: { ifct: 'L003', b12: '01036', note: 'IFCT paneer. B12 from USDA whole-milk ricotta (a similar fresh acid-set cheese).' },
+  paneer: {
+    check: '01036',
+    ifct: 'L003',
+    b12: '01036',
+    pdf: { fatce: 24.78, choavldf: 2.41, enerc: 1278 },
+    notAnalysed: ['vitA'],
+    note: 'IFCT paneer. The npm package has fat 14.78 g, carbs 12.41 g and 1,079 kJ; the printed IFCT 2017 Table 1 has fat 24.78 g, available carbohydrate 2.41 g and 1,278 kJ, and its own energy factors (17/37/17 kJ/g) reproduce 1,278 kJ from those, so the PDF values are used. IFCT did not analyse retinol in any dairy food, so vitamin A is from USDA whole-milk ricotta, as is B12 (a similar fresh acid-set cheese).',
+  },
   ghee: { usda: '01003', note: 'USDA anhydrous butter oil (ghee). IFCT has no ghee.' },
   oil: { usda: '04037', note: 'USDA rice-bran oil. Chosen over groundnut oil (USDA 04042) because it has twice the vitamin E (32 vs 16 mg/100 g) and some omega-3.' },
   // Pulses & soya
-  sattu: { ifct: 'B001', b12: 0, note: 'IFCT Bengal gram dal. IFCT has no roasted chana flour; roasting mainly removes water, so values per 100 g are close but not exact.' },
-  roastedChana: { ifct: 'B001', b12: 0, note: 'IFCT Bengal gram dal (unroasted).' },
-  moongWhole: { ifct: 'B011', b12: 0, note: 'IFCT green gram, whole.' },
-  moongDal: { ifct: 'B010', b12: 0, note: 'IFCT green gram, dal.' },
-  toorDal: { ifct: 'B021', b12: 0, note: 'IFCT red gram, dal.' },
-  kalaChana: { ifct: 'B002', b12: 0, note: 'IFCT Bengal gram, whole.' },
+  sattu: { check: '16056', ifct: 'B001', b12: 0, note: 'IFCT Bengal gram dal. IFCT has no roasted chana flour; roasting mainly removes water, so values per 100 g are close but not exact.' },
+  roastedChana: { check: '16056', ifct: 'B001', b12: 0, note: 'IFCT Bengal gram dal (unroasted).' },
+  moongWhole: { check: '16080', ifct: 'B011', b12: 0, note: 'IFCT green gram, whole.' },
+  moongDal: { check: '16080', ifct: 'B010', b12: 0, note: 'IFCT green gram, dal.' },
+  toorDal: { check: '16101', ifct: 'B021', b12: 0, note: 'IFCT red gram, dal.' },
+  kalaChana: { check: '16056', ifct: 'B002', b12: 0, note: 'IFCT Bengal gram, whole.' },
   kabuliChana: { usda: '16056', note: 'USDA chickpeas, raw. IFCT has no kabuli chana.' },
-  rajma: { ifct: 'B020', b12: 0, note: 'IFCT rajmah, red.' },
+  rajma: { check: '16032', ifct: 'B020', b12: 0, note: 'IFCT rajmah, red.' },
   soyaChunks: { usda: '16117', note: 'USDA defatted soy flour, which soya chunks are extruded from. Pack labels (≈ 52 g protein, 13 g fibre) differ by a few grams.' },
-  besan: { ifct: 'B001', b12: 0, note: 'IFCT Bengal gram dal; besan is ground chana dal.' },
+  besan: { check: '16056', ifct: 'B001', b12: 0, note: 'IFCT Bengal gram dal; besan is ground chana dal.' },
   // Grains & flours
   oats: { usda: '08120', note: 'USDA rolled oats, not fortified. IFCT has no oats.' },
-  atta: { ifct: 'A019', b12: 0, note: 'IFCT wheat flour, atta.' },
-  daliya: { ifct: 'A021', b12: 0, note: 'IFCT wheat, bulgur.' },
-  rice: { ifct: 'A015', b12: 0, note: 'IFCT rice, raw, milled.' },
-  poha: { ifct: 'A011', b12: 0, note: 'IFCT rice flakes.' },
+  atta: { check: '20080', ifct: 'A019', b12: 0, note: 'IFCT wheat flour, atta.' },
+  daliya: { check: '20012', ifct: 'A021', b12: 0, note: 'IFCT wheat, bulgur.' },
+  rice: { check: '20444', ifct: 'A015', b12: 0, note: 'IFCT rice, raw, milled.' },
+  poha: { check: '20444', ifct: 'A011', b12: 0, note: 'IFCT rice flakes.' },
   // Nuts & seeds
-  peanuts: { ifct: 'H012', b12: 0, note: 'IFCT groundnut.' },
+  peanuts: { check: '16087', ifct: 'H012', b12: 0, note: 'IFCT groundnut.' },
   pumpkinSeeds: { usda: '12014', note: 'USDA pumpkin seed kernels, dried.' },
-  flax: { ifct: 'H014', b12: 0, note: 'IFCT linseeds.' },
-  sunflowerSeeds: { ifct: 'H020', b12: 0, note: 'IFCT sunflower seeds (kernels).' },
-  almonds: { ifct: 'H001', b12: 0, note: 'IFCT almond.' },
-  walnuts: { ifct: 'H021', b12: 0, note: 'IFCT walnut.' },
-  cashews: { ifct: 'H005', b12: 0, note: 'IFCT cashew nut.' },
+  flax: { check: '12220', ifct: 'H014', b12: 0, note: 'IFCT linseeds.' },
+  sunflowerSeeds: { check: '12036', ifct: 'H020', b12: 0, note: 'IFCT sunflower seeds (kernels).' },
+  almonds: { check: '12061', ifct: 'H001', b12: 0, note: 'IFCT almond.' },
+  walnuts: { check: '12155', ifct: 'H021', b12: 0, note: 'IFCT walnut.' },
+  cashews: { check: '12087', ifct: 'H005', b12: 0, note: 'IFCT cashew nut.' },
   // Fruit
-  raisins: { ifct: 'E057', b12: 0, note: 'IFCT raisins, black.' },
+  raisins: { check: '09298', ifct: 'E057', b12: 0, note: 'IFCT raisins, black.' },
   dates: { ifct: 'E018', b12: 0, refuse: '09087', note: 'IFCT dates, dry, dark brown. Edible share from USDA (pits 10%).' },
   banana: { ifct: 'E012', b12: 0, refuse: '09040', note: 'IFCT banana, robusta. Peel from USDA (36%).' },
   papaya: { ifct: 'E049', b12: 0, refuse: '09226', note: 'IFCT papaya, ripe. Seeds and skin from USDA (38%).' },
@@ -84,7 +105,7 @@ export const SOURCES: Record<string, FoodSource> = {
   muskmelon: { ifct: 'E045', b12: 0, refuse: '09181', note: 'IFCT musk melon, orange flesh. Rind and seeds from USDA cantaloupe (49%).' },
   mango: { ifct: ['E036', 'E037', 'E038', 'E039', 'E040', 'E041', 'E042'], b12: 0, refuse: '09176', note: 'Average of the 7 ripe mango varieties in IFCT. Seed and skin from USDA (29%).' },
   apple: { ifct: 'E001', b12: 0, refuse: '09003', note: 'IFCT apple, big. Core and stem from USDA (10%).' },
-  lemon: { ifct: 'E033', b12: 0, edibleApprox: 0.4, note: 'IFCT lemon juice. Juice share of a whole lemon (~40%) is an approximation.' },
+  lemon: { check: '09152', ifct: 'E033', b12: 0, edibleApprox: 0.4, pdf: { choavldf: 6.97 }, note: 'IFCT lemon juice. Available carbohydrate is 6.97 g in the printed IFCT Table 1 but 0 in the npm package; the PDF value is used. Juice share of a whole lemon (~40%) is an approximation.' },
   // Vegetables
   spinach: { ifct: 'C033', b12: 0, refuse: '11457', note: 'IFCT spinach. Stems and roots from USDA (28%).' },
   amaranth: { ifct: 'C002', b12: 0, refuse: '11003', note: 'IFCT amaranth leaves, green (chaulai). Stems from USDA (6%).' },
@@ -105,7 +126,7 @@ export const SOURCES: Record<string, FoodSource> = {
   tomato: { ifct: 'D076', b12: 0, refuse: '11529', note: 'IFCT tomato, ripe, local. Core from USDA (9%).' },
   capsicum: { ifct: 'D033', b12: 0, refuse: '11333', note: 'IFCT capsicum, green. Seeds and core from USDA (18%).' },
   // Eggs, meat & fish
-  egg: { ifct: 'M001', b12: '01123', note: 'IFCT egg, whole, raw. B12 from USDA whole egg. Bought by count; grams are without the shell.' },
-  chicken: { ifct: 'N001', b12: '05043', note: 'IFCT chicken leg, skinless (curry cut). B12 from USDA dark meat.' },
-  fish: { ifct: 'S006', b12: '15008', note: 'IFCT rohu. B12 from USDA carp (same family).' },
+  egg: { check: '01123', ifct: 'M001', b12: '01123', note: 'IFCT egg, whole, raw. B12 from USDA whole egg. Bought by count; grams are without the shell.' },
+  chicken: { check: '05080', ifct: 'N001', b12: '05043', note: 'IFCT chicken leg, skinless (curry cut). B12 from USDA dark meat.' },
+  fish: { check: '15008', ifct: 'S006', b12: '15008', note: 'IFCT rohu. B12 from USDA carp (same family).' },
 };

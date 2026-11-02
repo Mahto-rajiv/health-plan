@@ -7,6 +7,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { SOURCES, type FoodSource } from './sources';
 import { NUTRIENT_KEYS, type NutrientKey } from '../../lib/data/nutrient-keys';
+import { NUTRIENT_BY_KEY } from '../../lib/data/nutrients';
 
 const CACHE = '.cache/food-data';
 const DOWNLOADS = {
@@ -129,6 +130,9 @@ const SR: Record<Exclude<NutrientKey, 'carbs' | 'biotin'>, string[]> = {
 };
 
 const round = (v: number) => Number(v.toPrecision(4));
+/** IFCT-vs-USDA ratio above which a vitamin or mineral takes the lower value. */
+const DISAGREE = 4;
+const MACROS: NutrientKey[] = ['protein', 'fat', 'carbs', 'fiber'];
 
 function main() {
   mkdirSync(CACHE, { recursive: true });
@@ -144,20 +148,50 @@ function main() {
     const f = srFields(line);
     srFoods.set(f[0], { name: f[2], refuseDesc: f[7], refuse: f[8] === '' ? null : Number(f[8]) });
   }
-  const wanted = new Set(Object.values(SOURCES).flatMap((s) => [s.usda, typeof s.b12 === 'string' ? s.b12 : undefined]).filter(Boolean) as string[]);
+  const checkNdb = (s: FoodSource) => s.check ?? s.refuse;
+  const wanted = new Set(Object.values(SOURCES).flatMap((s) => [s.usda, typeof s.b12 === 'string' ? s.b12 : undefined, checkNdb(s)]).filter(Boolean) as string[]);
   const srValues = new Map<string, Map<string, number>>();
+  // Highest value of each nutrient in any SR28 food: a physical ceiling for the plausibility test.
+  const srNumToKey = new Map(Object.entries(SR).flatMap(([k, nums]) => nums.map((n) => [n, k as NutrientKey] as const)));
+  const srMax = {} as Partial<Record<NutrientKey, { value: number; ndb: string }>>;
   for (const line of unzip('NUT_DATA.txt').split(/\r?\n/)) {
     if (!line) continue;
     const f = srFields(line);
+    const key = srNumToKey.get(f[1]);
+    if (key && Number(f[2]) > (srMax[key]?.value ?? -1)) srMax[key] = { value: Number(f[2]), ndb: f[0] };
     if (!wanted.has(f[0])) continue;
     if (!srValues.has(f[0])) srValues.set(f[0], new Map());
     srValues.get(f[0])!.set(f[1], Number(f[2]));
   }
 
+  // ROOT-CAUSE FIX for a transcription error in the ifct2017 npm package (found in Round 3).
+  // In the printed IFCT 2017, Table 2 (water-soluble vitamins) for fish and shellfish (groups
+  // P–S) has only six columns: B1, B2, B3, B5, B6 (mg) and total folate (µg); there is no
+  // biotin column. The package puts the B6 figure in mg into a column it treats as grams
+  // (1,000× too high), puts folate (µg × 10⁻⁴) into the biotin column, and writes folate as 0.
+  // Checked row by row against the PDF, e.g. Rohu S006, p. 60: B6 0.24 mg, folate 12.63 µg;
+  // package: vitb6c 0.24, biot 0.001263, folsum 0. Every P–S row follows the same pattern.
+  const FISH_TABLE = /^[PQRS]\d/;
+  // Single cells the package mistyped, corrected from the printed PDF (see sources.ts `pdf`).
+  const pdfFix = new Map<string, Record<string, number>>();
+  for (const s of Object.values(SOURCES)) if (s.pdf && typeof s.ifct === 'string') pdfFix.set(s.ifct, s.pdf);
+  const ifctCell = (code: string, col: string): number | null => {
+    const r = ifct.get(code);
+    if (!r) return null;
+    const fixed = pdfFix.get(code)?.[col];
+    if (fixed !== undefined) return fixed;
+    if (FISH_TABLE.test(code)) {
+      if (col === 'vitb6c') return Number(r.vitb6c) / 1e3;
+      if (col === 'folsum') return Number(r.biot) / 1e2;
+      if (col === 'biot') return null; // not analysed for fish
+    }
+    const v = r[col];
+    return v === undefined || v === '' ? null : Number(v);
+  };
   const ifctValue = (codes: string[], col: string): number | null => {
-    const vals = codes.map((c) => ifct.get(c)?.[col]);
-    if (vals.some((v) => v === undefined || v === '')) return null;
-    return vals.reduce((s, v) => s + Number(v), 0) / vals.length;
+    const vals = codes.map((c) => ifctCell(c, col));
+    if (vals.some((v) => v === null)) return null;
+    return (vals as number[]).reduce((s, v) => s + v, 0) / vals.length;
   };
   const srValue = (ndb: string, nums: string[]): number | null => {
     const m = srValues.get(ndb);
@@ -165,7 +199,18 @@ function main() {
     return null;
   };
 
-  const out: Record<string, { source: string; tabulatedKcal: number | null; edible: number; edibleSource: string; values: Record<NutrientKey, number | null> }> = {};
+  type Check = { ndb: string; name: string; values: Partial<Record<NutrientKey, number | null>> };
+  const srAll = (ndb: string) => {
+    const values: Partial<Record<NutrientKey, number | null>> = {};
+    for (const [key, nums] of Object.entries(SR)) values[key as NutrientKey] = srValue(ndb, nums);
+    const carb = srValue(ndb, ['205']);
+    values.carbs = carb === null ? null : Math.max(0, carb - (values.fiber ?? 0));
+    const trp = srValue(ndb, ['501']);
+    if (values.niacin != null && trp !== null) values.niacin += (trp * 1000) / 60; // niacin equivalents, as for the main values
+    for (const k of Object.keys(values) as NutrientKey[]) if (values[k] != null) values[k] = round(values[k]!);
+    return values;
+  };
+  const out: Record<string, { source: string; tabulatedKcal: number | null; edible: number; edibleSource: string; waterAsh: number | null; check: Check | null; values: Record<NutrientKey, number | null> }> = {};
   const gaps: string[] = [];
   for (const [id, s] of Object.entries(SOURCES) as [string, FoodSource][]) {
     const values = {} as Record<NutrientKey, number | null>;
@@ -190,6 +235,38 @@ function main() {
         values.b12 = srValue(s.b12, ['418']);
         source += `; B12 from USDA SR28 ${s.b12} (${srFoods.get(s.b12)?.name})`;
       } else values.b12 = null;
+      // Zero rule. The package has no blank cells, so a 0 may mean "not analysed". A 0 is
+      // replaced by the USDA equivalent when that food has a meaningful amount (≥ 5% of the
+      // RDA/AI per 100 g; ≥ 0.5 g for macros and fatty acids), unless the zero was checked
+      // against the PDF (`zeroConfirmed`). Foods listed in `notAnalysed` are filled the same way.
+      const c = checkNdb(s);
+      const eq = c ? srAll(c) : null;
+      const filled: string[] = [];
+      for (const k of NUTRIENT_KEYS) {
+        if (k === 'b12' || k === 'biotin' || s.zeroConfirmed?.includes(k)) continue;
+        const u = eq?.[k];
+        if (u == null) continue;
+        const ref = NUTRIENT_BY_KEY[k]?.rda ?? NUTRIENT_BY_KEY[k]?.ear;
+        const meaningful = ref ? u >= 0.05 * ref : u >= 0.5;
+        if (s.notAnalysed?.includes(k) || (values[k] === 0 && meaningful)) {
+          values[k] = u;
+          filled.push(k);
+        }
+      }
+      for (const k of s.notAnalysed ?? []) if (!filled.includes(k)) throw new Error(`${id}: notAnalysed ${k} has no USDA value to fill from`);
+      if (filled.length) source += `; not analysed in IFCT (0 in the package), so from USDA SR28 ${c} (${srFoods.get(c!)?.name}): ${filled.join(', ')}`;
+      // Conservative rule: vitamins and minerals more than 4× apart between IFCT and the
+      // USDA equivalent take the lower value. Macros stay IFCT.
+      const lowered: string[] = [];
+      for (const k of NUTRIENT_KEYS) {
+        if (MACROS.includes(k) || filled.includes(k)) continue;
+        const v = values[k];
+        const u = eq?.[k];
+        if (v == null || u == null || v <= 0 || u <= 0 || (v / u <= DISAGREE && u / v <= DISAGREE)) continue;
+        lowered.push(`${k} (IFCT ${round(v)}, USDA ${u})`);
+        values[k] = Math.min(v, u);
+      }
+      if (lowered.length) source += `; IFCT and USDA ${c} differ more than ${DISAGREE}×, lower value used: ${lowered.join(', ')}`;
     } else if (s.usda) {
       if (!srFoods.has(s.usda)) throw new Error(`${id}: USDA NDB ${s.usda} not found`);
       source = `USDA SR28 ${s.usda} (${srFoods.get(s.usda)!.name})`;
@@ -229,7 +306,22 @@ function main() {
       values[k] = v === null || v === undefined ? null : round(v);
       if (values[k] === null) gaps.push(`${id}.${k}`);
     }
-    out[id] = { source, tabulatedKcal: tabulatedKcal === null ? null : round(tabulatedKcal), edible: round(edible), edibleSource, values };
+    // Water + ash (g/100 g) from the main table, so the test can check that a row's parts add up to ~100 g.
+    let waterAsh: number | null = null;
+    if (s.ifct) {
+      const codes = Array.isArray(s.ifct) ? s.ifct : [s.ifct];
+      const w = ifctValue(codes, 'water');
+      const a = ifctValue(codes, 'ash');
+      waterAsh = w === null || a === null ? null : round(w + a);
+    } else {
+      const w = srValue(s.usda!, ['255']);
+      const a = srValue(s.usda!, ['207']);
+      waterAsh = w === null || a === null ? null : round(w + a);
+    }
+    const c = s.ifct ? checkNdb(s) : undefined;
+    if (c && !srFoods.has(c)) throw new Error(`${id}: check NDB ${c} not found`);
+    const check = c ? { ndb: c, name: srFoods.get(c)!.name, values: srAll(c) } : null;
+    out[id] = { source, tabulatedKcal: tabulatedKcal === null ? null : round(tabulatedKcal), edible: round(edible), edibleSource, waterAsh, check, values };
   }
 
   const header = `// GENERATED by scripts/food-data/build.ts — do not edit by hand. Run \`npm run food-data\`.
@@ -244,11 +336,19 @@ export interface Composition {
   /** Share of the bought weight that is eaten. */
   edible: number;
   edibleSource: string;
+  /** Water + ash, g per 100 g, from the same table (for the mass-balance check). */
+  waterAsh: number | null;
+  /** The closest USDA SR28 food, for the plausibility test only (IFCT foods). */
+  check: { ndb: string; name: string; values: Partial<Record<NutrientKey, number | null>> } | null;
   values: Record<NutrientKey, number | null>;
 }
 
 `;
-  const body = `export const COMPOSITION = ${JSON.stringify(out, null, 2)} satisfies Record<string, Composition>;\n`;
+  const maxes = Object.fromEntries(Object.entries(srMax).map(([k, v]) => [k, { ...v!, name: srFoods.get(v!.ndb)?.name ?? '' }]));
+  const body =
+    `export const COMPOSITION = ${JSON.stringify(out, null, 2)} satisfies Record<string, Composition>;\n\n` +
+    `/** Highest value per 100 g of each nutrient in any of the ${srFoods.size} USDA SR28 foods (plausibility ceiling). */\n` +
+    `export const SR28_MAX: Partial<Record<NutrientKey, { value: number; ndb: string; name: string }>> = ${JSON.stringify(maxes, null, 2)};\n`;
   writeFileSync('lib/data/composition.generated.ts', header + body);
   console.log(`Wrote ${Object.keys(out).length} foods. ${gaps.length} missing values:`);
   const byNutrient = new Map<string, string[]>();
