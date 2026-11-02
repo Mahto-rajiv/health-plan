@@ -1,6 +1,26 @@
 # Progress
 
-Spec: `docs/brief.md` (audit-driven fix, 30 Oct 2026). Branch: `audit-fixes`. Nothing is pushed.
+## Round 2 (2 Nov 2026) — branch `round2-seasonal`, nothing pushed
+
+Spec: `docs/brief-round2.md` (overrides `docs/brief.md` where they differ).
+
+### Inspection: the review notes, checked before any change
+| Review note | Checked | Finding |
+|---|---|---|
+| Fruit is hardcoded; Health text depends on it | Yes | True. Papaya is in Meal 1 every day and banana in Meal 3. Health text says vitamin C is "mostly the daily papaya". Peas are in 4 sabzis all year. |
+| Only a few nutrients are computed; folate and omega-3 "not computed" | Yes | True. `foods.ts` has 10 fields (macros, iron, calcium, zinc, vitamin C, B12). The values were typed by hand, citing "IFCT/USDA/labels" without a per-food source. |
+| Phase 0 iron and zinc fall short | Yes | Zinc 13.0 mg against an EAR of 14. Iron 14 mg is above the EAR (11) but below the RDA (19). Round 1 blamed the fibre and cost caps. Cost was the binding one: pumpkin seeds and cashews were cut for price. |
+| Dairy carries much of the protein | Yes | True. About 900 g a day of milk and curd in Phases 1–2. |
+| Solver not in the repo | Yes | Worse than stated: the scratchpad copy is gone too. The plans can't be regenerated. |
+| Warm-up not visible as steps; session-length arithmetic | Yes | The warm-up is 3 jargon lines. `estimateMinutes` leaves out changeover time and warm-up sets for the second heavy lift. Upper B in week 3 computes to exactly 45:00, so in real life it runs over the 45-min cap. |
+| Monday needs ~28 min of morning cooking | Yes | True. 25–31 min of hands-on cooking before leaving on 4 of 5 weekdays (Meal 1 + a lunch made in the morning). |
+| Monday's per-meal costs add to ₹123 but the monthly figure implies more | Yes | Both numbers are right but unexplained. Monday is the cheapest day (₹123, against a ₹136 weekly average), and the monthly figure adds ₹300 of pantry items (≈ ₹10 a day) that no meal shows. |
+| Hand-typed Health numbers will go stale | Yes | True. "≈13 mg zinc", "14–19 mg iron", "about 4 kg (68 → 64)", "mostly the daily papaya" are all typed text. |
+| Weight-loss to-do / Phase 0 shouldn't hardcode the weight | Yes | True. The to-do says "about 4 kg (68 → 64 kg)" as fixed text. |
+
+## Round 1
+
+Spec: `docs/brief.md` (audit-driven fix, 30 Oct 2026). Branch: `audit-fixes`. Merged to main on 2 Nov.
 
 ## Status
 
