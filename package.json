@@ -11,7 +11,8 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "links": "tsx scripts/check-links.ts",
     "plans:report": "tsx scripts/eval-plans.ts",
-    "food-data": "tsx scripts/food-data/build.ts"
+    "food-data": "tsx scripts/food-data/build.ts",
+    "solve": "tsx scripts/solve-plans.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -29,6 +30,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
+    "highs": "1.15.3",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5"

@@ -43,6 +43,25 @@ export function weeklyAverages(entries: BodyEntry[]): WeeklyPoint[] {
     .map(([k, v]) => ({ weekStart: k, weight: avg(v.w), waist: avg(v.c), n: v.w.length }));
 }
 
+export interface WeightLoss {
+  /** Weight before the loss: the earliest recalled weight, else Settings. */
+  before: number;
+  /** Latest weekly-average weigh-in, else the start weight in Settings. */
+  now: number;
+  loss: number;
+  /** True once at least one real weigh-in is logged in Progress. */
+  confirmed: boolean;
+}
+
+/** How much weight was lost, from your own log (nothing hard-coded). */
+export function weightLoss(entries: BodyEntry[], settings: { startWeightKg: number; preLossWeightKg: number }): WeightLoss {
+  const weeks = weeklyAverages(entries).filter((w) => w.weight !== undefined);
+  const recalled = recalledWeights(entries);
+  const now = weeks.length ? weeks[weeks.length - 1].weight! : settings.startWeightKg;
+  const before = recalled.length ? recalled[0].weightKg! : settings.preLossWeightKg;
+  return { before, now, loss: before - now, confirmed: weeks.length > 0 };
+}
+
 /** 7-day trailing average for each measured weight; recalled weights are returned with `recalled`. */
 export function rollingAverage(entries: BodyEntry[]) {
   const sorted = measured(entries).filter((e) => typeof e.weightKg === 'number').sort((a, b) => a.date.localeCompare(b.date));

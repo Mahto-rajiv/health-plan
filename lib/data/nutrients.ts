@@ -54,7 +54,7 @@ export const NUTRIENTS: NutrientInfo[] = [
   { key: 'vitA', label: 'Vitamin A', unit: 'µg', group: 'Vitamins', ear: 460, rda: 1000, source: ['icmr2020'], hair: true, note: 'µg retinol activity equivalents; plant β-carotene counted at 12:1 (US IOM). The upper limit applies to retinol only, which food here gives little of. Too much retinol (supplements) causes hair loss.' },
   { key: 'thiamin', label: 'Thiamine (B1)', unit: 'mg', group: 'Vitamins', ear: 1.5, rda: 1.8, source: ['icmr2020'] },
   { key: 'riboflavin', label: 'Riboflavin (B2)', unit: 'mg', group: 'Vitamins', ear: 2.1, rda: 2.5, source: ['icmr2020'], hair: true },
-  { key: 'niacin', label: 'Niacin (B3)', unit: 'mg', group: 'Vitamins', ear: 15, rda: 18, source: ['icmr2020'], note: 'Preformed niacin only. The body also makes niacin from protein (tryptophan), so the real total is higher.' },
+  { key: 'niacin', label: 'Niacin (B3)', unit: 'mg', group: 'Vitamins', ear: 15, rda: 18, source: ['icmr2020', 'driVitamins'], note: 'Niacin equivalents: niacin in food plus what the body makes from tryptophan in protein (1 mg per 60 mg tryptophan, US IOM).' },
   { key: 'b6', label: 'Vitamin B6', unit: 'mg', group: 'Vitamins', ear: 2.1, rda: 2.4, source: ['icmr2020'] },
   { key: 'folate', label: 'Folate (B9)', unit: 'µg', group: 'Vitamins', ear: 250, rda: 300, source: ['icmr2020'], hair: true, note: 'Food folate. Cooking destroys some of it; the numbers are for raw food.' },
   { key: 'b12', label: 'Vitamin B12', unit: 'µg', group: 'Vitamins', ear: 2, rda: 2.2, source: ['icmr2020', 'usdaSr28'], hair: true, note: 'Only animal foods contain it. Boiling milk destroys some, so treat the total as an upper estimate.' },
@@ -64,7 +64,7 @@ export const NUTRIENTS: NutrientInfo[] = [
   { key: 'biotin', label: 'Biotin (B7)', unit: 'µg', group: 'Vitamins', rda: 30, adequateIntake: true, source: ['driVitamins'], hair: true, note: 'Deficiency is rare. Biotin supplements don’t help hair unless you are deficient, and they distort many blood tests.' },
   // Fats
   { key: 'ala', label: 'Omega-3 (ALA)', unit: 'g', group: 'Fats', rda: 2.2, adequateIntake: true, source: ['icmr2020', 'driMacros'], note: 'ICMR 2020 gives 2.2 g of n-3 fat a day; the US adequate intake is 1.6 g.' },
-  { key: 'la', label: 'Omega-6 (linoleic acid)', unit: 'g', group: 'Fats', rda: 6.6, adequateIntake: true, source: ['icmr2020'], note: 'ICMR 2020 minimum. Groundnut oil and peanuts give plenty.' },
+  { key: 'la', label: 'Omega-6 (linoleic acid)', unit: 'g', group: 'Fats', rda: 6.6, adequateIntake: true, source: ['icmr2020'], note: 'ICMR 2020 minimum. Rice-bran oil and peanuts give plenty.' },
 ];
 
 export const NUTRIENT_BY_KEY = Object.fromEntries(NUTRIENTS.map((n) => [n.key, n])) as Record<NutrientKey, NutrientInfo | undefined>;

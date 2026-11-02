@@ -1,24 +1,21 @@
-// ─── Food database ────────────────────────────────────────────────────────────
-// Values are per 100 g of food as weighed (raw/dry unless the name says otherwise).
-// Sources: Indian Food Composition Tables (IFCT 2017, ICMR-NIN), USDA FoodData
-// Central, and Indian retail pack labels. Treat every value as an approximation:
-// real foods vary by brand, season and preparation, so the app rounds totals and
-// never shows more precision than the data supports.
+// ─── Food list ────────────────────────────────────────────────────────────────
+// Names, grocery categories and how each food is bought. Nutrient values and the
+// edible share come from lib/data/composition.generated.ts, which
+// scripts/food-data/build.ts builds from IFCT 2017 (ICMR-NIN) and USDA SR28.
+// Nothing nutritional is typed by hand here. Sources per food:
+// scripts/food-data/sources.ts.
 //
 // Prices are in lib/data/prices.ts (editable in Settings).
 //
-// Energy: the `kcal` column is the tabulated value. The app computes kcal from
-// the macros instead (lib/config.ts ATWATER), so meal and day totals always
-// reconcile with protein, carbs, fat and fibre. Carbs are AVAILABLE
-// carbohydrate (fibre excluded).
-//
-// Vitamin B12 (`b12`) uses USDA FoodData Central values for the closest food
-// (whole milk, plain yogurt, cottage cheese, whole egg, broiler meat, carp).
-// Boiling milk destroys some of it, so treat diet totals as an upper estimate.
+// Energy: the app computes kcal from the macros (lib/config.ts ATWATER), so meal
+// and day totals always reconcile with protein, carbs, fat and fibre. Carbs are
+// AVAILABLE carbohydrate (fibre excluded).
 //
 // Meal grams are edible weight. Produce prices are per kg as bought, so
-// `edible` (the share left after peel, seeds, stems and trimmings) converts
-// one into the other. The yields are typical approximations, not measurements.
+// `edible` (the share left after peel, seeds, pods and trimmings, from USDA
+// SR28 "refuse") converts one into the other.
+import { COMPOSITION } from './composition.generated';
+import type { NutrientKey } from './nutrient-keys';
 
 export type GroceryCategory =
   | 'Dairy'
@@ -30,334 +27,218 @@ export type GroceryCategory =
   | 'Fats & oils'
   | 'Eggs, meat & fish';
 
-export interface Nutrients {
-  kcal: number;
-  protein: number;
-  carbs: number; // available carbohydrate (excludes fibre)
-  fat: number;
-  fiber: number;
-  iron: number; // mg
-  calcium: number; // mg
-  zinc: number; // mg
-  vitC: number; // mg
-  /** µg. Stored on the food as `b12`, not in `per100`; filled in by itemNutrients. */
-  b12: number;
-}
+/** Nutrient totals. kcal is computed from the macros; missing source values count as 0 (see missingNutrients). */
+export type Nutrients = { kcal: number } & Record<NutrientKey, number>;
 
-export interface Food {
+export interface FoodMeta {
   name: string;
   category: GroceryCategory;
-  per100: Omit<Nutrients, 'b12'>;
   /** How the item is usually bought, used to round the grocery list. */
   buyUnit: { label: string; grams: number };
-  /** Share of the bought weight that is eaten (default 1). Cost and grocery weight divide by it. */
-  edible?: number;
   /** Optional household measure shown next to grams. */
   measure?: { label: string; grams: number };
-  /** Vitamin B12, µg per 100 g. Only animal foods contain it; plant foods are 0. */
-  b12?: number;
   isEgg?: boolean;
   isMeatOrFish?: boolean;
 }
 
-const n = (
-  kcal: number,
-  protein: number,
-  carbs: number,
-  fat: number,
-  fiber: number,
-  iron: number,
-  calcium: number,
-  zinc: number,
-  vitC = 0,
-): Omit<Nutrients, 'b12'> => ({ kcal, protein, carbs, fat, fiber, iron, calcium, zinc, vitC });
-
-export const FOODS = {
-  // Dairy
+const META = {
   milk: {
     name: 'Toned milk',
     category: 'Dairy',
-    per100: n(58, 3.1, 4.7, 3.0, 0, 0.1, 120, 0.4, 1),
-    b12: 0.4,
     buyUnit: { label: '1 L', grams: 1000 },
     measure: { label: 'ml', grams: 1 },
   },
   curd: {
     name: 'Curd (dahi, set at home from toned milk)',
     category: 'Dairy',
-    per100: n(60, 3.3, 4.6, 3.1, 0, 0.1, 120, 0.5, 1),
-    b12: 0.35,
     buyUnit: { label: '1 L milk, set as curd at home,', grams: 1000 },
   },
   paneer: {
     name: 'Paneer',
     category: 'Dairy',
-    per100: n(290, 18.5, 3, 22, 0, 0.3, 300, 2.5),
-    b12: 0.4,
     buyUnit: { label: '200 g pack', grams: 200 },
   },
   ghee: {
     name: 'Ghee',
     category: 'Fats & oils',
-    per100: n(900, 0, 0, 100, 0, 0, 0, 0),
     buyUnit: { label: '500 ml', grams: 500 },
     measure: { label: 'tsp', grams: 5 },
   },
   oil: {
-    name: 'Groundnut oil (or rice-bran oil)',
+    name: 'Rice-bran oil (or groundnut oil)',
     category: 'Fats & oils',
-    per100: n(884, 0, 0, 100, 0, 0, 0, 0),
     buyUnit: { label: '1 L', grams: 910 },
     measure: { label: 'tsp', grams: 5 },
   },
-
-  // Pulses & soya
   sattu: {
     name: 'Sattu (roasted chana flour)',
     category: 'Pulses & soya',
-    per100: n(370, 22, 50, 5.5, 16, 5, 60, 3),
     buyUnit: { label: '1 kg', grams: 1000 },
     measure: { label: 'tbsp', grams: 10 },
   },
   roastedChana: {
     name: 'Roasted chana',
     category: 'Pulses & soya',
-    per100: n(365, 20, 50, 5.5, 17, 5, 60, 3),
     buyUnit: { label: '500 g', grams: 500 },
   },
   moongWhole: {
     name: 'Green moong (whole, dry)',
     category: 'Pulses & soya',
-    per100: n(335, 23, 48, 1.3, 16, 4.4, 120, 2.7),
     buyUnit: { label: '500 g', grams: 500 },
   },
   moongDal: {
     name: 'Moong dal (yellow, split, dry)',
     category: 'Pulses & soya',
-    per100: n(345, 24, 52, 1.2, 9, 4, 80, 2.5),
     buyUnit: { label: '500 g', grams: 500 },
   },
   toorDal: {
     name: 'Toor / arhar dal (dry)',
     category: 'Pulses & soya',
-    per100: n(340, 22, 52, 1.5, 9, 3.9, 70, 2.5),
     buyUnit: { label: '500 g', grams: 500 },
   },
   kalaChana: {
     name: 'Kala chana (dry)',
     category: 'Pulses & soya',
-    per100: n(360, 20, 46, 5, 18, 6, 150, 3),
     buyUnit: { label: '500 g', grams: 500 },
   },
   kabuliChana: {
     name: 'Kabuli chana / chickpeas (dry)',
     category: 'Pulses & soya',
-    per100: n(364, 19, 50, 6, 17, 5, 100, 3),
     buyUnit: { label: '500 g', grams: 500 },
   },
   rajma: {
     name: 'Rajma (dry)',
     category: 'Pulses & soya',
-    per100: n(333, 22, 45, 1.2, 18, 5.5, 140, 2.8),
     buyUnit: { label: '500 g', grams: 500 },
   },
   soyaChunks: {
     name: 'Soya chunks (dry)',
     category: 'Pulses & soya',
-    per100: n(345, 52, 20, 0.5, 13, 9, 240, 2.5),
     buyUnit: { label: '1 kg pouch', grams: 1000 },
   },
   besan: {
     name: 'Besan (gram flour)',
     category: 'Pulses & soya',
-    per100: n(387, 22, 50, 6.7, 11, 4.9, 45, 2.8),
     buyUnit: { label: '500 g', grams: 500 },
   },
-
-  // Grains & flours
   oats: {
     name: 'Rolled oats',
     category: 'Grains & flours',
-    per100: n(385, 12.5, 58, 7.5, 10, 4, 50, 3),
     buyUnit: { label: '1 kg', grams: 1000 },
   },
   atta: {
     name: 'Whole-wheat atta',
     category: 'Grains & flours',
-    per100: n(340, 12, 62, 1.7, 11, 4, 35, 2.5),
     buyUnit: { label: '5 kg bag', grams: 5000 },
     measure: { label: 'roti', grams: 35 },
   },
   daliya: {
     name: 'Daliya (broken wheat)',
     category: 'Grains & flours',
-    per100: n(340, 12, 62, 1.7, 11, 4, 35, 2.5), // whole wheat, as atta
     buyUnit: { label: '1 kg', grams: 1000 },
   },
   rice: {
     name: 'Rice (raw)',
     category: 'Grains & flours',
-    per100: n(360, 7, 78, 0.6, 1.3, 0.8, 10, 1.1),
     buyUnit: { label: '1 kg', grams: 1000 },
   },
   poha: {
     name: 'Poha (flattened rice)',
     category: 'Grains & flours',
-    per100: n(350, 6.5, 75, 1.2, 2, 4, 20, 1),
     buyUnit: { label: '500 g', grams: 500 },
   },
-
-  // Nuts & seeds
   peanuts: {
     name: 'Peanuts (raw)',
     category: 'Nuts & seeds',
-    per100: n(567, 25.8, 16, 49, 8.5, 4.6, 92, 3.3),
     buyUnit: { label: '500 g', grams: 500 },
     measure: { label: 'tbsp', grams: 9 },
   },
   pumpkinSeeds: {
     name: 'Pumpkin seeds',
     category: 'Nuts & seeds',
-    per100: n(559, 30, 5, 49, 6, 8.8, 46, 7.8),
-    buyUnit: { label: '200 g', grams: 200 },
-  },
-  watermelonSeeds: {
-    name: 'Watermelon seeds (kernels)',
-    category: 'Nuts & seeds',
-    per100: n(557, 28, 15, 47, 4, 7.3, 54, 10),
     buyUnit: { label: '200 g', grams: 200 },
   },
   flax: {
     name: 'Flaxseed (ground)',
     category: 'Nuts & seeds',
-    per100: n(534, 18, 2, 42, 27, 5.7, 255, 4.3),
     buyUnit: { label: '250 g', grams: 250 },
     measure: { label: 'tbsp', grams: 7 },
+  },
+  sunflowerSeeds: {
+    name: 'Sunflower seeds (kernels)',
+    category: 'Nuts & seeds',
+    buyUnit: { label: '200 g', grams: 200 },
   },
   almonds: {
     name: 'Almonds',
     category: 'Nuts & seeds',
-    per100: n(579, 21, 10, 50, 12, 3.7, 270, 3.1),
     buyUnit: { label: '250 g', grams: 250 },
   },
   walnuts: {
     name: 'Walnut kernels',
     category: 'Nuts & seeds',
-    per100: n(654, 15, 7, 65, 6.7, 2.9, 98, 3.1),
     buyUnit: { label: '100 g', grams: 100 },
   },
   cashews: {
     name: 'Cashews',
     category: 'Nuts & seeds',
-    per100: n(553, 18, 27, 44, 3.3, 6.7, 37, 5.8),
     buyUnit: { label: '100 g', grams: 100 },
   },
-
-  // Fruit
   raisins: {
     name: 'Raisins',
     category: 'Fruit',
-    per100: n(299, 3, 75, 0.5, 3.7, 1.9, 50, 0.2, 2),
     buyUnit: { label: '250 g', grams: 250 },
   },
   dates: {
     name: 'Dates',
     category: 'Fruit',
-    per100: n(282, 2.5, 67, 0.4, 8, 1, 64, 0.4),
-    edible: 0.9,
     buyUnit: { label: '250 g', grams: 250 },
     measure: { label: 'date', grams: 10 },
   },
   banana: {
     name: 'Banana',
     category: 'Fruit',
-    per100: n(89, 1.1, 20.5, 0.3, 2.6, 0.3, 5, 0.2, 9),
-    edible: 0.65,
     buyUnit: { label: '1 dozen (~2 kg)', grams: 2000 },
     measure: { label: 'medium banana', grams: 110 },
   },
   papaya: {
     name: 'Papaya',
     category: 'Fruit',
-    per100: n(43, 0.5, 9, 0.3, 1.7, 0.3, 20, 0.1, 60),
-    edible: 0.7,
     buyUnit: { label: '1 kg', grams: 1000 },
   },
   guava: {
     name: 'Guava',
     category: 'Fruit',
-    per100: n(68, 2.6, 9, 1, 5.4, 0.3, 18, 0.2, 228),
-    edible: 0.95,
-    buyUnit: { label: '1 kg', grams: 1000 },
-  },
-  seasonalFruit: {
-    name: 'Seasonal fruit (orange, guava, apple, papaya…)',
-    category: 'Fruit',
-    per100: n(55, 0.8, 12, 0.3, 2.5, 0.3, 25, 0.1, 40),
-    edible: 0.8,
     buyUnit: { label: '1 kg', grams: 1000 },
   },
   lemon: {
     name: 'Lemon (juice)',
     category: 'Fruit',
-    per100: n(22, 0.4, 7, 0.2, 0.3, 0.1, 6, 0.1, 39),
-    edible: 0.4,
     buyUnit: { label: '250 g', grams: 250 },
   },
-
-  // Vegetables
   sweetPotato: {
     name: 'Sweet potato',
     category: 'Vegetables',
-    per100: n(86, 1.6, 17, 0.1, 3, 0.6, 30, 0.3, 2.4),
-    edible: 0.85,
     buyUnit: { label: '1 kg', grams: 1000 },
   },
   beetroot: {
     name: 'Beetroot',
     category: 'Vegetables',
-    per100: n(43, 1.6, 7, 0.2, 2.8, 0.8, 16, 0.35, 5),
-    edible: 0.85,
     buyUnit: { label: '500 g', grams: 500 },
-  },
-  mixedVeg: {
-    name: 'Mixed seasonal vegetables (sabzi)',
-    category: 'Vegetables',
-    per100: n(35, 2, 5, 0.3, 2.5, 0.8, 30, 0.3, 25),
-    edible: 0.85,
-    buyUnit: { label: '1 kg', grams: 1000 },
   },
   spinach: {
     name: 'Spinach / palak',
     category: 'Vegetables',
-    per100: n(23, 2.9, 1.4, 0.4, 2.2, 2.7, 99, 0.5, 28),
-    edible: 0.7,
     buyUnit: { label: '1 bunch (~250 g)', grams: 250 },
   },
-  salad: {
-    name: 'Salad (cucumber, onion, tomato, carrot)',
-    category: 'Vegetables',
-    per100: n(25, 1, 4.5, 0.2, 1.5, 0.4, 20, 0.2, 12),
-    edible: 0.88,
-    buyUnit: { label: '1 kg', grams: 1000 },
-  },
-
   potato: {
     name: 'Potato',
     category: 'Vegetables',
-    // USDA FoodData Central SR Legacy 170026 (flesh and skin, raw)
-    per100: n(77, 2.0, 15.4, 0.1, 2.1, 0.8, 12, 0.3, 19.7),
-    edible: 0.85,
     buyUnit: { label: '1 kg', grams: 1000 },
   },
-
-  // Eggs, meat & fish
   egg: {
     name: 'Egg',
     category: 'Eggs, meat & fish',
-    per100: n(143, 12.6, 0.7, 9.5, 0, 1.8, 56, 1.3),
-    // ~₹7 per egg (Delhi, Oct 2026), ~50 g edible portion
-    b12: 0.9,
     buyUnit: { label: 'tray of 30', grams: 1500 },
     measure: { label: 'egg', grams: 50 },
     isEgg: true,
@@ -365,22 +246,132 @@ export const FOODS = {
   chicken: {
     name: 'Chicken (raw, edible part — curry cut or boneless)',
     category: 'Eggs, meat & fish',
-    per100: n(120, 22.5, 0, 2.6, 0, 0.4, 5, 0.8),
-    b12: 0.3,
     buyUnit: { label: '500 g', grams: 500 },
     isMeatOrFish: true,
   },
   fish: {
     name: 'Rohu / katla fish (raw, edible part)',
     category: 'Eggs, meat & fish',
-    per100: n(100, 17, 0, 3, 0, 1, 80, 0.8),
-    b12: 1.5,
     buyUnit: { label: '500 g', grams: 500 },
     isMeatOrFish: true,
   },
-} satisfies Record<string, Food>;
+  orange: {
+    name: 'Orange / kinnow',
+    category: 'Fruit',
+    buyUnit: { label: '1 kg', grams: 1000 },
+  },
+  muskmelon: {
+    name: 'Muskmelon (kharbooja)',
+    category: 'Fruit',
+    buyUnit: { label: '1 melon (~1 kg)', grams: 1000 },
+  },
+  mango: {
+    name: 'Mango',
+    category: 'Fruit',
+    buyUnit: { label: '1 kg', grams: 1000 },
+  },
+  apple: {
+    name: 'Apple',
+    category: 'Fruit',
+    buyUnit: { label: '1 kg', grams: 1000 },
+    measure: { label: 'medium apple', grams: 150 },
+  },
+  amaranth: {
+    name: 'Amaranth leaves (chaulai)',
+    category: 'Vegetables',
+    buyUnit: { label: '1 bunch (~250 g)', grams: 250 },
+  },
+  peas: {
+    name: 'Green peas (in the pod)',
+    category: 'Vegetables',
+    buyUnit: { label: '1 kg in pods', grams: 1000 },
+  },
+  cauliflower: {
+    name: 'Cauliflower',
+    category: 'Vegetables',
+    buyUnit: { label: '1 head (~1 kg)', grams: 1000 },
+  },
+  carrot: {
+    name: 'Carrot',
+    category: 'Vegetables',
+    buyUnit: { label: '500 g', grams: 500 },
+  },
+  radish: {
+    name: 'Radish (mooli)',
+    category: 'Vegetables',
+    buyUnit: { label: '500 g', grams: 500 },
+  },
+  bottleGourd: {
+    name: 'Bottle gourd (lauki)',
+    category: 'Vegetables',
+    buyUnit: { label: '1 lauki (~1 kg)', grams: 1000 },
+  },
+  okra: {
+    name: 'Okra (bhindi)',
+    category: 'Vegetables',
+    buyUnit: { label: '500 g', grams: 500 },
+  },
+  pumpkin: {
+    name: 'Pumpkin (kaddu)',
+    category: 'Vegetables',
+    buyUnit: { label: '1 kg', grams: 1000 },
+  },
+  brinjal: {
+    name: 'Brinjal (baingan)',
+    category: 'Vegetables',
+    buyUnit: { label: '500 g', grams: 500 },
+  },
+  frenchBeans: {
+    name: 'French beans',
+    category: 'Vegetables',
+    buyUnit: { label: '500 g', grams: 500 },
+  },
+  cucumber: {
+    name: 'Cucumber',
+    category: 'Vegetables',
+    buyUnit: { label: '500 g', grams: 500 },
+  },
+  onion: {
+    name: 'Onion',
+    category: 'Vegetables',
+    buyUnit: { label: '1 kg', grams: 1000 },
+  },
+  tomato: {
+    name: 'Tomato',
+    category: 'Vegetables',
+    buyUnit: { label: '1 kg', grams: 1000 },
+  },
+  capsicum: {
+    name: 'Capsicum (green)',
+    category: 'Vegetables',
+    buyUnit: { label: '250 g', grams: 250 },
+  },
+} satisfies Record<string, FoodMeta>;
 
-export type FoodId = keyof typeof FOODS;
+export type FoodId = keyof typeof META;
+
+export interface Food extends FoodMeta {
+  /** Per 100 g edible portion; null = not in the source table. */
+  per100: Record<NutrientKey, number | null>;
+  /** The source table's own kcal per 100 g (cross-check only). */
+  tabulatedKcal: number | null;
+  /** Share of the bought weight that is eaten. */
+  edible: number;
+  edibleSource: string;
+  source: string;
+}
+
+const composition = COMPOSITION as Record<string, (typeof COMPOSITION)[keyof typeof COMPOSITION]>;
+
+export const FOODS = Object.fromEntries(
+  (Object.keys(META) as FoodId[]).map((id) => {
+    const c = composition[id];
+    if (!c) throw new Error(`No composition for ${id}: add it to scripts/food-data/sources.ts and run npm run food-data`);
+    return [id, { ...(META[id] as FoodMeta), per100: c.values, tabulatedKcal: c.tabulatedKcal, edible: c.edible, edibleSource: c.edibleSource, source: c.source }];
+  }),
+) as Record<FoodId, Food>;
+
+export const FOOD_IDS = Object.keys(META) as FoodId[];
 
 export function getFood(id: FoodId): Food {
   return FOODS[id];

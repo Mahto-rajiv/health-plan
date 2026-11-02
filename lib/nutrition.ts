@@ -1,4 +1,5 @@
 import { FOODS, type Food, type FoodId, type Nutrients } from './data/foods';
+import { NUTRIENT_KEYS, type NutrientKey } from './data/nutrient-keys';
 import { DEFAULT_PRICE_TABLE, type PriceTable } from './data/prices';
 import { ATWATER } from './config';
 
@@ -10,18 +11,7 @@ export interface MealItem {
   note?: string;
 }
 
-export const EMPTY_NUTRIENTS: Nutrients = {
-  kcal: 0,
-  protein: 0,
-  carbs: 0,
-  fat: 0,
-  fiber: 0,
-  iron: 0,
-  calcium: 0,
-  zinc: 0,
-  vitC: 0,
-  b12: 0,
-};
+export const EMPTY_NUTRIENTS: Nutrients = Object.fromEntries([['kcal', 0], ...NUTRIENT_KEYS.map((k) => [k, 0])]) as Nutrients;
 
 const KEYS = Object.keys(EMPTY_NUTRIENTS) as (keyof Nutrients)[];
 
@@ -30,12 +20,28 @@ export function atwaterKcal(n: Pick<Nutrients, 'protein' | 'carbs' | 'fat' | 'fi
   return n.protein * ATWATER.protein + n.carbs * ATWATER.carbs + n.fat * ATWATER.fat + n.fiber * ATWATER.fiber;
 }
 
+/** Nutrients in one item. A value missing from the source table counts as 0; see missingNutrients. */
 export function itemNutrients(item: MealItem): Nutrients {
   const food = FOODS[item.food] as Food;
   const factor = item.g / 100;
   const out = { ...EMPTY_NUTRIENTS };
-  for (const k of KEYS) out[k] = k === 'b12' ? (food.b12 ?? 0) * factor : food.per100[k] * factor;
+  for (const k of NUTRIENT_KEYS) out[k] = (food.per100[k] ?? 0) * factor;
   out.kcal = atwaterKcal(out);
+  return out;
+}
+
+/** For each nutrient, the foods in these items whose source table has no value (so totals may be low). */
+export function missingNutrients(items: MealItem[]): Partial<Record<NutrientKey, FoodId[]>> {
+  const out: Partial<Record<NutrientKey, FoodId[]>> = {};
+  for (const it of items) {
+    if (it.g <= 0) continue;
+    for (const k of NUTRIENT_KEYS) {
+      if (FOODS[it.food].per100[k] === null) {
+        const list = (out[k] ??= []);
+        if (!list.includes(it.food)) list.push(it.food);
+      }
+    }
+  }
   return out;
 }
 
@@ -51,7 +57,7 @@ export function itemsNutrients(items: MealItem[]): Nutrients {
 
 /** Grams to buy for this many edible grams (peel, seeds and trimmings added back). */
 export function boughtGrams(food: FoodId, edibleGrams: number): number {
-  return edibleGrams / ((FOODS[food] as Food).edible ?? 1);
+  return edibleGrams / FOODS[food].edible;
 }
 
 export function itemCost(item: MealItem, prices: PriceTable = DEFAULT_PRICE_TABLE): number {

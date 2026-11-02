@@ -9,7 +9,8 @@ import { PHASES, PHASE_IDS, type PhaseId } from '@/lib/config';
 import { formatQuantity, itemsNutrients, roundKcal } from '@/lib/nutrition';
 import { useSettings } from '@/lib/storage';
 import { useToday } from '@/lib/hooks';
-import { phaseOn } from '@/lib/phase';
+import { phaseOn, seasonOn } from '@/lib/phase';
+import { SEASONS, SEASON_IDS, type SeasonId } from '@/lib/data/seasons';
 import { Button } from '@/components/ui/Button';
 
 /** One printable card per dinner: what Mom needs at the stove, nothing else. */
@@ -21,6 +22,8 @@ export function CookingCardsView() {
   const phaseParam = Number(params.get('phase'));
   const def = MEAL_PLAN_DEFINITIONS.find((p) => p.id === (planParam ?? settings.planId)) ?? MEAL_PLAN_DEFINITIONS[0];
   const phase: PhaseId = PHASE_IDS.includes(phaseParam as PhaseId) && params.get('phase') !== null ? (phaseParam as PhaseId) : phaseOn(settings, today);
+  const seasonParam = params.get('season') as SeasonId | null;
+  const season: SeasonId = seasonParam && SEASON_IDS.includes(seasonParam) ? seasonParam : seasonOn(settings, today);
   const dinners = planDinners(def);
 
   return (
@@ -36,12 +39,12 @@ export function CookingCardsView() {
       <header>
         <h1 className="text-xl font-semibold text-ink">Dinner cooking cards</h1>
         <p className="text-sm text-muted">
-          {def.name} · {PHASES[phase].name}. Quantities are for one portion (raw weights); multiply for the family. At most 2 pots.
+          {def.name} · {PHASES[phase].name} · {SEASONS[season].name} ({SEASONS[season].monthsLabel}) vegetables. Quantities are for one portion (raw weights); multiply for the family. At most 2 pots.
         </p>
       </header>
       <div className="grid gap-4 md:grid-cols-2 print:block">
         {dinners.map(({ days, meal }) => {
-          const m = resolveMeal(meal, phase);
+          const m = resolveMeal(meal, phase, season);
           const n = itemsNutrients(m.items);
           return (
             <article key={meal.id} className="break-inside-avoid rounded-2xl border border-line bg-surface p-4 print:mb-4 print:rounded-none print:border-slate-400">
@@ -53,8 +56,8 @@ export function CookingCardsView() {
               {m.dayBefore && <p className="mt-2 text-sm font-medium text-ink">Day before: {m.dayBefore}</p>}
               <h3 className="mt-3 text-sm font-semibold text-ink">Ingredients (one portion)</h3>
               <ul className="mt-1 space-y-0.5 text-sm">
-                {m.items.map((it) => (
-                  <li key={it.food} className="flex flex-wrap justify-between gap-x-3 border-b border-dotted border-line py-0.5">
+                {m.items.map((it, i) => (
+                  <li key={`${it.food}-${i}`} className="flex flex-wrap justify-between gap-x-3 border-b border-dotted border-line py-0.5">
                     <span className="min-w-0">{FOODS[it.food].name}</span>
                     <span className="tabular min-w-0 text-right text-ink-2">
                       {formatQuantity(it)}

@@ -1,4 +1,5 @@
 import type { RefId } from './references';
+import { BUDGET } from '../config';
 
 // ─── Daily targets ────────────────────────────────────────────────────────────
 // Energy: Mifflin-St Jeor BMR = 10×64 + 6.25×180 − 5×24 + 5 ≈ 1,650 kcal.
@@ -177,7 +178,7 @@ export const FOOD_SAFETY = {
     'Milk for home-set curd: packaged pasteurised milk can be used as it is; boil loose milk first and cool it to lukewarm before adding the starter.',
     'Rajma and other dry beans must be soaked and then boiled or pressure-cooked until completely soft. Raw or undercooked kidney beans contain a toxin that causes vomiting.',
     'Wash fruit and salad vegetables under running water before cutting them, and cut salad fresh rather than days ahead.',
-    'Cooking oil: use groundnut or rice-bran oil every day, and mustard oil only now and then for flavour (about a teaspoon a week). Most Indian mustard oil is 40–50% erucic acid; at the plans’ ~30 g of oil a day it would be far above the EFSA safe intake, which is based on heart effects in animals. Harm in people has not been shown, but there is no reason to take the risk daily.',
+    'Cooking oil: rice-bran oil every day (it has about twice the vitamin E of groundnut oil, which is the alternative), and mustard oil only now and then for flavour (about a teaspoon a week). Most Indian mustard oil is 40–50% erucic acid; at the plans’ ~30 g of oil a day it would be far above the EFSA safe intake, which is based on heart effects in animals. Harm in people has not been shown, but there is no reason to take the risk daily.',
     'Rice: for plain rice, cook it in plenty of water (about 6 cups per cup of rice) and drain it like pasta. That removes about 40% of the arsenic rice picks up from soil and water. Pulao and khichdi can’t be drained, which is one reason the plans keep rice to about one portion a day and alternate it with roti and daliya.',
     'Chicken and fish: don’t blacken them. Charring meat on high heat forms compounds (HCAs and PAHs) linked to cancer in lab studies. Marinate, turn often and cut off burnt bits. Paneer and soya don’t form HCAs in meaningful amounts.',
   ],
@@ -189,9 +190,9 @@ export const FOOD_SAFETY = {
 export const PANTRY_MONTHLY = 300; // spices, salt, tea, sugar, ginger-garlic, coriander, mint, curry leaves etc.
 
 export const BUDGET_NOTES = [
-  'All prices are estimates (Oct 2026), not quotes. A few were compared with online listings; the rest are local-shop estimates. Edit them in Settings → Prices and every cost in the app is recalculated.',
+  'All prices are estimates (Oct–Nov 2026), not quotes. A few were compared with online listings; the rest are local-shop estimates. Edit them in Settings → Prices and every cost in the app is recalculated.',
   'Costs include every food in the plan plus ~₹300/month for spices, salt, tea, herbs and other basics. Cooking gas is not included. Supplements are costed separately on the Health page.',
-  'Produce is costed as bought, so peel, seeds and trimmings are paid for (e.g. ~30% of a papaya, ~35% of a banana). The yields used are typical approximations.',
+  'Produce is costed as bought, so peel, seeds, pods and trimmings are paid for (e.g. 38% of a papaya, 36% of a banana, 62% of peas in the pod). The shares are USDA SR28 “refuse” values.',
   'Cost rule: when two foods are equivalent in nutrition and taste, the plan uses the cheaper one unless it has a safety or digestive downside. That is why it uses soya, dals and home-set curd, but sealed branded paneer and ghee rather than loose ones.',
-  'The cost rises with the phases because you eat more: Phase 2 is above the target; see the computed swaps to bring it down.',
+  `The budget is a ceiling of ₹${BUDGET.max.toLocaleString('en-IN')} a month with no lower target (Round 2), so the plans are built for nutrition first. The cost rises with the phases because you eat more, and changes a little with the season. New seasonal produce prices (Nov 2026) are rough estimates; check them in Settings.`,
 ];

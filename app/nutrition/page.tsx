@@ -6,11 +6,22 @@ import { Callout } from '@/components/ui/Callout';
 import { ButtonLink } from '@/components/ui/Button';
 import { References } from '@/components/References';
 import { ENERGY_MATH, ENERGY_NOTE, GAIN_RULES, GUT, HYDRATION, TARGETS, TRAINING_DAY } from '@/lib/data/nutrition-guide';
-import { MEAL_PLAN_DEFINITIONS, MEAL_SLOTS, gramsFor, type Meal, type MealSlot } from '@/lib/data/meal-plans';
+import { MEAL_PLAN_DEFINITIONS, MEAL_SLOTS, itemKey, solvedGrams, type Meal, type MealSlot, type PlanItem } from '@/lib/data/meal-plans';
+import { SEASON_IDS } from '@/lib/data/seasons';
+import type { PhaseId } from '@/lib/config';
 import { FOODS } from '@/lib/data/foods';
 import { DAILY, PHASES, PHASE_IDS } from '@/lib/config';
 
 export const metadata: Metadata = { title: 'Nutrition' };
+
+const SLOT_NAME = { fruit1: 'Fruit (changes with the season)', fruit3: 'Fruit (changes with the season)', sabzi: 'Vegetables (seasonal)', salad: 'Salad (seasonal)', greens: 'Greens (seasonal)' } as const;
+
+/** Grams of an item in a phase: one number, or a range when the seasonal amount differs. */
+function rampCell(m: Meal, it: PlanItem, p: PhaseId): string {
+  const vals = SEASON_IDS.map((s) => solvedGrams(m, it, p, s));
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  return lo === hi ? String(lo) : `${lo}–${hi}`;
+}
 
 export default function NutritionPage() {
   // Meals 1 and 3 are fixed, so the gut ramp can be shown as exact quantities per phase.
@@ -213,19 +224,21 @@ export default function NutritionPage() {
                   <tbody key={m.id} className="divide-y divide-line">
                     <tr>
                       <th colSpan={4} scope="rowgroup" className="pt-3 pb-1 text-left text-xs font-semibold text-ink-2">
-                        {m.id.startsWith('m1') ? 'Meal 1' : 'Meal 3'}: {m.title}
+                        {m.id.startsWith('m1') ? 'Meal 1' : 'Meal 3'}: {m.title.replace(/\{fruit[13]\}/, 'seasonal fruit')}
                       </th>
                     </tr>
-                    {m.items.map((it) => (
-                      <tr key={it.food}>
-                        <th scope="row" className="py-1 pr-2 font-normal text-ink-2">{FOODS[it.food].name}</th>
-                        {PHASE_IDS.map((p) => (
-                          <td key={p} className="px-2 py-1 text-right">
-                            {gramsFor(it.g, p)}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
+                    {m.items
+                      .filter((it) => PHASE_IDS.some((p) => SEASON_IDS.some((s) => solvedGrams(m, it, p, s) > 0)))
+                      .map((it) => (
+                        <tr key={itemKey(it)}>
+                          <th scope="row" className="py-1 pr-2 font-normal text-ink-2">{it.slot ? SLOT_NAME[it.slot] : FOODS[it.food!].name}</th>
+                          {PHASE_IDS.map((p) => (
+                            <td key={p} className="px-2 py-1 text-right">
+                              {rampCell(m, it, p)}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
                   </tbody>
                 ))}
               </table>

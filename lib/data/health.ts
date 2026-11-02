@@ -171,103 +171,25 @@ export const HAIR = {
     'Whether your vitamin D level needs anything beyond a standard daily dose',
   ],
   nutrition: [
-    { title: 'Weight loss and low intake', body: 'Losing weight and eating too little — especially too little protein — over the past 6 months is a recognised trigger for diffuse shedding (telogen effluvium), which typically starts 2–4 months after the trigger. That fits your timeline. It is plausible, not certain: the AAD gives “lost 20 pounds (~9 kg) or more” as a typical trigger, and your loss is ~4 kg. A dermatologist must confirm the cause. Eating enough is right for your health anyway, but nutrition cannot be shown to cure hair loss.', level: 'Reasonable' },
-    { title: 'Iron stores', body: 'Your blood iron markers are normal. Ferritin hasn’t been measured. Evidence linking low-normal ferritin to hair loss is mixed, but it’s cheap to check. The plans include iron foods (dals, soya, atta, greens) with vitamin C from papaya and vegetables.', level: 'Mixed' },
-    { title: 'Zinc', body: 'Vegetarians absorb less zinc because of phytates in grains and legumes. Soaking and sprouting help. The plans provide about 13 mg/day in Phase 0, rising to ~15–16 mg in Phase 2, before absorption losses. Don’t supplement unless a test shows it’s low — too much zinc can cause problems too.', level: 'Mixed' },
+    { title: 'Weight loss and low intake', body: 'Losing weight and eating too little — especially too little protein — over the past 6 months is a recognised trigger for diffuse shedding (telogen effluvium), which typically starts 2–4 months after the trigger. That fits your timeline. It is plausible, not certain: the AAD gives “lost 20 pounds (~9 kg) or more” as a typical trigger, and your loss is smaller (see the to-do above). A dermatologist must confirm the cause. Eating enough is right for your health anyway, but nutrition cannot be shown to cure hair loss.', level: 'Reasonable' },
+    { title: 'Iron stores', body: 'Your blood iron markers are normal. Ferritin hasn’t been measured. Evidence linking low-normal ferritin to hair loss is mixed, but it’s cheap to check. The plans include iron foods (dals, soya, atta, greens, pumpkin seeds) with vitamin C from the season’s fruit and vegetables. The diet table below shows how much.', level: 'Mixed' },
+    { title: 'Zinc', body: 'Vegetarians absorb less zinc because of phytates in grains and legumes. Soaking and sprouting help. The diet table below shows how much each plan gives, before absorption losses. Don’t supplement unless a test shows it’s low — too much zinc can cause problems too.', level: 'Mixed' },
     { title: 'Vitamin D', body: 'Low vitamin D is common in some hair conditions, but the link is clearest for alopecia areata, not male pattern hair loss. Correcting a low level is sensible for general health; it is not a proven hair treatment.', level: 'Weak' },
     { title: 'Biotin and “hair” supplements', body: 'No benefit without a proven deficiency, which is rare. High-dose biotin can falsify blood tests, including thyroid and heart tests. Some multi-ingredient hair products contain amounts of vitamin A or selenium that can themselves cause shedding.', level: 'Avoid' },
   ],
   refs: ['aadCauses', 'aadShedding', 'malkud2015', 'almohanna', 'guoKatta', 'trost', 'yongpisarn', 'fdaBiotin', 'biotinThyroid', 'nhsHairLoss'] as RefId[],
 };
 
-// ─── Diet coverage ────────────────────────────────────────────────────────────
-// Needs are ICMR-NIN 2020 RDAs for adult Indian men (EAR in brackets). Where
-// `key` is set, the page computes each plan's average from its foods.
-
-export type Coverage = 'Covered by diet' | 'Close' | 'Not from diet';
-
-/** Shown at the top of the Health page. */
-export const HEALTH_TODO = [
+// ─── To-do ────────────────────────────────────────────────────────────────────
+/** Shown at the top of the Health page. 'weight' is worded from your own log (app/health/WeightTodo.tsx). */
+export const HEALTH_TODO: (string | 'weight')[] = [
   'Book a dermatologist appointment for the 6 months of hair shedding and thinning.',
-  'Tell the doctor you lost about 4 kg (68 → 64 kg) in about 6 months, while eating under ~2,000 kcal a day (your estimate).',
+  'weight',
   'Ask about these blood tests: ferritin (iron stores), zinc, folate, and active B12 (holotranscobalamin) — the B12 test before any B12 tablet.',
 ];
 
-export interface CoverageRow {
-  nutrient: string;
-  need: string;
-  key?: 'calcium' | 'iron' | 'zinc' | 'vitC' | 'b12';
-  unit?: string;
-  coverage: Coverage;
-  note: string;
-}
-
-export const DIET_COVERAGE: CoverageRow[] = [
-  {
-    nutrient: 'Calcium',
-    need: '1,000 mg (average need 800)',
-    key: 'calcium',
-    unit: 'mg',
-    coverage: 'Covered by diet',
-    note: 'Mostly from milk and curd, plus soya, pulses and greens.',
-  },
-  {
-    nutrient: 'Iron',
-    need: '19 mg (average need 11)',
-    key: 'iron',
-    unit: 'mg',
-    coverage: 'Close',
-    note: 'Above the average need (11 mg) in every phase; near the RDA only in Phase 2. Plant iron is absorbed less well, which the ICMR figure already allows for. Your haemoglobin, MCV and transferrin saturation are normal, so an iron supplement is not justified.',
-  },
-  {
-    nutrient: 'Zinc',
-    need: '17 mg (average need 14)',
-    key: 'zinc',
-    unit: 'mg',
-    coverage: 'Close',
-    note: 'Phases 1–2 reach the average requirement (14 mg); Phase 0 gives ~13 mg (about 93% of it) for its two weeks, because fibre and pulses are capped then. The RDA already assumes a high-phytate Indian diet. Supplement only if a blood test shows it is low.',
-  },
-  {
-    nutrient: 'Vitamin C',
-    need: '80 mg (average need 65)',
-    key: 'vitC',
-    unit: 'mg',
-    coverage: 'Covered by diet',
-    note: 'Mostly the daily papaya in Meal 1, plus vegetables. Eaten with pulses, it also helps iron absorption.',
-  },
-  {
-    nutrient: 'Vitamin B12',
-    need: '2.2 µg (average need 2.0)',
-    key: 'b12',
-    unit: 'µg',
-    coverage: 'Close',
-    note: 'On paper all plans meet the need from milk, curd and eggs, but boiling milk destroys some B12, absorption varies, and your blood level is already low-normal. Test first, then a supplement course if your doctor agrees (see below).',
-  },
-  {
-    nutrient: 'Vitamin D',
-    need: '600 IU',
-    coverage: 'Not from diet',
-    note: 'Food provides very little, unless your milk pack is fortified (look for the +F logo and “vitamin D” on the label). It comes from midday sun or a supplement.',
-  },
-  {
-    nutrient: 'Iodine',
-    need: '150 µg',
-    coverage: 'Covered by diet',
-    note: 'From iodised salt used in cooking. Rock, pink and sea salt are usually not iodised.',
-  },
-  {
-    nutrient: 'Folate',
-    need: '300 µg',
-    coverage: 'Covered by diet',
-    note: 'Pulses, chana, rajma, spinach and whole wheat are rich sources (estimated from typical values; the app does not compute folate).',
-  },
-  {
-    nutrient: 'Omega-3 (ALA)',
-    need: '≈ 1.6 g (US adequate intake; ICMR sets no RDA)',
-    coverage: 'Close',
-    note: 'Not computed by the app. The plans contain little ALA; a tablespoon (7 g) of ground flaxseed a day would add about 1.6 g. Fish in the non-veg plan supplies EPA/DHA directly.',
-  },
-];
+// The diet coverage table is computed on the page from every plan, phase and
+// season (lib/nutrient-audit.ts), so no amounts are typed here.
 
 // ─── Supplements ──────────────────────────────────────────────────────────────
 
@@ -332,13 +254,13 @@ export const SUPPLEMENTS: Supplement[] = [
   {
     name: 'Omega-3 (fish or algal oil)',
     verdict: 'Not recommended',
-    why: 'No clear benefit for your goals or your hair. The non-veg plan includes fish once a week; the vegetarian plans contain little omega-3 (see the diet table). High-dose EPA/DHA (> 1.5 g a day) raised atrial fibrillation risk in trials of people at high heart risk.',
+    why: 'No clear benefit for your goals or your hair. The non-veg plan includes fish once a week; plant omega-3 (ALA) from flaxseed and rice-bran oil is in the diet table above. High-dose EPA/DHA (> 1.5 g a day) raised atrial fibrillation risk in trials of people at high heart risk.',
     refs: ['odsOmega3', 'abuknesha2026'],
   },
   {
     name: 'Iron, zinc, biotin, “hair growth” blends',
     verdict: 'Not recommended',
-    why: 'Your iron markers are normal and the diet gives ~14–19 mg of iron a day depending on the phase; zinc hasn’t been tested and the diet gives ~13–16 mg. Extra zinc can cause copper deficiency (anaemia, nerve problems). Biotin helps only if you are deficient, which is rare, and at hair-supplement doses (5–10 mg) it distorts many blood tests, including thyroid, vitamin D and ferritin. If a test shows a deficiency, treat that one nutrient.',
+    why: 'Your iron markers are normal, zinc hasn’t been tested, and the diet table above shows what the plans give of both. Extra zinc can cause copper deficiency (anaemia, nerve problems). Biotin helps only if you are deficient, which is rare, and at hair-supplement doses (5–10 mg) it distorts many blood tests, including thyroid, vitamin D and ferritin. If a test shows a deficiency, treat that one nutrient.',
     refs: ['guoKatta', 'trost', 'duncan2015', 'li2017', 'fdaBiotin', 'biotinThyroid', 'odsZinc'],
   },
 ];

@@ -1,9 +1,11 @@
 import { FOODS, type FoodId, type GroceryCategory, type Nutrients } from './data/foods';
 import { MEAL_PLAN_DEFINITIONS, buildWeek, type PlanId, type PlannedDay, type PlannedMeal, type MealPlanDefinition } from './data/meal-plans';
+import { SEASON_IDS, type SeasonId } from './data/seasons';
+import type { NutrientKey } from './data/nutrient-keys';
 import { DEFAULT_PRICE_TABLE, type PriceTable } from './data/prices';
 import { FOOD_SAFETY, PANTRY_MONTHLY } from './data/nutrition-guide';
 import { PHASE_IDS, type PhaseId } from './config';
-import { boughtGrams, itemCost, itemsCost, itemsNutrients, sumNutrients } from './nutrition';
+import { boughtGrams, itemCost, itemsCost, itemsNutrients, missingNutrients, sumNutrients } from './nutrition';
 
 // Everything here is computed from the plan definitions and a price table, so
 // totals can never drift from the foods listed or the prices in Settings.
@@ -13,8 +15,10 @@ export interface ComputedDay extends PlannedDay {
   cost: number;
   mealTotals: Nutrients[];
   mealCosts: number[];
-  /** Hands-on cooking minutes that day. */
+  /** Hands-on cooking minutes that day (all meals, whenever they are cooked). */
   activeMinutes: number;
+  /** Hands-on minutes on the morning itself, before leaving (weekdays): Meal 1 plus packing. */
+  morningMinutes: number;
 }
 
 export interface GroceryLine {
@@ -31,8 +35,13 @@ export interface GroceryLine {
 export interface ComputedPlan {
   def: MealPlanDefinition;
   phase: PhaseId;
+  season: SeasonId;
   days: ComputedDay[];
   weeklyAverage: Nutrients;
+  /** Nutrients for which some food in the week has no value in its source table (so the total may be low). */
+  missing: Partial<Record<NutrientKey, FoodId[]>>;
+  /** Milk and curd per day, weekly average (g). */
+  dairyPerDay: number;
   ranges: Record<'kcal' | 'protein' | 'fiber', [number, number]>;
   weeklyFoodCost: number;
   monthlyCost: number;
@@ -54,10 +63,10 @@ const CATEGORY_ORDER: GroceryCategory[] = [
 ];
 
 // Fresh foods: never suggest that one pack "lasts weeks".
-const PERISHABLE = new Set<FoodId>([
-  'milk', 'curd', 'paneer', 'banana', 'papaya', 'guava', 'seasonalFruit', 'lemon',
-  'sweetPotato', 'beetroot', 'mixedVeg', 'spinach', 'salad', 'potato', 'chicken', 'fish',
-]);
+const DRY_FRUIT = new Set<FoodId>(['dates', 'raisins']);
+const isPerishable = (food: FoodId) =>
+  ['milk', 'curd', 'paneer', 'chicken', 'fish'].includes(food) ||
+  ((FOODS[food].category === 'Fruit' || FOODS[food].category === 'Vegetables') && !DRY_FRUIT.has(food));
 
 /** How many shop units a week needs, or how long one unit lasts — for low-waste buying. */
 function packHint(food: FoodId, weeklyGrams: number): string {
@@ -65,7 +74,7 @@ function packHint(food: FoodId, weeklyGrams: number): string {
   const ratio = weeklyGrams / unit.grams;
   if (ratio >= 1) return `≈ ${Math.max(1, Math.round(ratio * 2) / 2)} × ${unit.label} a week`;
   if (food === 'paneer') return `1 × ${unit.label} covers ~${Math.floor(7 / ratio)} days — freeze the extra in portions`;
-  if (PERISHABLE.has(food)) return 'buy fresh, 2–3 times a week';
+  if (isPerishable(food)) return 'buy fresh, 2–3 times a week';
   const weeks = Math.floor(1 / ratio);
   if (FOODS[food].category === 'Nuts & seeds' && weeks > 8) return `buy the smallest pack you can (1 × ${unit.label} would last ${weeks > 26 ? '6+ months' : `~${weeks} weeks`}) and keep it airtight in the fridge`;
   if (weeks > 26) return `1 × ${unit.label} lasts 6+ months`;
@@ -83,6 +92,14 @@ function formatAmount(food: FoodId, grams: number): string {
 
 export const mealMinutes = (pm: PlannedMeal) => pm.meal.activeMin;
 
+/** Minutes of hands-on work on the morning before leaving: Meal 1, plus packing the office meals. */
+export function morningMinutes(day: PlannedDay): number {
+  if (day.isWeekend) return day.meals[0].meal.activeMin;
+  const [m1, m2, m3] = day.meals;
+  const office = (pm: PlannedMeal) => (pm.meal.madeWhen === 'morning' || pm.meal.madeWhen === 'night-before' ? (pm.meal.morningMin ?? pm.meal.activeMin) : 0);
+  return m1.meal.activeMin + office(m2) + office(m3);
+}
+
 /** Storage and food-safety advice for a planned meal. */
 export function storageAdvice(pm: PlannedMeal): string[] {
   const out = pm.meal.keeps ? [pm.meal.keeps] : [];
@@ -90,8 +107,8 @@ export function storageAdvice(pm: PlannedMeal): string[] {
   return out;
 }
 
-export function computePlan(def: MealPlanDefinition, phase: PhaseId, prices: PriceTable = DEFAULT_PRICE_TABLE): ComputedPlan {
-  const week = buildWeek(def, phase);
+export function computePlan(def: MealPlanDefinition, phase: PhaseId, season: SeasonId, prices: PriceTable = DEFAULT_PRICE_TABLE): ComputedPlan {
+  const week = buildWeek(def, phase, season);
   const days: ComputedDay[] = week.map((d) => {
     const items = d.meals.flatMap((m) => m.meal.items);
     return {
@@ -101,6 +118,7 @@ export function computePlan(def: MealPlanDefinition, phase: PhaseId, prices: Pri
       mealTotals: d.meals.map((m) => itemsNutrients(m.meal.items)),
       mealCosts: d.meals.map((m) => itemsCost(m.meal.items, prices)),
       activeMinutes: d.meals.reduce((s, m) => s + mealMinutes(m), 0),
+      morningMinutes: morningMinutes(d),
     };
   });
 
@@ -133,8 +151,11 @@ export function computePlan(def: MealPlanDefinition, phase: PhaseId, prices: Pri
   return {
     def,
     phase,
+    season,
     days,
     weeklyAverage,
+    missing: missingNutrients(week.flatMap((d) => d.meals.flatMap((m) => m.meal.items))),
+    dairyPerDay: ((grams.get('milk') ?? 0) + (grams.get('curd') ?? 0)) / 7,
     ranges: { kcal: range('kcal'), protein: range('protein'), fiber: range('fiber') },
     weeklyFoodCost,
     monthlyCost: (weeklyFoodCost * 30) / 7 + PANTRY_MONTHLY,
@@ -144,14 +165,14 @@ export function computePlan(def: MealPlanDefinition, phase: PhaseId, prices: Pri
   };
 }
 
-/** All plans for one phase. */
-export function computePlans(phase: PhaseId, prices: PriceTable = DEFAULT_PRICE_TABLE): ComputedPlan[] {
-  return MEAL_PLAN_DEFINITIONS.map((def) => computePlan(def, phase, prices));
+/** All plans for one phase and season. */
+export function computePlans(phase: PhaseId, season: SeasonId, prices: PriceTable = DEFAULT_PRICE_TABLE): ComputedPlan[] {
+  return MEAL_PLAN_DEFINITIONS.map((def) => computePlan(def, phase, season, prices));
 }
 
-/** Plans at default prices, by phase. Computed on demand so client bundles don't pay for it at load. */
-export function defaultPlans(): Record<PhaseId, ComputedPlan[]> {
-  return Object.fromEntries(PHASE_IDS.map((ph) => [ph, computePlans(ph)])) as Record<PhaseId, ComputedPlan[]>;
+/** Every plan × phase × season at default prices (36). Computed on demand so client bundles don't pay for it at load. */
+export function allDefaultPlans(): ComputedPlan[] {
+  return PHASE_IDS.flatMap((ph) => SEASON_IDS.flatMap((s) => computePlans(ph, s)));
 }
 
 export function findPlan(plans: ComputedPlan[], id: PlanId): ComputedPlan {
@@ -159,6 +180,8 @@ export function findPlan(plans: ComputedPlan[], id: PlanId): ComputedPlan {
 }
 
 // ─── Budget swaps ─────────────────────────────────────────────────────────────
+// Only shown when a plan is over the budget ceiling (BUDGET.max) (e.g. after you enter higher
+// prices). There is no lower target, so the plans don't push you to swap.
 
 interface SwapRule {
   id: string;
@@ -194,14 +217,6 @@ const SWAP_RULES: SwapRule[] = [
     from: ['oats'],
     to: [{ food: 'daliya', perGram: 1 }],
     share: 1,
-  },
-  {
-    id: 'papaya-banana',
-    label: 'Make half the papaya bananas',
-    note: 'Same edible weight. Banana has much less vitamin C (≈ 9 mg vs 60 mg per 100 g), so switch back when papaya or guava is cheap.',
-    from: ['papaya'],
-    to: [{ food: 'banana', perGram: 1 }],
-    share: 0.5,
   },
   {
     id: 'chicken-soya',

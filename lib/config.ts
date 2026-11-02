@@ -1,5 +1,5 @@
 // ─── Single source of truth for profile, budget and phases ───────────────────
-// Every "within / above target" label, every phase target and every default
+// Every "within / over budget" label, every phase target and every default
 // profile value in the app is read from here. Change a number once, here.
 
 /** Facts from the owner (Oct 2026). Defaults for Settings; Settings can override them. */
@@ -18,33 +18,28 @@ export const PROFILE = {
   maintenanceEstimate: [2000, 2100] as [number, number],
 } as const;
 
-/** Food budget in ₹ per month. Supplements are costed separately. */
+/**
+ * Food budget in ₹ per month (owner, Round 2): anything up to ₹6,000 is fine and
+ * there is no target below it, so the plans are not optimised for low cost.
+ * The solver keeps each plan at or below `planningMax` at the default prices,
+ * leaving ~5% headroom because the prices are estimates. Supplements are costed
+ * separately.
+ */
 export const BUDGET = {
-  /** Acceptable range. */
-  min: 3000,
   max: 6000,
-  /** What the plans aim for. */
-  targetMin: 4000,
-  targetMax: 4500,
+  planningMax: 5700,
 } as const;
 
-export type BudgetStatus = 'below-target' | 'within-target' | 'above-target' | 'above-max';
+export type BudgetStatus = 'within' | 'over';
 
 export function budgetStatus(monthly: number): BudgetStatus {
-  if (monthly > BUDGET.max) return 'above-max';
-  if (monthly > BUDGET.targetMax) return 'above-target';
-  if (monthly >= BUDGET.targetMin) return 'within-target';
-  return 'below-target';
+  return monthly > BUDGET.max ? 'over' : 'within';
 }
 
 export const BUDGET_LABEL: Record<BudgetStatus, string> = {
-  'below-target': 'below target',
-  'within-target': 'within target',
-  'above-target': 'above target',
-  'above-max': 'over budget',
+  within: 'within budget',
+  over: 'over budget',
 };
-
-// ─── Phases ───────────────────────────────────────────────────────────────────
 
 export type PhaseId = 0 | 1 | 2;
 

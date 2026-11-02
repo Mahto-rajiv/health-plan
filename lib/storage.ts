@@ -2,6 +2,7 @@
 
 import { useCallback, useSyncExternalStore } from 'react';
 import type { PlanId } from './data/meal-plans';
+import { SEASON_IDS, type SeasonId } from './data/seasons';
 import type { SessionId } from './data/training';
 import { PROFILE, type PhaseId } from './config';
 
@@ -15,6 +16,8 @@ export interface Settings {
   programStart: string;
   /** 'auto' follows the program week; a number pins that phase. */
   phase: 'auto' | PhaseId;
+  /** 'auto' follows the calendar (lib/data/seasons.ts); a season pins it, e.g. when your market is early or late. */
+  season: 'auto' | SeasonId;
   startWeightKg: number;
   /** Weight before the recent loss; the first checkpoint. */
   preLossWeightKg: number;
@@ -76,6 +79,7 @@ export const DEFAULT_SETTINGS: Settings = {
   planId: 'vegetarian',
   programStart: '2026-11-02',
   phase: 'auto',
+  season: 'auto',
   startWeightKg: PROFILE.weightKg,
   preLossWeightKg: PROFILE.preLossWeightKg,
   targetWeightKg: PROFILE.longTermTargetKg,
@@ -100,6 +104,7 @@ function migrateSettings(s: Settings & { trainingTime?: unknown }): Settings {
     planId: VALID_PLANS.includes(rest.planId) ? rest.planId : 'vegetarian',
     startWeightKg: rest.startWeightKg === 66 ? PROFILE.weightKg : rest.startWeightKg,
     phase: rest.phase === 'auto' || rest.phase === 0 || rest.phase === 1 || rest.phase === 2 ? rest.phase : 'auto',
+    season: rest.season === 'auto' || SEASON_IDS.includes(rest.season as SeasonId) ? rest.season : 'auto',
   };
 }
 

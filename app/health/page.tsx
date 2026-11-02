@@ -5,12 +5,17 @@ import { Card, CardHeader } from '@/components/ui/Card';
 import { Badge, type BadgeTone } from '@/components/ui/Badge';
 import { Callout } from '@/components/ui/Callout';
 import { References } from '@/components/References';
-import { BLOOD_DATE, BLOOD_RESULTS, DIET_COVERAGE, HAIR, HEALTH_TODO, HEALTH_DISCLAIMER, SUPPLEMENTS, SUPPLEMENT_NOTES, SUPPLEMENT_NOTE_REFS, type Coverage, type CoverageRow, type ResultStatus, type Supplement } from '@/lib/data/health';
-import { defaultPlans } from '@/lib/meal-plans';
-
-// Server component: computed once at build time.
-const DEFAULT_PLANS = defaultPlans();
+import { BLOOD_DATE, BLOOD_RESULTS, HAIR, HEALTH_TODO, HEALTH_DISCLAIMER, SUPPLEMENTS, SUPPLEMENT_NOTES, SUPPLEMENT_NOTE_REFS, type ResultStatus, type Supplement } from '@/lib/data/health';
+import { allDefaultPlans } from '@/lib/meal-plans';
+import { MEAL_PLAN_DEFINITIONS } from '@/lib/data/meal-plans';
+import { NOT_COMPUTED, NUTRIENTS } from '@/lib/data/nutrients';
+import { auditRange, fmtAmount, STATUS_LABEL, type AuditStatus } from '@/lib/nutrient-audit';
+import { WeightTodo } from './WeightTodo';
 import type { RefId } from '@/lib/data/references';
+
+// Server component: computed once at build time from every plan × phase × season (36), at default prices.
+const ALL_PLANS = allDefaultPlans();
+const COVERAGE_BY_PLAN = MEAL_PLAN_DEFINITIONS.map((def) => ({ def, rows: auditRange(ALL_PLANS.filter((p) => p.def.id === def.id)) }));
 
 export const metadata: Metadata = { title: 'Health' };
 
@@ -29,14 +34,7 @@ const VERDICT: Record<Supplement['verdict'], BadgeTone> = {
 
 const LEVEL: Record<string, BadgeTone> = { Reasonable: 'good', Mixed: 'caution', Weak: 'neutral', Avoid: 'alert' };
 
-const COVERAGE: Record<Coverage, BadgeTone> = { 'Covered by diet': 'good', Close: 'caution', 'Not from diet': 'alert' };
-
-const fmt = (v: number) => (v < 10 ? v.toFixed(1) : Math.round(v).toLocaleString('en-IN'));
-
-/** Average daily amount in a plan in Phase 0 and Phase 2, computed from its foods. */
-function planAmount(key: NonNullable<CoverageRow['key']>, i: number): string {
-  return `${fmt(DEFAULT_PLANS[0][i].weeklyAverage[key])} → ${fmt(DEFAULT_PLANS[2][i].weeklyAverage[key])}`;
-}
+const COVERAGE_TONE: Record<AuditStatus, BadgeTone> = { meets: 'good', 'below-rda': 'caution', 'below-ear': 'alert', 'above-ul': 'alert', info: 'neutral' };
 
 export default function HealthPage() {
   const groups = [...new Set(BLOOD_RESULTS.map((r) => r.group))];
@@ -56,7 +54,7 @@ export default function HealthPage() {
             {HEALTH_TODO.map((t, i) => (
               <li key={t} className="flex gap-3">
                 <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-semibold text-violet-900">{i + 1}</span>
-                <span className="text-ink-2">{t}</span>
+                <span className="text-ink-2">{t === 'weight' ? <WeightTodo /> : t}</span>
               </li>
             ))}
           </ol>
@@ -161,37 +159,69 @@ export default function HealthPage() {
           <CardHeader
             title="What your diet covers"
             icon={<Salad size={18} />}
-            description="Daily need for adult Indian men (ICMR-NIN 2020) against each plan’s average day in Phase 0 → Phase 2, computed from its foods. Supplements are only for what food can’t cover."
+            description="Every vitamin and mineral the food tables cover, for each plan: the lowest and highest weekly average across all phases and seasons, against ICMR-NIN 2020 (US/Canadian values where ICMR gives none). Computed from the foods, so it updates when the meals change. Supplements are only for what food can’t cover."
           />
-          <ul className="divide-y divide-line rounded-xl border border-line">
-            {DIET_COVERAGE.map((c) => (
-              <li key={c.nutrient} className="grid gap-2 p-3 text-sm sm:grid-cols-[minmax(0,14rem)_1fr] sm:gap-5">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium text-ink">{c.nutrient}</span>
-                    <Badge tone={COVERAGE[c.coverage]}>{c.coverage}</Badge>
-                  </div>
-                  <div className="mt-0.5 text-xs text-muted">Need: {c.need}</div>
-                </div>
-                <div>
-                  {c.key && (
-                    <dl className="tabular mb-1.5 grid grid-cols-1 gap-x-4 gap-y-0.5 text-xs sm:grid-cols-3">
-                      {DEFAULT_PLANS[2].map((p, i) => (
-                        <div key={p.def.id} className="flex justify-between gap-2 sm:block">
-                          <dt className="text-muted">{p.def.shortName}</dt>
-                          <dd className="whitespace-nowrap font-medium text-ink">
-                            {planAmount(c.key!, i)} {c.unit}
-                          </dd>
-                        </div>
-                      ))}
-                    </dl>
-                  )}
-                  <p className="text-ink-2">{c.note}</p>
-                </div>
+          <div className="overflow-x-auto">
+            <table className="tabular w-full min-w-[36rem] text-left text-sm">
+              <thead>
+                <tr className="border-b border-line text-xs text-muted">
+                  <th scope="col" className="py-1.5 pr-2 font-medium">Nutrient · average need · RDA</th>
+                  {COVERAGE_BY_PLAN.map(({ def }) => (
+                    <th key={def.id} scope="col" className="px-2 py-1.5 text-right font-medium">
+                      {def.shortName}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {NUTRIENTS.map((n, i) => (
+                  <tr key={n.key} className="align-top">
+                    <th scope="row" className="py-1.5 pr-2 font-normal text-ink">
+                      {n.label}
+                      {n.hair && <span title="Linked to hair loss when deficient"> ★</span>}
+                      <span className="block text-[11px] text-muted">
+                        {n.ear ? `${fmtAmount(n.ear)} · ` : ''}
+                        {n.rda ? `${fmtAmount(n.rda)}${n.adequateIntake ? ' (AI)' : ''} ` : ''}
+                        {n.unit}
+                      </span>
+                    </th>
+                    {COVERAGE_BY_PLAN.map(({ def, rows }) => {
+                      const r = rows[i];
+                      return (
+                        <td key={def.id} className="px-2 py-1.5 text-right">
+                          <span className="whitespace-nowrap font-medium text-ink">
+                            {fmtAmount(r.min)}–{fmtAmount(r.max)}
+                          </span>
+                          <span className="mt-0.5 block">
+                            <Badge tone={COVERAGE_TONE[r.worst]}>{r.worst === 'meets' ? 'meets RDA' : STATUS_LABEL[r.worst]}</Badge>
+                          </span>
+                          {r.belowEar.length > 0 && (
+                            <span className="mt-0.5 block text-[11px] text-rose-700">
+                              in {r.belowEar.length} of 12: {[...new Set(r.belowEar.map((b) => b.split(', ').slice(1).join(' ')))].slice(0, 4).join('; ')}
+                              {r.belowEar.length > 4 ? '…' : ''}
+                            </span>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-muted">
+            <li>
+              The badge shows the worst case across the 12 phase × season combinations. ★ = linked to hair loss when deficient (Almohanna 2019; Guo
+              &amp; Katta 2017). Per-season detail, main sources and data gaps are on Meal plans → Vitamins &amp; minerals.
+            </li>
+            {NOT_COMPUTED.map((n) => (
+              <li key={n.label}>
+                <strong>{n.label}:</strong> {n.why}
               </li>
             ))}
+            <li>Vitamin B12: on paper the plans meet the need from milk, curd and eggs, but boiling milk destroys some, absorption varies, and your blood level is already low-normal. Test first, then a supplement course if your doctor agrees (see below).</li>
           </ul>
-          <References ids={['icmr2020', 'ifct', 'usdaFdc', 'odsIodine', 'odsOmega3']} />
+          <References ids={['icmr2020', 'driElements', 'driVitamins', 'driMacros', 'ifct', 'usdaSr28', 'almohanna', 'guoKatta', 'odsIodine']} />
         </Card>
 
         <Card>

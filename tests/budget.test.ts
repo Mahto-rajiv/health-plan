@@ -6,11 +6,12 @@ import { BUDGET, BUDGET_LABEL, budgetStatus } from '../lib/config';
 
 describe('budget labels', () => {
   it('derive from the single BUDGET constant', () => {
-    assert.equal(budgetStatus(BUDGET.targetMin - 1), 'below-target');
-    assert.equal(budgetStatus(BUDGET.targetMin), 'within-target');
-    assert.equal(budgetStatus(BUDGET.targetMax), 'within-target');
-    assert.equal(budgetStatus(BUDGET.targetMax + 1), 'above-target');
-    assert.equal(budgetStatus(BUDGET.max + 1), 'above-max');
+    // Round 2: one ceiling (₹6,000), no lower target.
+    assert.equal(BUDGET.max, 6000);
+    assert.ok(BUDGET.planningMax < BUDGET.max);
+    assert.equal(budgetStatus(1000), 'within');
+    assert.equal(budgetStatus(BUDGET.max), 'within');
+    assert.equal(budgetStatus(BUDGET.max + 1), 'over');
     assert.ok(Object.values(BUDGET_LABEL).every((l) => l.length > 0));
   });
 

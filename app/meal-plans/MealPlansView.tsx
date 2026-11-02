@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ShoppingBasket, CalendarDays, Wallet, Scale, Printer, ShieldCheck } from 'lucide-react';
+import { ShoppingBasket, CalendarDays, Wallet, Scale, Printer, ShieldCheck, Leaf } from 'lucide-react';
 import { budgetSwaps, findPlan, ingredientValues, type ComputedPlan } from '@/lib/meal-plans';
 import { DAYS, type DayName, type PlanId } from '@/lib/data/meal-plans';
 import { BUDGET_NOTES, PANTRY_MONTHLY, FOOD_SAFETY, ENERGY_NOTE } from '@/lib/data/nutrition-guide';
@@ -11,7 +11,10 @@ import { PRICES_AS_OF } from '@/lib/data/prices';
 import { useSettings } from '@/lib/storage';
 import { useToday } from '@/lib/hooks';
 import { usePlans, usePrices } from '@/lib/plan-hooks';
-import { phaseOn } from '@/lib/phase';
+import { phaseOn, seasonOn } from '@/lib/phase';
+import { SEASONS, SEASON_IDS, nextSeasonChange, type SeasonId, type SlotId } from '@/lib/data/seasons';
+import { NutrientAudit } from '@/components/meals/NutrientAudit';
+import { longDate } from '@/lib/dates';
 import { dayName } from '@/lib/dates';
 import { formatINR, roundTo, cn } from '@/lib/utils';
 import { roundKcal } from '@/lib/nutrition';
@@ -23,13 +26,11 @@ import { Callout } from '@/components/ui/Callout';
 import { MealCard } from '@/components/meals/MealCard';
 import { References } from '@/components/References';
 
-type View = 'day' | 'grocery' | 'prep';
+type View = 'day' | 'nutrients' | 'grocery' | 'prep';
 
 const STATUS_TONE = {
-  'below-target': 'text-emerald-700',
-  'within-target': 'text-emerald-700',
-  'above-target': 'text-amber-700',
-  'above-max': 'text-rose-700',
+  within: 'text-emerald-700',
+  over: 'text-rose-700',
 } as const;
 
 export function MealPlansView() {
@@ -38,7 +39,10 @@ export function MealPlansView() {
   const activePhase = phaseOn(settings, today);
   const [pickedPhase, setPickedPhase] = useState<PhaseId | null>(null);
   const phase = pickedPhase ?? activePhase;
-  const plans = usePlans(phase);
+  const activeSeason = seasonOn(settings, today);
+  const [pickedSeason, setPickedSeason] = useState<SeasonId | null>(null);
+  const season = pickedSeason ?? activeSeason;
+  const plans = usePlans(phase, season);
   const [pickedDay, setPickedDay] = useState<DayName | null>(null);
   const [view, setView] = useState<View>('day');
 
@@ -64,6 +68,19 @@ export function MealPlansView() {
         </p>
       </div>
 
+      <div>
+        <div className="mb-1 text-xs font-medium text-muted">Season</div>
+        <Segmented<SeasonId>
+          wrap
+          label="Season"
+          value={season}
+          onChange={setPickedSeason}
+          options={SEASON_IDS.map((s) => ({ value: s, label: `${SEASONS[s].name}${s === activeSeason ? ' · now' : ''}` }))}
+        />
+      </div>
+
+      <SeasonNote season={season} activeSeason={activeSeason} today={today} pinned={settings.season !== 'auto'} />
+
       <PlanPicker plans={plans} value={plan.def.id} onChange={(id) => setSettings((s) => ({ ...s, planId: id }))} />
 
       <Card className="space-y-3">
@@ -82,11 +99,13 @@ export function MealPlansView() {
       </Card>
 
       <Segmented<View>
+        wrap
         label="Section"
         value={view}
         onChange={setView}
         options={[
           { value: 'day', label: 'Daily meals' },
+          { value: 'nutrients', label: 'Vitamins & minerals' },
           { value: 'grocery', label: 'Groceries & cost' },
           { value: 'prep', label: 'Prep & safety' },
         ]}
@@ -124,11 +143,19 @@ export function MealPlansView() {
           <Callout tone="info" title="The 4-meal structure">
             Exactly four meals, no snacks. <strong>Meal 1</strong> is the same every day (about 10 minutes).{' '}
             <strong>Meal 2</strong> on weekdays is eaten cold at the office: no rice, dal, gravy or reheating.{' '}
-            <strong>Meal 3</strong> is the same Monday–Friday and is your pre-workout meal at 6:15–6:45 PM. Quantities step up
-            with each phase; the foods stay the same.
+            <strong>Meal 3</strong> is the same Monday–Friday and is your pre-workout meal at 6:15–6:45 PM. Quantities change
+            with each phase. Within a season the foods are the same every day; only the fruit and vegetables change with the season.
           </Callout>
 
-          <DayTotals totals={computed.totals} minutes={computed.activeMinutes} cost={computed.cost} phase={phase} />
+          <DayTotals
+            totals={computed.totals}
+            minutes={computed.activeMinutes}
+            morning={computed.morningMinutes}
+            weekend={computed.isWeekend}
+            cost={computed.cost}
+            averageCost={plan.weeklyFoodCost / 7}
+            phase={phase}
+          />
 
           <div className="grid gap-4 xl:grid-cols-2">
             {computed.meals.map((pm, i) => (
@@ -136,9 +163,15 @@ export function MealPlansView() {
             ))}
           </div>
           <p className="text-xs text-muted">
-            Nutrient values are estimates from the Indian Food Composition Tables (2017) and USDA data. {ENERGY_NOTE}
+            Nutrient values are estimates from the Indian Food Composition Tables (2017) and USDA SR28. {ENERGY_NOTE}
           </p>
         </section>
+      )}
+
+      {view === 'nutrients' && (
+        <Card>
+          <NutrientAudit plan={plan} />
+        </Card>
       )}
 
       {view === 'grocery' && <GroceryView plan={plan} plans={plans} />}
@@ -186,7 +219,67 @@ function PlanStat({ label, value, className, hint }: { label: string; value: str
   );
 }
 
-function DayTotals({ totals, minutes, cost, phase }: { totals: Nutrients; minutes: number; cost: number; phase: PhaseId }) {
+const SLOT_LABEL: Record<SlotId, string> = {
+  fruit1: 'Meal 1 fruit',
+  fruit3: 'Meal 3 fruit',
+  sabzi: 'Cooked vegetables',
+  salad: 'Salad',
+  greens: 'Leafy greens',
+};
+
+function SeasonNote({ season, activeSeason, today, pinned }: { season: SeasonId; activeSeason: SeasonId; today: string | null; pinned: boolean }) {
+  const S = SEASONS[season];
+  const next = today ? nextSeasonChange(today) : null;
+  return (
+    <Card as="div" className="p-4">
+      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
+          <Leaf size={16} aria-hidden className="text-emerald-700" /> {S.name} ({S.monthsLabel}): what’s in season
+        </h2>
+        {season === activeSeason && next && !pinned && (
+          <p className="text-xs text-muted">
+            Changes to {SEASONS[next.season].name.toLowerCase()} on {longDate(next.date)}
+          </p>
+        )}
+      </div>
+      <dl className="grid gap-x-5 gap-y-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
+        {(Object.keys(SLOT_LABEL) as SlotId[]).map((slot) => (
+          <div key={slot}>
+            <dt className="text-xs text-muted">{SLOT_LABEL[slot]}</dt>
+            <dd className="text-ink">
+              {S.slots[slot].name}
+              {S.slots[slot].fallback && <span className="block text-xs text-muted">Not in the market? {S.slots[slot].fallback}</span>}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mt-3 text-xs text-muted">
+        Meal 1 is still the same every day and Meal 3 the same Monday–Friday: within a season the fruit doesn’t change. On the 1st of
+        December, March, June and September the fruit and vegetables switch to the next season’s; everything else stays as it is. Onion,
+        tomato, potato, banana and papaya are sold all year. Seasons are approximate for the North Indian plains
+        {pinned ? '; you have pinned this season in Settings.' : '; if your market is early or late, pick the season in Settings.'}
+      </p>
+    </Card>
+  );
+}
+
+function DayTotals({
+  totals,
+  minutes,
+  morning,
+  weekend,
+  cost,
+  averageCost,
+  phase,
+}: {
+  totals: Nutrients;
+  minutes: number;
+  morning: number;
+  weekend: boolean;
+  cost: number;
+  averageCost: number;
+  phase: PhaseId;
+}) {
   const P = PHASES[phase];
   const fatPct = ((totals.fat * 9) / totals.kcal) * 100;
   const rows = [
@@ -201,7 +294,7 @@ function DayTotals({ totals, minutes, cost, phase }: { totals: Nutrients; minute
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3 className="text-sm font-semibold text-ink">Day total vs {P.name.split(' · ')[0]} target</h3>
         <p className="tabular text-xs text-muted">
-          ~{minutes} min hands-on cooking · food ≈ {formatINR(cost)}
+          {weekend ? `~${minutes} min hands-on cooking` : `~${morning} min hands-on before you leave · ~${minutes} min cooking in all (most of it the evening before)`}
         </p>
       </div>
       <dl className="tabular grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-3 lg:grid-cols-5">
@@ -213,6 +306,11 @@ function DayTotals({ totals, minutes, cost, phase }: { totals: Nutrients; minute
           </div>
         ))}
       </dl>
+      <p className="tabular mt-3 border-t border-line pt-2 text-xs text-muted">
+        Food today ≈ {formatINR(cost)} (this week’s average day ≈ {formatINR(averageCost)}). The monthly estimate also adds{' '}
+        {formatINR(PANTRY_MONTHLY)} a month (≈ {formatINR(PANTRY_MONTHLY / 30)} a day) for spices, salt, tea and other basics that no single meal
+        shows.
+      </p>
     </Card>
   );
 }
@@ -221,7 +319,7 @@ function GroceryView({ plan, plans }: { plan: ComputedPlan; plans: ComputedPlan[
   const prices = usePrices();
   const status = budgetStatus(plan.monthlyCost);
   const swaps = budgetSwaps(plan, prices);
-  const gap = plan.monthlyCost - BUDGET.targetMax;
+  const gap = plan.monthlyCost - BUDGET.max;
   const allSwapsCost = plan.monthlyCost - swaps.reduce((s, x) => s + x.monthlySaving, 0);
   const cheapest = Math.min(...plans.map((p) => p.costPer10gProtein));
   return (
@@ -230,7 +328,7 @@ function GroceryView({ plan, plans }: { plan: ComputedPlan; plans: ComputedPlan[
         <CardHeader
           title="Budget"
           icon={<Wallet size={18} />}
-          description={`Target ${formatINR(BUDGET.targetMin)}–${formatINR(BUDGET.targetMax)} a month; acceptable range ${formatINR(BUDGET.min)}–${formatINR(BUDGET.max)}. Food only — supplements are costed on the Health page. Prices are estimates (${PRICES_AS_OF}); edit them in Settings.`}
+          description={`Up to ${formatINR(BUDGET.max)} a month; there is no lower target, so the plans are built for nutrition, not for the lowest cost. Food only — supplements are costed on the Health page. Prices are estimates (${PRICES_AS_OF}); edit them in Settings.`}
         />
         <div className="tabular grid grid-cols-2 gap-4 sm:grid-cols-3">
           <div>
@@ -246,7 +344,9 @@ function GroceryView({ plan, plans }: { plan: ComputedPlan; plans: ComputedPlan[
 
         <div className="mt-4 overflow-x-auto">
           <table className="tabular w-full text-left text-sm">
-            <caption className="mb-1 text-left text-xs text-muted">All three plans in {PHASES[plan.phase].name.split(' · ')[0]}</caption>
+            <caption className="mb-1 text-left text-xs text-muted">
+              All three plans in {PHASES[plan.phase].name.split(' · ')[0]}, {SEASONS[plan.season].name.toLowerCase()}
+            </caption>
             <thead>
               <tr className="border-b border-line text-xs text-muted">
                 <th scope="col" className="py-1.5 pr-2 font-medium">Plan</th>
@@ -282,17 +382,19 @@ function GroceryView({ plan, plans }: { plan: ComputedPlan; plans: ComputedPlan[
           </p>
         </div>
 
-        {status === 'above-target' || status === 'above-max' ? (
-          <Callout tone="caution" className="mt-4" title={`About ${formatINR(roundTo(gap, 50))} a month above the target`}>
-            Mostly milk, curd and paneer: dairy is the low-fibre protein that lets the plans meet the protein target under the fibre caps.
+        {status === 'over' ? (
+          <Callout tone="caution" className="mt-4" title={`About ${formatINR(roundTo(gap, 50))} a month over ${formatINR(BUDGET.max)}`}>
+            With your prices this plan costs more than the ceiling.
             {swaps.length > 0 && <> All the swaps below together bring it to ≈ {formatINR(roundTo(allSwapsCost, 50))}.</>}
           </Callout>
         ) : (
-          <Callout tone="good" className="mt-4" title={`Within the ${formatINR(BUDGET.targetMin)}–${formatINR(BUDGET.targetMax)} target`}>
-            Prices vary by city and season; edit them in Settings and the totals update.
+          <Callout tone="good" className="mt-4" title={`Within the ${formatINR(BUDGET.max)} budget`}>
+            Prices vary by city and season; edit them in Settings and the totals update. Milk and curd average{' '}
+            {Math.round(plan.dairyPerDay)} g a day in this plan: dairy is the low-fibre protein that lets the plans meet protein under the
+            fibre caps, and the main source of B12 and calcium for vegetarians.
           </Callout>
         )}
-        {swaps.length > 0 && (
+        {status === 'over' && swaps.length > 0 && (
           <div className="mt-4">
             <h3 className="mb-1.5 text-sm font-semibold text-ink">Ways to spend less on this plan</h3>
             <ul className="space-y-1.5 text-sm">
@@ -419,7 +521,7 @@ function PrepView({ plan }: { plan: ComputedPlan }) {
         </ol>
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
-            href={`/meal-plans/cards?plan=${plan.def.id}&phase=${plan.phase}`}
+            href={`/meal-plans/cards?plan=${plan.def.id}&phase=${plan.phase}&season=${plan.season}`}
             className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-line-strong px-3 text-sm font-medium text-ink hover:bg-slate-50"
           >
             <Printer size={16} aria-hidden /> Printable dinner cooking cards

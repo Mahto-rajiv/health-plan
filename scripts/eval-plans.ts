@@ -1,20 +1,31 @@
-// Day-by-day report for every plan and phase. Run: npm run plans:report
-import { defaultPlans } from '../lib/meal-plans';
+// Summary of every plan × phase × season at default prices. Run: npm run plans:report
+// Writes docs/plan-report.md (pasted into PROGRESS.md) and prints the same.
+import { writeFileSync } from 'node:fs';
+import { allDefaultPlans } from '../lib/meal-plans';
+import { auditPlan, fmtAmount } from '../lib/nutrient-audit';
+import { PHASES } from '../lib/config';
+import { SEASONS } from '../lib/data/seasons';
 
-const DEFAULT_PLANS = defaultPlans();
-import { PHASES, PHASE_IDS } from '../lib/config';
-
-for (const ph of PHASE_IDS) {
-  console.log(`\n##### ${PHASES[ph].name} — kcal ${PHASES[ph].kcal.join('–')}, protein ${PHASES[ph].protein.map(Math.round).join('–')} g, fibre ≤ ${PHASES[ph].fibreMax} g`);
-  for (const plan of DEFAULT_PLANS[ph]) {
-    console.log(`\n=== ${plan.def.name}`);
-    for (const d of plan.days) {
-      const n = d.totals;
-      const per = d.mealTotals.map((x) => `${Math.round(x.kcal)}/${Math.round(x.protein)}`).join(' ');
-      console.log(
-        `${d.day.slice(0, 3)} kcal ${Math.round(n.kcal)} P ${Math.round(n.protein)} C ${Math.round(n.carbs)} F ${Math.round(n.fat)} (${Math.round((n.fat * 900) / n.kcal)}%) Fib ${Math.round(n.fiber)} Fe ${n.iron.toFixed(1)} Ca ${Math.round(n.calcium)} Zn ${n.zinc.toFixed(1)} VC ${Math.round(n.vitC)} B12 ${n.b12.toFixed(1)} ₹${Math.round(d.cost)} | ${per}`,
-      );
-    }
-    console.log(`month ≈ ₹${Math.round(plan.monthlyCost)} · ₹${plan.costPer10gProtein.toFixed(1)} per 10 g protein · ${plan.eggsPerWeek} eggs/week`);
-  }
+const plans = allDefaultPlans();
+const lines: string[] = [
+  '# Plan report',
+  '',
+  `Generated ${new Date().toISOString().slice(0, 10)} by \`npm run plans:report\` at default prices. Per day: range across the 7 days; nutrients are weekly averages.`,
+  '',
+  '| Phase | Season | Plan | kcal | Protein g | Fibre g | Fat % | Milk+curd g/day | Morning min (weekdays) | ₹/month | Below EAR (weekly avg) |',
+  '|---|---|---|---|---|---|---|---|---|---|---|',
+];
+for (const p of plans) {
+  const r = (k: 'kcal' | 'protein' | 'fiber') => `${Math.round(p.ranges[k][0])}–${Math.round(p.ranges[k][1])}`;
+  const fat = p.days.map((d) => (d.totals.fat * 900) / d.totals.kcal);
+  const morning = p.days.filter((d) => !d.isWeekend).map((d) => d.morningMinutes);
+  const below = auditPlan(p)
+    .filter((a) => a.status === 'below-ear')
+    .map((a) => `${a.info.label} ${fmtAmount(a.value)}/${fmtAmount(a.info.ear!)} ${a.info.unit}`);
+  lines.push(
+    `| ${p.phase} | ${SEASONS[p.season].name} | ${p.def.shortName} | ${r('kcal')} | ${r('protein')} | ${r('fiber')} | ${Math.round(Math.min(...fat))}–${Math.round(Math.max(...fat))} | ${Math.round(p.dairyPerDay)} | ${Math.max(...morning)} | ${Math.round(p.monthlyCost).toLocaleString('en-IN')} | ${below.join('; ') || '—'} |`,
+  );
 }
+lines.push('', `Phase bands: ${[0, 1, 2].map((ph) => `${ph}: ${PHASES[ph as 0].kcal.join('–')} kcal, ${PHASES[ph as 0].protein.map(Math.round).join('–')} g protein, fibre ≤ ${PHASES[ph as 0].fibreMax} g`).join(' · ')}.`, '');
+writeFileSync('docs/plan-report.md', lines.join('\n'));
+console.log(lines.join('\n'));

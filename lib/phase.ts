@@ -1,4 +1,5 @@
 import { PHASES, phaseForWeek, type PhaseId } from './config';
+import { SEASON_IDS, seasonForDate, type SeasonId } from './data/seasons';
 import { daysBetween, programWeek } from './dates';
 import { assessGain } from './progress';
 import type { BodyEntry, Settings } from './storage';
@@ -7,6 +8,13 @@ import type { BodyEntry, Settings } from './storage';
 export function phaseOn(settings: Settings, iso: string | null): PhaseId {
   if (settings.phase !== 'auto') return settings.phase;
   return iso ? phaseForWeek(programWeek(settings.programStart, iso)) : 0;
+}
+
+/** The season in force on a date: the Settings override, or the calendar. */
+export function seasonOn(settings: Settings, iso: string | null): SeasonId {
+  // Ignore anything that isn't a known season (e.g. a value saved by an older version).
+  if (SEASON_IDS.includes(settings.season as SeasonId)) return settings.season as SeasonId;
+  return seasonForDate(iso ?? new Date().toISOString().slice(0, 10));
 }
 
 /** Weight assessment for today with the user's settings. */

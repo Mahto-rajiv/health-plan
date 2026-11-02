@@ -2,6 +2,8 @@ import type { MealItem } from '../nutrition';
 import type { PhaseId } from '../config';
 import type { FoodId } from './foods';
 import type { TutorialId } from './tutorials';
+import { SEASONS, type SeasonId, type SlotId, SEASON_IDS } from './seasons';
+import { QUANTITIES } from './plan-quantities.generated';
 
 // ─── Four-meal structure (applies to every plan) ─────────────────────────────
 // • Exactly 4 meals a day. No snacks.
@@ -28,12 +30,33 @@ export type MealSlot = 1 | 2 | 3 | 4;
 /** Grams for Phase 0, 1 and 2, or one value for all phases. */
 export type Grams = number | readonly [number, number, number];
 
-export interface PlanItem {
-  food: FoodId;
+interface PlanItemBase {
+  /** Starting amount per phase (edible grams). The solver (npm run solve) picks the final amount within `range`. */
   g: Grams;
-  /** Household description, e.g. "2 parathas" or "soaked overnight". One per phase if it changes. */
+  /** Household description, e.g. "2 parathas" or "soaked overnight". One per phase if it changes. May use {slot} tokens. */
   note?: string | readonly [string, string, string];
+  /** Smallest and largest amount the solver may use, any phase. Default: the starting amounts ±40%. 0 makes the item optional. */
+  range?: readonly [number, number];
+  /** Amounts are multiples of this (default 5 g; eggs 50 g). */
+  step?: number;
 }
+
+/** A fixed food, the same all year. */
+export interface FoodItem extends PlanItemBase {
+  food: FoodId;
+  slot?: never;
+}
+
+/** A seasonal slot: the food changes with the season (lib/data/seasons.ts). */
+export interface SlotItem extends PlanItemBase {
+  slot: SlotId;
+  food?: never;
+}
+
+export type PlanItem = FoodItem | SlotItem;
+
+/** Key used for an item in the solver output. */
+export const itemKey = (it: PlanItem): string => (it.slot ? `slot:${it.slot}` : it.food!);
 
 export interface Substitution {
   swap: string;
@@ -64,6 +87,8 @@ export interface Meal {
   requiresReheat: boolean;
   /** Office meals: when the food is made. */
   madeWhen?: 'morning' | 'night-before';
+  /** Office meals: hands-on minutes on the morning itself (packing). Weekday mornings must stay short. */
+  morningMin?: number;
   /** Something to do the day before (soaking, boiling potatoes). */
   dayBefore?: string;
 }
@@ -120,23 +145,33 @@ export const MEAL_SLOTS: Record<MealSlot, { name: string; weekday: string; weeke
 const meal = (m: Meal): Meal => m;
 
 const COLD_PACK =
-  'Pack it cold, between the frozen bottle and an ice pack in the insulated bag; into the office fridge on arrival. If there is no fridge space, eat it by ~12:30 PM.';
+  'Morning: straight from the fridge into the insulated bag, between the frozen bottle and an ice pack; into the office fridge on arrival. If there is no fridge space, eat it by ~12:30 PM.';
+
+// Weekday lunches are cooked the evening before (with or after dinner) and kept
+// in the fridge, so the only morning work is Meal 1 and ~3 minutes of packing.
+// USDA FSIS: refrigerate cooked food within 2 hours; leftovers keep 3–4 days.
+// These are eaten the next day.
+const OVERNIGHT = 'Cool on a plate for 10–15 minutes, box it and put it in the fridge (within 2 hours of cooking). Eat it the next day, not later.';
+const MORNING_PACK = 'Morning (about 3 minutes): pack the box straight from the fridge with a box of curd and the frozen bottle.';
 
 // Meal 1 ─────────────────────────────────────────────────────────────────────
 
 const M1_VEG = meal({
   id: 'm1-veg',
-  title: 'Oats cooked in milk with peanuts, and papaya',
+  title: 'Oats cooked in milk with peanuts and seeds, and {fruit1}',
   items: [
     { food: 'milk', g: 300 },
     { food: 'oats', g: [55, 60, 60] },
     { food: 'peanuts', g: [15, 25, 25], note: 'dry-roasted, crushed' },
-    { food: 'papaya', g: 150, note: 'cut, on the side' },
+    { food: 'pumpkinSeeds', g: 5, range: [0, 15], note: 'stirred in at the end' },
+    { food: 'flax', g: 5, range: [0, 10], note: 'ground, stirred in at the end' },
+    { food: 'sunflowerSeeds', g: 5, range: [0, 20], note: 'stirred in at the end' },
+    { slot: 'fruit1', g: 150, range: [100, 250], note: 'cut, on the side' },
   ],
   steps: [
     'Bring the milk to a boil in a small pan.',
     'Add the oats and simmer 3–4 minutes, stirring, until thick.',
-    'Top with the crushed roasted peanuts; eat the papaya alongside.',
+    'Stir in the ground flaxseed and the pumpkin and sunflower seeds; top with the crushed roasted peanuts. Eat the {fruit1} alongside.',
   ],
   activeMin: 8,
   totalMin: 10,
@@ -145,24 +180,30 @@ const M1_VEG = meal({
   substitutions: [
     { swap: 'Oats', with: 'Daliya, same weight (needs ~15 min, so cook 2 days’ worth at once)' },
     { swap: 'Peanuts', with: 'Same weight of almonds (≈ 6× the price)' },
-    { swap: 'Papaya', with: 'Guava (half the weight) or orange; banana has ~1/6 the vitamin C' },
+    { swap: 'The fruit', with: 'Any fruit in season (see the season note); papaya is in the market all year' },
+    { swap: 'Pumpkin seeds', with: 'Leave out if they don’t suit you; the zinc then comes mostly from dals and atta' },
   ],
-  why: 'Quick, mostly carbohydrate with ~20 g protein, moderate in fat and fibre so it sits well on the commute. Papaya covers most of the day’s vitamin C.',
+  why: 'Quick, mostly carbohydrate with ~20 g protein, moderate in fat and fibre so it sits well on the commute. Pumpkin seeds add zinc and iron; ground flaxseed adds omega-3 (ALA). The fruit changes with the season; everything else stays the same all year.',
+  keeps: 'Grind a week’s flaxseed at a time and keep it in a closed jar in the fridge (ground flax goes stale).',
   requiresReheat: false,
 });
 
 const M1_EGG = meal({
   id: 'm1-egg',
-  title: 'Oats cooked in milk with boiled eggs, and papaya',
+  title: 'Oats cooked in milk with boiled eggs and seeds, and {fruit1}',
   items: [
     { food: 'milk', g: 200 },
     { food: 'oats', g: 70 },
-    { food: 'egg', g: [50, 100, 100], note: ['1 egg, boiled last night', '2 eggs, boiled last night', '2 eggs, boiled last night'] },
-    { food: 'papaya', g: 150, note: 'cut, on the side' },
+    { food: 'egg', g: [50, 100, 100], step: 50, range: [50, 100], note: 'boiled last night' },
+    { food: 'pumpkinSeeds', g: 5, range: [0, 15], note: 'stirred in at the end' },
+    { food: 'flax', g: 5, range: [0, 10], note: 'ground, stirred in at the end' },
+    { food: 'sunflowerSeeds', g: 5, range: [0, 20], note: 'stirred in at the end' },
+    { slot: 'fruit1', g: 150, range: [100, 250], note: 'cut, on the side' },
   ],
   steps: [
     'Bring the milk to a boil in a small pan, add the oats and simmer 3–4 minutes.',
-    'Peel the egg(s) boiled last night; season with salt and pepper.',
+    'Stir in the ground flaxseed and the pumpkin and sunflower seeds.',
+    'Peel the egg(s) boiled last night; season with salt and pepper. Eat the {fruit1} alongside.',
   ],
   activeMin: 7,
   totalMin: 10,
@@ -171,10 +212,10 @@ const M1_EGG = meal({
   substitutions: [
     { swap: 'Oats', with: 'Daliya, same weight' },
     { swap: 'Boiled eggs', with: 'A 2-egg omelette (adds ~5 min and 1 tsp oil)' },
-    { swap: 'Papaya', with: 'Guava (half the weight) or orange; banana has ~1/6 the vitamin C' },
+    { swap: 'The fruit', with: 'Any fruit in season (see the season note); papaya is in the market all year' },
   ],
-  why: 'Same base as the vegetarian Meal 1; eggs replace the peanuts for protein.',
-  keeps: 'Boil tomorrow’s eggs while dinner cooks (10 minutes), cool them in cold water and refrigerate. Food Standards Scotland advises eating hard-boiled eggs within 2 days.',
+  why: 'Same base as the vegetarian Meal 1; eggs replace the peanuts for protein. The fruit changes with the season; everything else stays the same all year.',
+  keeps: 'Grind a week’s flaxseed at a time and keep it in the fridge. Boil tomorrow’s eggs while dinner cooks (10 minutes), cool them in cold water and refrigerate. Food Standards Scotland advises eating hard-boiled eggs within 2 days.',
   tutorials: ['boiledEggs'],
   requiresReheat: false,
 });
@@ -182,18 +223,19 @@ const M1_EGG = meal({
 // Meal 3 ─────────────────────────────────────────────────────────────────────
 
 const M3_WEEKDAY = meal({
-  id: 'm3-curd-banana',
-  title: 'Curd with banana, dates and peanuts',
+  id: 'm3-curd-fruit',
+  title: 'Curd with {fruit3}, dates and peanuts',
   items: [
     { food: 'curd', g: 225 },
-    { food: 'banana', g: 110, note: '1 medium, packed whole' },
-    { food: 'dates', g: [20, 30, 40], note: ['2 dates', '3 dates', '4 dates'] },
+    { slot: 'fruit3', g: 110, range: [80, 200], note: 'packed whole' },
+    { food: 'dates', g: [20, 30, 40], step: 10 },
     { food: 'peanuts', g: 10, note: 'dry-roasted' },
+    { food: 'sunflowerSeeds', g: 5, range: [0, 20] },
   ],
   steps: [
-    'Morning: spoon the curd into a leak-proof box. Pack the banana whole, and the dates and peanuts in a small dry box.',
+    'Morning: spoon the curd into a leak-proof box. Pack the {fruit3} whole, and the dates and peanuts in a small dry box.',
     'At the office: curd into the fridge on arrival.',
-    '6:15–6:45 PM: slice the banana and chop the dates into the curd; sprinkle the peanuts on top.',
+    '6:15–6:45 PM: chop the dates into the curd and sprinkle the peanuts and sunflower seeds on top; eat the {fruit3} alongside.',
   ],
   activeMin: 3,
   totalMin: 3,
@@ -202,12 +244,13 @@ const M3_WEEKDAY = meal({
   substitutions: [
     { swap: 'Dates', with: 'Raisins, same weight' },
     { swap: 'Peanuts', with: 'Roasted chana, twice the weight (about 3× the fibre)' },
-    { swap: 'Banana', with: 'Chikoo or mango in season' },
+    { swap: 'The fruit', with: 'Banana works in any season (in the market all year)' },
   ],
   why: 'Pre-workout 2–3 h before training: mostly carbohydrate with some protein and little fat or fibre. Nothing to cook or heat.',
   keeps: 'The curd is the perishable part. Keep it in the office fridge; without one, eat it within ~4 h of leaving home.',
   requiresReheat: false,
   madeWhen: 'morning',
+  morningMin: 3,
 });
 
 // Meal 2: office lunches ─────────────────────────────────────────────────────
@@ -220,7 +263,7 @@ const L_SATTU = meal({
     { food: 'sattu', g: [25, 25, 40], note: 'filling' },
     { food: 'oil', g: [9, 9, 12], note: 'dough and tawa' },
     { food: 'curd', g: 225 },
-    { food: 'salad', g: [50, 50, 80], note: 'onion and cucumber, cut in the morning' },
+    { slot: 'salad', g: [50, 50, 80], range: [40, 120], note: '{salad}' },
     { food: 'lemon', g: 5, note: 'in the filling' },
   ],
   steps: [
@@ -228,7 +271,8 @@ const L_SATTU = meal({
     'Knead the atta into a soft dough and divide it into balls.',
     'Stuff each ball with the filling, seal and roll out gently.',
     'Cook on a hot tawa with a little oil until there are brown spots on both sides.',
-    'Let the parathas cool on a plate for 10 minutes before packing, so steam doesn’t make them soggy.',
+    `${OVERNIGHT} Steam makes warm parathas soggy, so let them cool fully before wrapping them in foil. Cut the salad and keep it in a closed box.`,
+    MORNING_PACK,
   ],
   activeMin: 20,
   totalMin: 25,
@@ -242,7 +286,8 @@ const L_SATTU = meal({
   keeps: COLD_PACK,
   tutorials: ['sattuParatha'],
   requiresReheat: false,
-  madeWhen: 'morning',
+  madeWhen: 'night-before',
+  morningMin: 3,
 });
 
 const L_PANEER_ROLL = meal({
@@ -251,7 +296,9 @@ const L_PANEER_ROLL = meal({
   items: [
     { food: 'atta', g: [80, 80, 90], note: ['2 rotis', '2 rotis', '2 large rotis'] },
     { food: 'paneer', g: [60, 80, 110] },
-    { food: 'mixedVeg', g: [60, 80, 90], note: 'onion, tomato, capsicum' },
+    { food: 'onion', g: [25, 30, 35] },
+    { food: 'tomato', g: [20, 30, 30] },
+    { food: 'capsicum', g: [15, 20, 25] },
     { food: 'oil', g: 4 },
     { food: 'curd', g: 125, note: 'with chopped mint and salt' },
   ],
@@ -260,7 +307,8 @@ const L_PANEER_ROLL = meal({
     'Heat the oil, add jeera, then onion, tomato and capsicum; cook 4–5 minutes with salt, haldi and garam masala.',
     'Crumble in the paneer and cook 2 minutes until dry.',
     'Cool, then roll the bhurji inside the rotis and wrap in foil.',
-    'Pack the curd separately with mint and salt as a dip.',
+    OVERNIGHT,
+    `${MORNING_PACK} Stir chopped mint and salt into the curd as a dip.`,
   ],
   activeMin: 20,
   totalMin: 25,
@@ -268,13 +316,14 @@ const L_PANEER_ROLL = meal({
   flavour: 'Cook the bhurji dry; a squeeze of lemon and chaat masala just before rolling keep it bright when cold.',
   substitutions: [
     { swap: 'Paneer', with: 'Tofu, same weight (less fat, similar protein)' },
-    { swap: 'Capsicum', with: 'Peas or grated carrot' },
+    { swap: 'Capsicum', with: 'Peas in winter, or grated carrot' },
   ],
   why: 'Paneer and curd travel safely cold for ~4 h with the frozen bottle, and taste fine unheated.',
   keeps: COLD_PACK,
   tutorials: ['paneerBhurji', 'roti'],
   requiresReheat: false,
-  madeWhen: 'morning',
+  madeWhen: 'night-before',
+  morningMin: 3,
 });
 
 const L_CHILLA = meal({
@@ -283,7 +332,8 @@ const L_CHILLA = meal({
   items: [
     { food: 'besan', g: [65, 85, 110], note: ['2 chillas', '2 chillas', '3 chillas'] },
     { food: 'paneer', g: 30, note: 'grated, inside' },
-    { food: 'mixedVeg', g: 200, note: 'onion, tomato, coriander' },
+    { food: 'onion', g: 70, note: 'chopped, with coriander' },
+    { food: 'tomato', g: 70, note: 'chopped' },
     { food: 'oil', g: [5, 6, 6] },
     { food: 'curd', g: [125, 125, 225] },
   ],
@@ -291,7 +341,8 @@ const L_CHILLA = meal({
     'Whisk the besan with water, salt, ajwain and haldi into a pouring batter; stir in the chopped onion, tomato, chilli and coriander.',
     'Pour a ladle onto a hot greased tawa, spread thin and cook ~2 minutes a side.',
     'Sprinkle grated paneer on one half and fold.',
-    'Cool before packing; pack the curd separately.',
+    OVERNIGHT,
+    MORNING_PACK,
   ],
   activeMin: 20,
   totalMin: 25,
@@ -304,7 +355,8 @@ const L_CHILLA = meal({
   keeps: COLD_PACK,
   tutorials: ['cheela'],
   requiresReheat: false,
-  madeWhen: 'morning',
+  madeWhen: 'night-before',
+  morningMin: 3,
 });
 
 const L_SOYA_ROLL = meal({
@@ -313,15 +365,16 @@ const L_SOYA_ROLL = meal({
   items: [
     { food: 'atta', g: [55, 55, 70], note: ['2 rotis', '2 rotis', '2 large rotis'] },
     { food: 'soyaChunks', g: [20, 35, 45], note: 'soaked, squeezed, minced' },
-    { food: 'mixedVeg', g: [50, 55, 100], note: 'onion, tomato, peas' },
+    { slot: 'sabzi', g: [50, 55, 100], note: '{sabzi}, finely chopped' },
     { food: 'oil', g: [9, 9, 12] },
     { food: 'curd', g: 250 },
   ],
   steps: [
     'Night before, while dinner cooks: soak the soya chunks in hot water 10 minutes, squeeze out all the water and mince them in a mixer.',
-    'Sauté onion, ginger-garlic, tomato and peas in the oil; add the soya, salt, chilli and garam masala; cook dry ~5 minutes.',
-    'Cool, refrigerate overnight in a closed box.',
-    'Morning: make the rotis, roll the cold keema inside and wrap in foil. Pack the curd separately.',
+    'Sauté the onion, ginger-garlic, tomato and the chopped vegetables in the oil; add the soya, salt, chilli and garam masala; cook dry ~5 minutes.',
+    'Make the rotis, roll the cooled keema inside and wrap in foil.',
+    OVERNIGHT,
+    MORNING_PACK,
   ],
   activeMin: 20,
   totalMin: 30,
@@ -329,13 +382,14 @@ const L_SOYA_ROLL = meal({
   flavour: 'Squeeze the soya really dry so it takes up the masala; finish with kasuri methi and lemon. Raw onion rings in the roll add crunch.',
   substitutions: [
     { swap: 'Soya chunks', with: 'Paneer, about 2.5× the weight' },
-    { swap: 'Peas', with: 'Grated carrot or capsicum' },
+    { swap: 'The vegetables', with: 'Grated carrot or capsicum' },
   ],
   why: 'Soya is the cheapest protein in the food table. It stays at ≤ 20 g a day in Phase 0 while your gut adjusts.',
   keeps: COLD_PACK,
   tutorials: ['soyaKeema', 'roti'],
   requiresReheat: false,
   madeWhen: 'night-before',
+  morningMin: 3,
 });
 
 const L_ALOO_PANEER = meal({
@@ -343,16 +397,17 @@ const L_ALOO_PANEER = meal({
   title: 'Aloo-paneer parathas with curd',
   items: [
     { food: 'atta', g: 110, note: ['2 parathas', '2 parathas', '2 large parathas'] },
-    { food: 'potato', g: [55, 70, 70], note: 'boiled the night before' },
+    { food: 'potato', g: [55, 70, 70], note: 'boiled with dinner' },
     { food: 'paneer', g: [60, 60, 75], note: 'grated' },
     { food: 'oil', g: 6 },
     { food: 'curd', g: 225 },
   ],
   steps: [
-    'Mash the cold boiled potato with the grated paneer, salt, green chilli, coriander and amchur.',
+    'Mash the cooled boiled potato with the grated paneer, salt, green chilli, coriander and amchur.',
     'Stuff into balls of atta dough and roll out gently.',
     'Cook on the tawa with a little oil until brown spots appear on both sides.',
-    'Cool 10 minutes before packing; pack the curd separately.',
+    OVERNIGHT,
+    MORNING_PACK,
   ],
   activeMin: 20,
   totalMin: 25,
@@ -362,10 +417,11 @@ const L_ALOO_PANEER = meal({
     { swap: 'Paneer', with: 'More potato plus 15 g sattu in the filling' },
   ],
   keeps: COLD_PACK,
-  dayBefore: 'Boil the potatoes with dinner (pressure cooker, 2–3 whistles) and refrigerate them.',
+  dayBefore: 'Boil the potatoes with dinner (pressure cooker, 2–3 whistles) and let them cool before mashing.',
   tutorials: ['roti'],
   requiresReheat: false,
-  madeWhen: 'morning',
+  madeWhen: 'night-before',
+  morningMin: 3,
 });
 
 const L_EGG_ROLL = meal({
@@ -373,8 +429,10 @@ const L_EGG_ROLL = meal({
   title: 'Egg bhurji rolls with curd',
   items: [
     { food: 'atta', g: [90, 105, 110], note: ['2 rotis', '2 rotis', '2 large rotis'] },
-    { food: 'egg', g: [100, 100, 150], note: ['2 eggs', '2 eggs', '3 eggs'] },
-    { food: 'mixedVeg', g: [50, 60, 65], note: 'onion, tomato, capsicum' },
+    { food: 'egg', g: [100, 100, 150], step: 50, range: [100, 150] },
+    { food: 'onion', g: [20, 25, 25] },
+    { food: 'tomato', g: [15, 20, 20] },
+    { food: 'capsicum', g: [15, 15, 20] },
     { food: 'oil', g: [5, 5, 7] },
     { food: 'curd', g: 125 },
   ],
@@ -382,7 +440,9 @@ const L_EGG_ROLL = meal({
     'Make the rotis.',
     'Sauté onion, tomato and capsicum in the oil 3–4 minutes with salt, haldi and chilli.',
     'Add the beaten eggs and stir until completely set, with no runny parts.',
-    'Cool, roll inside the rotis and wrap in foil. Pack the curd separately.',
+    'Cool, roll inside the rotis and wrap in foil.',
+    OVERNIGHT,
+    MORNING_PACK,
   ],
   activeMin: 15,
   totalMin: 20,
@@ -392,7 +452,8 @@ const L_EGG_ROLL = meal({
   keeps: `Cook the eggs until fully set. ${COLD_PACK}`,
   tutorials: ['eggBhurji', 'roti'],
   requiresReheat: false,
-  madeWhen: 'morning',
+  madeWhen: 'night-before',
+  morningMin: 3,
 });
 
 const L_CHICKEN_ROLL = meal({
@@ -401,14 +462,15 @@ const L_CHICKEN_ROLL = meal({
   items: [
     { food: 'atta', g: [100, 105, 110], note: ['2 rotis', '2 rotis', '2 large rotis'] },
     { food: 'chicken', g: [60, 70, 80], note: 'boneless, cooked the night before' },
-    { food: 'salad', g: [50, 60, 60], note: 'raw onion and cucumber' },
+    { slot: 'salad', g: [50, 60, 60], range: [40, 120], note: '{salad}, sliced' },
     { food: 'oil', g: [9, 9, 12] },
     { food: 'curd', g: [100, 125, 250] },
   ],
   steps: [
     'Tuesday night: when the dinner chicken is browned in masala and fully cooked (no pink inside), lift this portion out before adding water. Cool and refrigerate in a closed box.',
-    'Morning: shred the cold chicken, mix with sliced onion, lemon and chaat masala.',
-    'Roll inside fresh rotis and wrap in foil. Pack the curd separately.',
+    'Same night, once it is cool: shred the chicken, mix with the sliced salad, lemon and chaat masala, roll inside rotis and wrap in foil.',
+    OVERNIGHT,
+    MORNING_PACK,
   ],
   activeMin: 15,
   totalMin: 15,
@@ -419,6 +481,7 @@ const L_CHICKEN_ROLL = meal({
   tutorials: ['roti'],
   requiresReheat: false,
   madeWhen: 'night-before',
+  morningMin: 3,
 });
 
 // Meal 4: dinners ────────────────────────────────────────────────────────────
@@ -427,12 +490,12 @@ const DAL_RICE_POTS = 'Pressure cooker with a separator (dal below, rice above) 
 
 const D_MOONG = meal({
   id: 'd-moong-dal-rice',
-  title: 'Moong dal, rice and soya-matar sabzi',
+  title: 'Moong dal, rice and soya sabzi',
   items: [
     { food: 'moongDal', g: [35, 35, 40] },
     { food: 'rice', g: 130 },
     { food: 'soyaChunks', g: [20, 40, 45], note: 'soaked 10 min, squeezed' },
-    { food: 'mixedVeg', g: 50, note: 'peas, onion, tomato' },
+    { slot: 'sabzi', g: 50, range: [50, 200], note: '{sabzi}' },
     { food: 'oil', g: [8, 9, 11], note: 'sabzi and tadka' },
     { food: 'curd', g: 175 },
   ],
@@ -440,7 +503,7 @@ const D_MOONG = meal({
     DAL_RICE_POTS,
     'Soak the soya chunks in hot water 10 minutes; squeeze them dry.',
     'Rinse the dal and rice. Dal with 3× water, haldi and salt in the cooker; rice with 2× water in the separator. 3 whistles, then let the pressure drop.',
-    'Meanwhile in the kadhai: jeera, onion, tomato and spices, then the peas and soya; cover and cook 8 minutes. Move to a bowl.',
+    'Meanwhile in the kadhai: jeera, onion, tomato and spices, then the chopped vegetables and soya; cover and cook 8 minutes. Move to a bowl.',
     'Same kadhai: heat 1 tsp oil, add jeera, garlic, hing and dry red chilli; pour over the dal.',
     'Serve with the curd.',
   ],
@@ -463,7 +526,7 @@ const D_RAJMA = meal({
   items: [
     { food: 'rajma', g: [50, 60, 80], note: 'soaked overnight' },
     { food: 'rice', g: [60, 65, 65] },
-    { food: 'salad', g: [80, 80, 100] },
+    { slot: 'salad', g: [80, 80, 100], range: [50, 150], note: '{salad}' },
     { food: 'oil', g: [8, 10, 12] },
     { food: 'curd', g: 175 },
   ],
@@ -485,29 +548,29 @@ const D_RAJMA = meal({
 });
 
 const D_PALAK_PANEER = meal({
-  id: 'd-palak-paneer-rice',
-  title: 'Palak paneer, moong dal and rice',
+  id: 'd-saag-paneer-rice',
+  title: 'Saag paneer, moong dal and rice',
   items: [
     { food: 'paneer', g: 30 },
     { food: 'moongDal', g: [30, 35, 40], note: 'thin dal' },
-    { food: 'spinach', g: [125, 135, 250] },
+    { slot: 'greens', g: [125, 135, 250], range: [100, 300], note: '{greens}' },
     { food: 'rice', g: [115, 125, 125] },
     { food: 'oil', g: 4 },
     { food: 'curd', g: 175 },
   ],
   steps: [
     'Pressure cooker with a separator: moong dal (3× water, haldi, salt) below, rice (2× water) above; 3 whistles.',
-    'Kadhai: boil water, blanch the spinach 2 minutes, drain, cool in cold water and blend.',
-    'Same kadhai: oil, jeera, onion, ginger-garlic, tomato and spices; add the spinach purée and simmer 5 minutes.',
+    'Kadhai: boil water, blanch the greens 2 minutes, drain, cool in cold water and blend.',
+    'Same kadhai: oil, jeera, onion, ginger-garlic, tomato and spices; add the green purée and simmer 5 minutes.',
     'Add the paneer cubes for the last 3 minutes.',
-    'Temper the dal with jeera and garlic in the kadhai once the palak paneer is out, and serve everything with the curd.',
+    'Temper the dal with jeera and garlic in the kadhai once the saag paneer is out, and serve everything with the curd.',
   ],
   activeMin: 25,
   totalMin: 35,
   pots: 2,
-  flavour: 'Cold water after blanching keeps the palak green; kasuri methi and lemon at the end.',
+  flavour: 'Cold water after blanching keeps the greens bright; kasuri methi and lemon at the end.',
   substitutions: [
-    { swap: 'Spinach', with: 'Methi or mixed greens' },
+    { swap: 'The greens', with: 'Methi, or any leafy greens in season' },
     { swap: 'Paneer', with: 'Soaked soya chunks, 40% of the weight' },
   ],
   tutorials: ['palakPaneer', 'dal'],
@@ -535,7 +598,7 @@ const D_TOOR = meal({
   totalMin: 35,
   pots: 2,
   flavour: 'Tomato and a pinch of jaggery in the tadka for Gujarati-style dal; or garlic and red chilli for Punjabi style.',
-  substitutions: [{ swap: 'Potato', with: 'Any seasonal sabzi, 150 g' }],
+  substitutions: [{ swap: 'Potato', with: 'The season’s sabzi, 150 g' }],
   tutorials: ['dal'],
   requiresReheat: false,
 });
@@ -547,7 +610,7 @@ const D_SOYA_CURRY = meal({
     { food: 'soyaChunks', g: [20, 35, 45], note: 'soaked 10 min, squeezed' },
     { food: 'rice', g: [85, 85, 105] },
     { food: 'potato', g: [60, 60, 80], note: 'cubed, in the curry' },
-    { food: 'salad', g: [80, 100, 100] },
+    { slot: 'salad', g: [80, 100, 100], range: [50, 150], note: '{salad}' },
     { food: 'oil', g: [4, 6, 8] },
     { food: 'curd', g: 175 },
   ],
@@ -573,9 +636,9 @@ const D_EGG_CURRY = meal({
   id: 'd-egg-curry-rice',
   title: 'Egg curry with rice and sabzi',
   items: [
-    { food: 'egg', g: [100, 100, 150], note: ['2 eggs', '2 eggs', '3 eggs'] },
+    { food: 'egg', g: [100, 100, 150], step: 50, range: [100, 150] },
     { food: 'rice', g: [125, 130, 130] },
-    { food: 'mixedVeg', g: 200, note: 'onion-tomato masala and a side sabzi' },
+    { slot: 'sabzi', g: 200, range: [100, 250], note: 'onion-tomato masala and a side sabzi of {sabzi}' },
     { food: 'oil', g: 4 },
     { food: 'curd', g: 150 },
   ],
@@ -600,7 +663,7 @@ const D_CHICKEN = meal({
   items: [
     { food: 'chicken', g: [65, 70, 75] },
     { food: 'rice', g: [125, 130, 130] },
-    { food: 'salad', g: 150 },
+    { slot: 'salad', g: 150, range: [50, 200], note: '{salad}' },
     { food: 'oil', g: 12 },
     { food: 'curd', g: [200, 200, 250], note: 'half in the marinade' },
   ],
@@ -627,7 +690,7 @@ const D_FISH = meal({
   items: [
     { food: 'fish', g: [80, 85, 115], note: 'rohu or katla pieces' },
     { food: 'rice', g: [120, 120, 130] },
-    { food: 'mixedVeg', g: [65, 120, 120], note: 'potato and seasonal veg in the curry' },
+    { slot: 'sabzi', g: [65, 120, 120], range: [60, 200], note: '{sabzi}, in the curry' },
     { food: 'oil', g: [4, 10, 12] },
     { food: 'curd', g: [75, 75, 125] },
   ],
@@ -641,7 +704,7 @@ const D_FISH = meal({
   activeMin: 25,
   totalMin: 40,
   pots: 2,
-  flavour: 'Kalonji and green chilli in the oil (Bengali style); groundnut oil every day, mustard oil only occasionally.',
+  flavour: 'Kalonji and green chilli in the oil (Bengali style); rice-bran oil every day, mustard oil only occasionally.',
   substitutions: [{ swap: 'Rohu / katla', with: 'Any local fish; sardine or mackerel give more omega-3' }],
   tutorials: ['fishCurry'],
   requiresReheat: false,
@@ -656,7 +719,7 @@ const W_PULAO = meal({
     { food: 'rice', g: [75, 75, 80] },
     { food: 'paneer', g: 30 },
     { food: 'soyaChunks', g: [15, 30, 45], note: 'soaked 10 min, squeezed' },
-    { food: 'mixedVeg', g: [100, 100, 120], note: 'peas, carrot, beans' },
+    { slot: 'sabzi', g: [100, 100, 120], range: [60, 200], note: '{sabzi}' },
     { food: 'oil', g: [4, 4, 9] },
     { food: 'curd', g: 225, note: 'raita with cucumber' },
   ],
@@ -681,14 +744,14 @@ const W_POHA = meal({
   items: [
     { food: 'poha', g: [40, 55, 60] },
     { food: 'peanuts', g: [10, 10, 15] },
-    { food: 'mixedVeg', g: [50, 50, 60], note: 'onion and peas' },
+    { food: 'onion', g: [50, 50, 60], note: 'sliced (add a handful of peas in winter)' },
     { food: 'oil', g: [4, 5, 5] },
     { food: 'curd', g: 250, note: 'whisked into chaas' },
     { food: 'lemon', g: 5 },
   ],
   steps: [
     'Rinse the poha in a sieve and let it soften 5 minutes.',
-    'Kadhai: oil, mustard seeds, curry leaves, peanuts, then onion and peas; 3 minutes.',
+    'Kadhai: oil, mustard seeds, curry leaves, peanuts, then the onion; 3 minutes.',
     'Add the poha, haldi, salt and a pinch of sugar; toss 2 minutes. Lemon and coriander on top.',
     'Whisk the curd with water, roasted jeera and salt into chaas.',
   ],
@@ -707,7 +770,7 @@ const W_KALA_CHANA = meal({
   items: [
     { food: 'kalaChana', g: 80, note: 'soaked overnight' },
     { food: 'rice', g: [70, 70, 90] },
-    { food: 'salad', g: [80, 100, 100] },
+    { slot: 'salad', g: [80, 100, 100], range: [50, 150], note: '{salad}' },
     { food: 'oil', g: 4 },
     { food: 'curd', g: 150 },
   ],
@@ -733,7 +796,7 @@ const W_KHICHDI = meal({
   items: [
     { food: 'rice', g: [85, 85, 90] },
     { food: 'moongDal', g: [65, 80, 90] },
-    { food: 'mixedVeg', g: [50, 60, 165], note: 'cooked into the khichdi' },
+    { slot: 'sabzi', g: [50, 60, 165], range: [50, 200], note: '{sabzi}, cooked into the khichdi' },
     { food: 'ghee', g: 4 },
     { food: 'curd', g: 250 },
   ],
@@ -757,7 +820,7 @@ const W_SHAKE = meal({
   items: [
     { food: 'milk', g: 325 },
     { food: 'banana', g: 110 },
-    { food: 'dates', g: [10, 20, 20], note: ['1 date', '2 dates', '2 dates'] },
+    { food: 'dates', g: [10, 20, 20], step: 10 },
     { food: 'roastedChana', g: [20, 25, 40] },
   ],
   steps: ['Blend the cold milk, banana and dates 30 seconds.', 'Eat the roasted chana alongside.'],
@@ -770,12 +833,12 @@ const W_SHAKE = meal({
 });
 
 const W_MATAR_PANEER = meal({
-  id: 'w-matar-paneer-rice',
-  title: 'Matar paneer and soya with rice',
+  id: 'w-paneer-soya-sabzi-rice',
+  title: 'Paneer and soya sabzi with rice',
   items: [
     { food: 'paneer', g: [50, 55, 55] },
     { food: 'soyaChunks', g: [20, 30, 30], note: 'soaked 10 min, squeezed' },
-    { food: 'mixedVeg', g: [90, 90, 150], note: 'peas, onion, tomato' },
+    { slot: 'sabzi', g: [90, 90, 150], range: [60, 200], note: '{sabzi} (matar paneer in winter)' },
     { food: 'rice', g: [95, 95, 105] },
     { food: 'oil', g: [8, 8, 10] },
     { food: 'curd', g: 100 },
@@ -783,7 +846,7 @@ const W_MATAR_PANEER = meal({
   steps: [
     'Cook the rice in the pressure cooker.',
     'Soak the soya chunks in hot water 10 minutes; squeeze them dry.',
-    'Kadhai: onion, ginger-garlic, tomato and spices until the oil separates; add the peas, soya and a little water, simmer 8 minutes.',
+    'Kadhai: onion, ginger-garlic, tomato and spices until the oil separates; add the chopped vegetables, soya and a little water, simmer 8 minutes.',
     'Add the paneer cubes for the last 3 minutes.',
   ],
   activeMin: 20,
@@ -810,10 +873,12 @@ const vegetarian: MealPlanDefinition = {
   sunday: { meal2: D_RAJMA, meal3: W_SHAKE, meal4: W_MATAR_PANEER },
   prepStrategy: [
     'Sunday: dry-roast the week’s peanuts; buy paneer in sealed packs (freeze the extra in portions).',
+    'Sunday: grind the week’s flaxseed and keep it in a closed jar in the fridge.',
+    'Sunday to Thursday evening: cook the next day’s office lunch with or after dinner (about 15–20 minutes), cool it and refrigerate it within 2 hours. Weekday mornings are then just Meal 1 and ~3 minutes of packing.',
     'Every night: set curd from 1 L milk for the next day.',
-    'Friday night: soak the kala chana for Saturday; Saturday night: soak the rajma for Sunday. Wednesday night: make Thursday’s soya keema. Thursday night: boil potatoes for Friday.',
+    'Friday night: soak the kala chana for Saturday; Saturday night: soak the rajma for Sunday. Thursday night: boil the potatoes with dinner for Friday’s parathas.',
   ],
-  notes: ['Iron and zinc come mostly from pulses and atta; lemon on dals and fruit with Meal 1 and 3 help absorption.'],
+  notes: ['Iron and zinc come mostly from pulses, atta and pumpkin seeds; lemon on dals and the fruit with Meals 1 and 3 help absorption.'],
 };
 
 const egg: MealPlanDefinition = {
@@ -830,8 +895,10 @@ const egg: MealPlanDefinition = {
   sunday: { meal2: D_RAJMA, meal3: W_SHAKE, meal4: W_MATAR_PANEER },
   prepStrategy: [
     'Every night: boil the next morning’s eggs while dinner cooks and refrigerate them (eat hard-boiled eggs within 2 days).',
+    'Sunday: grind the week’s flaxseed and keep it in a closed jar in the fridge.',
+    'Sunday to Thursday evening: cook the next day’s office lunch with or after dinner (about 15–20 minutes), cool it and refrigerate it within 2 hours. Weekday mornings are then just Meal 1 and ~3 minutes of packing.',
     'Every night: set curd from 1 L milk for the next day.',
-    'Friday night: soak the kala chana for Saturday; Saturday night: soak the rajma for Sunday. Wednesday night: make Thursday’s soya keema. Thursday night: boil potatoes for Friday.',
+    'Friday night: soak the kala chana for Saturday; Saturday night: soak the rajma for Sunday. Thursday night: boil the potatoes with dinner for Friday’s parathas.',
   ],
   notes: ['Eggs add vitamin B12 that plant foods lack.'],
 };
@@ -850,8 +917,10 @@ const nonveg: MealPlanDefinition = {
   sunday: { meal2: D_RAJMA, meal3: W_SHAKE, meal4: D_CHICKEN },
   prepStrategy: [
     'Every night: boil the next morning’s eggs while dinner cooks and refrigerate them.',
+    'Sunday: grind the week’s flaxseed and keep it in a closed jar in the fridge.',
+    'Sunday to Thursday evening: cook the next day’s office lunch with or after dinner (about 15–20 minutes), cool it and refrigerate it within 2 hours. Weekday mornings are then just Meal 1 and ~3 minutes of packing.',
     'Buy chicken on Monday and Saturday, or freeze portions and thaw in the fridge overnight.',
-    'Tuesday: cook the extra chicken for Wednesday’s roll (lift it out before adding water). Thursday night: boil potatoes for Friday.',
+    'Tuesday: cook the extra chicken for Wednesday’s roll (lift it out before adding water). Wednesday night: boil the potatoes with dinner for Thursday’s parathas.',
   ],
   notes: [
     'Fish once a week provides long-chain omega-3 (EPA/DHA).',
@@ -863,8 +932,14 @@ export const MEAL_PLAN_DEFINITIONS: MealPlanDefinition[] = [vegetarian, egg, non
 
 // ─── Week builder ─────────────────────────────────────────────────────────────
 
+export interface ResolvedItem extends MealItem {
+  /** Set when the item comes from a seasonal slot. */
+  slot?: SlotId;
+}
+
 export interface ResolvedMeal extends Omit<Meal, 'items'> {
-  items: MealItem[];
+  items: ResolvedItem[];
+  season: SeasonId;
 }
 
 export interface PlannedMeal {
@@ -882,23 +957,56 @@ export interface PlannedDay {
 
 export const gramsFor = (g: Grams, phase: PhaseId): number => (typeof g === 'number' ? g : g[phase]);
 
-/** The meal with quantities for one phase. */
-export function resolveMeal(m: Meal, phase: PhaseId): ResolvedMeal {
+/** The amount of an item for a phase and season: the solver's result, or the starting amount if the meal hasn't been solved. */
+export function solvedGrams(m: Meal, it: PlanItem, phase: PhaseId, season: SeasonId): number {
+  const q = (QUANTITIES as Record<string, Record<string, number[][]> | undefined>)[m.id]?.[itemKey(it)];
+  return q ? q[phase][SEASON_IDS.indexOf(season)] : gramsFor(it.g, phase);
+}
+
+/** Replace {fruit1}, {sabzi}… with the season's food names. */
+export function fillSlots(text: string, season: SeasonId): string {
+  return text.replace(/\{(fruit1|fruit3|sabzi|salad|greens)\}/g, (_, slot: SlotId) => SEASONS[season].slots[slot].name);
+}
+
+/** The meal with quantities for one phase and season. Seasonal slots become their foods; zero-gram optional items are left out. */
+export function resolveMeal(m: Meal, phase: PhaseId, season: SeasonId): ResolvedMeal {
+  const f = (t: string) => fillSlots(t, season);
+  const items: ResolvedItem[] = [];
+  for (const it of m.items) {
+    const g = solvedGrams(m, it, phase, season);
+    if (g <= 0) continue;
+    const note = it.note === undefined ? undefined : f(typeof it.note === 'string' ? it.note : it.note[phase]);
+    if (it.slot) {
+      for (const [food, share] of SEASONS[season].slots[it.slot].foods) {
+        items.push({ food, g: Math.round(g * share * 10) / 10, slot: it.slot, ...(note ? { note } : {}) });
+      }
+    } else items.push({ food: it.food!, g, ...(note ? { note } : {}) });
+  }
   return {
     ...m,
-    items: m.items.map((it) => ({
-      food: it.food,
-      g: gramsFor(it.g, phase),
-      ...(it.note ? { note: typeof it.note === 'string' ? it.note : it.note[phase] } : {}),
-    })),
+    title: f(m.title),
+    steps: m.steps.map(f),
+    flavour: f(m.flavour),
+    substitutions: m.substitutions.map((x) => ({ swap: f(x.swap), with: f(x.with) })),
+    ...(m.why ? { why: f(m.why) } : {}),
+    items,
+    season,
   };
 }
 
-export function buildWeek(plan: MealPlanDefinition, phase: PhaseId): PlannedDay[] {
+/** The four meals of a day in a plan, before quantities are applied. */
+export function mealsForDay(plan: MealPlanDefinition, day: DayName): [Meal, Meal, Meal, Meal] {
+  if (day === 'Saturday') return [plan.meal1, plan.saturday.meal2, plan.saturday.meal3, plan.saturday.meal4];
+  if (day === 'Sunday') return [plan.meal1, plan.sunday.meal2, plan.sunday.meal3, plan.sunday.meal4];
+  const wd = day as WeekdayName;
+  return [plan.meal1, plan.lunches[wd], plan.weekdayMeal3, plan.dinners[wd]];
+}
+
+export function buildWeek(plan: MealPlanDefinition, phase: PhaseId, season: SeasonId): PlannedDay[] {
   return DAYS.map((day) => {
     const isWeekend = day === 'Saturday' || day === 'Sunday';
     const t = (slot: MealSlot) => (isWeekend ? MEAL_SLOTS[slot].weekend : MEAL_SLOTS[slot].weekday);
-    const r = (m: Meal) => resolveMeal(m, phase);
+    const r = (m: Meal) => resolveMeal(m, phase, season);
     const meal1: PlannedMeal = { slot: 1, meal: r(plan.meal1), time: t(1), tag: 'fixed-daily' };
     if (isWeekend) {
       const w = day === 'Saturday' ? plan.saturday : plan.sunday;

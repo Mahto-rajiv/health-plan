@@ -48,7 +48,7 @@ export const SOURCES: Record<string, FoodSource> = {
   curd: { usda: '01116', fillFromIfct: { biotin: 'L002' }, note: 'USDA plain whole-milk yogurt. IFCT has no curd; biotin (missing in USDA) is from IFCT cow milk, the milk it is set from.' },
   paneer: { ifct: 'L003', b12: '01036', note: 'IFCT paneer. B12 from USDA whole-milk ricotta (a similar fresh acid-set cheese).' },
   ghee: { usda: '01003', note: 'USDA anhydrous butter oil (ghee). IFCT has no ghee.' },
-  oil: { usda: '04042', note: 'USDA peanut (groundnut) oil.' },
+  oil: { usda: '04037', note: 'USDA rice-bran oil. Chosen over groundnut oil (USDA 04042) because it has twice the vitamin E (32 vs 16 mg/100 g) and some omega-3.' },
   // Pulses & soya
   sattu: { ifct: 'B001', b12: 0, note: 'IFCT Bengal gram dal. IFCT has no roasted chana flour; roasting mainly removes water, so values per 100 g are close but not exact.' },
   roastedChana: { ifct: 'B001', b12: 0, note: 'IFCT Bengal gram dal (unroasted).' },
@@ -70,6 +70,7 @@ export const SOURCES: Record<string, FoodSource> = {
   peanuts: { ifct: 'H012', b12: 0, note: 'IFCT groundnut.' },
   pumpkinSeeds: { usda: '12014', note: 'USDA pumpkin seed kernels, dried.' },
   flax: { ifct: 'H014', b12: 0, note: 'IFCT linseeds.' },
+  sunflowerSeeds: { ifct: 'H020', b12: 0, note: 'IFCT sunflower seeds (kernels).' },
   almonds: { ifct: 'H001', b12: 0, note: 'IFCT almond.' },
   walnuts: { ifct: 'H021', b12: 0, note: 'IFCT walnut.' },
   cashews: { ifct: 'H005', b12: 0, note: 'IFCT cashew nut.' },

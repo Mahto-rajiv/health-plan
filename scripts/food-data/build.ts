@@ -42,17 +42,27 @@ function parseCsv(text: string): Record<string, string>[] {
   for (let i = 0; i < text.length; i++) {
     const c = text[i];
     if (quoted) {
-      if (c === '"' && text[i + 1] === '"') (field += '"'), i++;
-      else if (c === '"') quoted = false;
+      if (c === '"' && text[i + 1] === '"') {
+        field += '"';
+        i++;
+      } else if (c === '"') quoted = false;
       else field += c;
     } else if (c === '"') quoted = true;
-    else if (c === ',') row.push(field), (field = '');
-    else if (c === '\n' || c === '\r') {
+    else if (c === ',') {
+      row.push(field);
+      field = '';
+    } else if (c === '\n' || c === '\r') {
       if (c === '\r' && text[i + 1] === '\n') i++;
-      row.push(field), rows.push(row), (row = []), (field = '');
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = '';
     } else field += c;
   }
-  if (field || row.length) row.push(field), rows.push(row);
+  if (field || row.length) {
+    row.push(field);
+    rows.push(row);
+  }
   const [head, ...body] = rows;
   return body.filter((r) => r.length === head.length).map((r) => Object.fromEntries(head.map((h, i) => [h, r[i]])));
 }
@@ -168,6 +178,9 @@ function main() {
         const v = ifctValue(codes, col);
         values[key as NutrientKey] = v === null ? null : v * factor;
       }
+      // Niacin equivalents: preformed niacin + tryptophan / 60 (the body makes niacin from tryptophan).
+      const trp = ifctValue(codes, 'trp');
+      if (values.niacin !== null && trp !== null) values.niacin += (trp * 1000) / 60;
       // Vitamin A as retinol activity equivalents: retinol + β-carotene / 12 (US IOM 2001 factor).
       const retinol = ifctValue(codes, 'retol');
       const carotene = ifctValue(codes, 'cartb');
@@ -184,6 +197,8 @@ function main() {
       // SR28 carbohydrate is "by difference" and includes fibre; the app uses available carbohydrate.
       const carb = srValue(s.usda, ['205']);
       values.carbs = carb === null ? null : Math.max(0, carb - (values.fiber ?? 0));
+      const trp = srValue(s.usda, ['501']);
+      if (values.niacin !== null && trp !== null) values.niacin += (trp * 1000) / 60; // niacin equivalents, as above
       values.biotin = null; // SR28 has no biotin
       for (const [key, code] of Object.entries(s.fillFromIfct ?? {})) {
         const v = ifctValue([code], IFCT[key as 'biotin'][0]);

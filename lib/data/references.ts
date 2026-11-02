@@ -118,8 +118,8 @@ export const REFS = {
   usdaSr28: { label: 'USDA ARS (2016). National Nutrient Database for Standard Reference, Release 28 (nutrient values and edible share for foods IFCT lacks).', url: 'https://www.ars.usda.gov/northeast-area/beltsville-md-bhnrc/beltsville-human-nutrition-research-center/methods-and-application-of-food-composition-laboratory/mafcl-site-pages/sr11-sr28/' },
   ifct2017pkg: { label: 'ifct2017 (npm, v2.1.2): machine-readable copy of IFCT 2017 used to build the food table; spot-checked against the ICMR-NIN PDF.', url: 'https://www.npmjs.com/package/ifct2017' },
   driElements: { label: 'Health Canada. Dietary Reference Intakes tables: reference values for elements (US/Canadian DRIs, National Academies).', url: 'https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-elements.html' },
-  driVitamins: { label: 'Health Canada. Dietary Reference Intakes tables: reference values for vitamins.', url: 'https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-vitamins-dietary-reference-intakes-tables-2005.html' },
-  driMacros: { label: 'Health Canada. Dietary Reference Intakes tables: reference values for macronutrients.', url: 'https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-macronutrients-dietary-reference-intakes-tables-2005.html' },
+  driVitamins: { label: 'Health Canada. Dietary Reference Intakes tables: reference values for vitamins.', url: 'https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-vitamins.html' },
+  driMacros: { label: 'Health Canada. Dietary Reference Intakes tables: reference values for macronutrients.', url: 'https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-macronutrients.html' },
 } satisfies Record<string, Reference>;
 
 export type RefId = keyof typeof REFS;
