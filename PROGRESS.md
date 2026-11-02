@@ -18,6 +18,222 @@ Spec: `docs/brief-round2.md` (overrides `docs/brief.md` where they differ).
 | Hand-typed Health numbers will go stale | Yes | True. "≈13 mg zinc", "14–19 mg iron", "about 4 kg (68 → 64)", "mostly the daily papaya" are all typed text. |
 | Weight-loss to-do / Phase 0 shouldn't hardcode the weight | Yes | True. The to-do says "about 4 kg (68 → 64 kg)" as fixed text. |
 
+### Status
+- [x] **Inspection** (above).
+- [x] **Training:** numbered warm-up, honest session times, plain-language text.
+- [x] **Food data:** every value is generated from IFCT 2017 + USDA SR28 by a script in the repo.
+- [x] **Seasons:** four quarters, with fruit and vegetables as seasonal slots.
+- [x] **Solver in the repo** (`npm run solve`), covering 36 plan × phase × season variants.
+- [x] **Full vitamin and mineral audit:** 22 nutrients plus 2 fats, with gaps shown.
+- [x] **Weekday mornings:** at most 15 min hands-on (now 13–14; was 25–31).
+- [x] **Budget:** a single ₹6,000 ceiling.
+- [x] **Health page:** computed table, and the weight to-do read from your own log.
+- [x] **Tests, lint, typecheck, build, browser check, link check** (output below).
+- In progress: none. Blocked: none.
+
+### Decisions and why
+
+**1. Seasons.**
+- **Definition.** Four 3-month seasons for the North Indian plains: winter Dec–Feb, summer Mar–May, monsoon Jun–Aug, autumn Sep–Nov. This matches your "roughly by quarter" and follows the Rabi / Zaid / Kharif crop seasons.
+- **What changes.** Each meal has seasonal *slots*: Meal 1 fruit, Meal 3 fruit, cooked vegetables, salad and leafy greens. Within a season a slot is always the same food, so Meal 1 is still identical every day and Meal 3 identical Mon–Fri. Only the slot food changes, on 1 Dec, Mar, Jun and Sep.
+- **What stays fixed.** Every non-seasonal item (oats, milk, dal and so on) has the same amount all year. A test checks this.
+- **In the UI.** Meal plans has a Season picker with a "what's in season" card and a fallback for each slot. Settings has Auto (by date) or a pinned season, for markets that are early or late.
+- **Papaya and banana stay.** They are in the market all year. Papaya is autumn's breakfast fruit and banana is the Meal 3 fruit in summer and monsoon. I didn't force them out, because "seasonal" shouldn't mean dropping year-round staples.
+- **Fibre forced one swap.** Guava was first planned as autumn's breakfast fruit. At 8.6 g of fibre per 100 g, a normal portion breaks the Phase 0 cap of 35 g of fibre a day, and the solver confirmed it was infeasible. Guava is the winter Meal 3 fruit instead, in a smaller portion.
+- **Peas** appear only in winter, which is tested.
+
+**2. Nutrient data.**
+- **Before:** hand-typed values for 10 nutrients.
+- **Now:** `npm run food-data` downloads IFCT 2017 (via the `ifct2017` npm copy, pinned by sha256) and USDA SR28 (pinned by sha256), then generates `lib/data/composition.generated.ts`.
+  - That gives 27 values per food: macros, 10 minerals, 11 vitamins, ALA and linoleic acid.
+  - Every food records its exact source code (e.g. "IFCT 2017 E028 (Guava, white flesh)").
+- **Source rules:**
+  - IFCT first, because it measures Indian foods.
+  - USDA only where IFCT has no match: oats, curd, toned milk, oils, soya chunks, kabuli chana, pumpkin seeds.
+  - Vitamin B12 always comes from USDA, because IFCT doesn't report it.
+- **Spot checks.** I compared IFCT rows with the official ICMR-NIN PDF: groundnut protein 23.65 g, guava vitamin C 214 mg, spinach folate 142 µg. All match.
+- **Edible share** (peel, seeds, pods) now comes from USDA "refuse" values, replacing Round 1's guessed yields. For example, peas in the pod are 62% pod.
+- **Niacin** is counted as niacin equivalents: preformed niacin + tryptophan ÷ 60.
+- **Vitamin A** is counted as RAE, with β-carotene at 12:1, the conservative US factor.
+
+**3. Reference values.** Defined in `lib/data/nutrients.ts`.
+- **ICMR-NIN 2020, adult men** (EAR and RDA, Table 3 of the brief note), read from the official PDF: iron, zinc, calcium, magnesium, vitamins A, B1, B2, B3, B6, folate, B12 and C, plus ICMR's 2.2 g omega-3 and 6.6 g omega-6.
+- **US/Canadian DRIs for men 19–30** (Health Canada tables) where ICMR's summary has none: phosphorus, potassium, copper, selenium, manganese, vitamins E and K, biotin, and the upper limits.
+- **Planning floor is the EAR.** ICMR's note says the EAR, not the RDA, is the value for planning an individual's diet. So the plans must reach the EAR, and the solver pushes toward the RDA.
+- **Hair flag (★).** Shown on nutrients whose deficiency is linked to hair loss in the two reviews already cited (Almohanna 2019, Guo & Katta 2017). The text says plainly that enough prevents a deficiency; more than enough doesn't grow hair.
+
+**4. Gaps in the data, shown rather than guessed.**
+- **Missing values count as 0.** The app names the foods involved next to the total, e.g. "No data for oats, soya chunks…: total may be low".
+- **Remaining gaps:**
+  - Biotin is missing for 6 foods. Milk and curd biotin is filled from IFCT cow milk, and the source note says so.
+  - Manganese is missing for oil.
+- **Vitamin D is not counted from food.** IFCT reports vitamin D in plant foods, e.g. 13 µg per 100 g of atta, which other tables don't show. It's covered by sun and the existing 1,000 IU D3.
+- **Iodine** is in neither table; it comes from iodised salt.
+- **Two IFCT inconsistencies found and recorded in the tests.** The app's own kcal are computed from macros and are not affected by either.
+  - Chicken leg N001 is printed as 1,605 kJ, but its own protein and fat give 798 kJ. The breast row is consistent, so this looks like a misprint.
+  - For fibre-rich foods (guava, amaranth), IFCT's energy value matches the macros without the fibre term, although its method section lists fibre at 8 kJ/g.
+  - Because of this, the per-day check against the tables' own kcal now allows 5% (it was 3%). The brief's rule that shown kcal reconcile with the macros still holds exactly.
+
+**5. Solver in the repo** (`scripts/solve-plans.ts`, `npm run solve`).
+- **Method:** a mixed-integer programme run with HiGHS (npm `highs`, MIT licence; a dev dependency only, not shipped to the browser).
+- **Hard rules, every plan × season × day:**
+  - phase kcal, protein and fibre bands, fat 25–30%, and the Phase 0 soya and sattu caps;
+  - the 3 plans within 5% of each other;
+  - upper limits;
+  - cost ≤ ₹5,700 a month at default prices (₹300 under the ceiling, because prices are estimates);
+  - eggs ≤ 21 a week;
+  - non-seasonal amounts the same all year.
+- **Goal, in order:**
+  1. close any weekly-average shortfall below the EAR;
+  2. then below the RDA;
+  3. then stay close to the starting portions written in the meal data.
+- **Cost is not in the goal** (your requirement 4).
+- **Output:** `lib/data/plan-quantities.generated.ts`.
+- **Freshness tests:** fail if a meal is edited without re-solving, or if any amount is outside its allowed range or step.
+- **New optional items the solver may use:** pumpkin seeds, sunflower seeds and ground flaxseed in Meal 1, and sunflower seeds in Meal 3. They exist because zinc, vitamin E, thiamine, B6 and omega-3 were short. Round 1 had cut pumpkin seeds for cost.
+- **Oil:** rice-bran oil is now the default, with groundnut oil as the alternative; it was the other way round before. Rice-bran oil has twice the vitamin E (USDA: 32 vs 16 mg per 100 g). The app already listed rice-bran oil as an option.
+
+**6. Morning load.**
+- **Change:** all weekday lunches are cooked the evening before, cooled, and refrigerated within 2 hours (USDA FSIS). In the morning they go straight from the fridge into the insulated bag with the frozen bottle.
+- **Result:** weekday mornings are Meal 1 (7–8 min) plus about 3 min to pack the lunch and 3 min to pack Meal 3: 13–14 min in total. They were 25–31 min. A test caps mornings at 15 min.
+- **Trade-off:** the same cooking (about 15–20 min) moves to the evening, next to dinner. That's your mom's time either way, so check with her. Each lunch card says how long it takes the evening before.
+
+**7. Budget.**
+- `BUDGET` is now one ceiling: ₹6,000 a month, labelled "within" or "over" budget. The old ₹4,000–4,500 target and its labels are gone.
+- The "ways to spend less" swaps now appear only if a plan goes over the ceiling with your own prices.
+
+**8. Cost display.**
+- The day view now explains the gap your review spotted: today's food, this week's average day, and ≈ ₹10 a day of pantry items that no meal shows.
+
+**9. Weight.**
+- The Health to-do now uses your log:
+  - **Before:** the earliest recalled weight, otherwise Settings.
+  - **Now:** the latest weekly-average weigh-in, otherwise Settings.
+- Until you log a real weigh-in, it says the numbers come from Settings and links to Progress.
+- Phase 0's calorie band is unchanged: it comes from brief §3. If the weekly trend still falls, Progress already suggests +200 kcal.
+
+**10. Training.**
+- **Warm-up:** each session has a numbered warm-up of 10–11 min. Each step has a name, how to do it, a dose and its minutes, in this order: 5 min easy cardio, 2–3 drills for the day, 3 lighter sets for the first lift. Later heavy lifts get 1 lighter set each.
+- **Session time** is now explicit: warm-up + sets × (work + rest) + 1 min setup per exercise + finisher.
+- **Session length, real arithmetic (min):**
+
+  | Session | Week 1 | Week 3+ | Easy (deload) week |
+  |---|---|---|---|
+  | Lower A | 63.8 | 73.0 | 56.3 |
+  | Upper A | 65.7 | 72.2 | 56.5 |
+  | Lower B | 41.0 | 44.7 | 32.2 |
+  | Upper B | 37.3 | 44.2 | 33.0 |
+
+- **To fit the caps:**
+  - Some isolation rests went from 90 s to 60 s, still within the cited 60–90 s.
+  - Upper B dropped the cable row; back still gets 9 hard sets a week.
+  - Two Saturday accessories went from 3 sets to 2.
+- **Plain language:** the text was rewritten and a "Words used here" glossary added.
+- **Tabs:** on phones the Training tabs now wrap. At 320 px, Cardio and Progression were hidden off-screen, as your review suspected.
+
+### Where I disagree or push back
+- **"Fruit should change through the year."** Agreed for Meal 1. Banana and papaya are sold all year, so I kept them where they work best (banana is a good pre-workout fruit). I didn't swap in a less suitable fruit just to be different.
+- **"Dairy carries much of the protein."** True, and **not fixed: it got higher.** Milk and curd now come to 880–1,214 g a day (vegetarian plan 1,131–1,214 g), against about 900 g in Round 1. The solver chose more dairy because it is the low-fibre source of protein, riboflavin, B12 and calcium that fits under the fibre caps. I put no limit on dairy. It is within the rules you gave and you tolerate dairy well, but it is a lot. **Suggested next step:** add a dairy cap (e.g. 800 g/day) to the solver and accept smaller margins on B2, B6 and E. The amount is shown per plan on Groceries & cost and in `docs/plan-report.md`.
+- **"Phase 0 iron and zinc fall short."** Iron was never below the EAR. Zinc now meets the EAR in 10 of 12 Phase 0 variants. Phase 0's binding limits are calories and fibre, not cost: vitamin E, thiamine and B6 also stay below the EAR in most Phase 0 variants. Phase 0 lasts 2 weeks; the solver's best is shown in the app, not hidden.
+- **ICMR's B6 EAR (2.1 mg) is almost twice the US value (1.1 mg).** The plans meet the US value easily; against ICMR's, B6 is the one nutrient still short in Phase 2 (4 of 12 variants, by ≤ 0.15 mg). I kept ICMR as the standard and say so, rather than switch standards to make the table green.
+
+### Results (default prices; from `npm run plans:report`, also in `docs/plan-report.md`)
+
+The amounts in `lib/data/plan-quantities.generated.ts` came from `TL=150 GAP=0.005 npm run solve` (HiGHS stopped at its 150 s limit in each phase). The script's defaults are now a 2% gap with a 900 s limit. **A rerun can give slightly different grams when the time limit is reached; every rerun still has to pass the same tests.**
+
+| Phase | Season | Plan | kcal | Protein g | Fibre g | Fat % | Milk+curd g/day | Morning min (weekdays) | ₹/month | Below EAR (weekly avg) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | Winter | Vegetarian | 2102–2289 | 87–90 | 33–35 | 29–30 | 1131 | 14 | 4,644 | Zinc 14/14 mg; Thiamine (B1) 1.4/1.5 mg; Vitamin B6 1.4/2.1 mg; Vitamin E 8.5/12 mg |
+| 0 | Winter | Veg + eggs | 2099–2292 | 90–94 | 33–35 | 29–29 | 1006 | 13 | 4,611 | Thiamine (B1) 1.3/1.5 mg; Riboflavin (B2) 2.1/2.1 mg; Vitamin B6 1.4/2.1 mg; Vitamin E 9.3/12 mg |
+| 0 | Winter | Non-veg | 2108–2296 | 86–93 | 30–35 | 28–30 | 939 | 13 | 4,797 | Thiamine (B1) 1.3/1.5 mg; Riboflavin (B2) 2.0/2.1 mg; Vitamin E 10.0/12 mg |
+| 0 | Summer | Vegetarian | 2274–2295 | 86–92 | 33–35 | 27–30 | 1131 | 14 | 4,721 | Thiamine (B1) 1.3/1.5 mg; Vitamin B6 2.0/2.1 mg; Vitamin E 8.6/12 mg |
+| 0 | Summer | Veg + eggs | 2269–2299 | 89–94 | 32–35 | 27–29 | 1006 | 13 | 4,708 | Thiamine (B1) 1.3/1.5 mg; Vitamin B6 2.1/2.1 mg; Vitamin E 9.6/12 mg |
+| 0 | Summer | Non-veg | 2278–2300 | 87–93 | 31–35 | 27–29 | 939 | 13 | 4,873 | Thiamine (B1) 1.2/1.5 mg; Riboflavin (B2) 2.1/2.1 mg; Vitamin E 10.0/12 mg |
+| 0 | Monsoon | Vegetarian | 2286–2298 | 86–92 | 33–35 | 27–29 | 1131 | 14 | 4,812 | Thiamine (B1) 1.3/1.5 mg; Vitamin B6 2.0/2.1 mg; Vitamin E 8.7/12 mg |
+| 0 | Monsoon | Veg + eggs | 2270–2300 | 89–94 | 32–34 | 27–29 | 1006 | 13 | 4,783 | Thiamine (B1) 1.3/1.5 mg; Vitamin B6 2.1/2.1 mg; Vitamin E 9.7/12 mg |
+| 0 | Monsoon | Non-veg | 2292–2300 | 86–94 | 29–34 | 27–29 | 939 | 13 | 4,943 | Thiamine (B1) 1.2/1.5 mg; Riboflavin (B2) 2.1/2.1 mg; Vitamin E 10/12 mg |
+| 0 | Autumn | Vegetarian | 2127–2259 | 86–91 | 33–35 | 29–30 | 1131 | 14 | 4,825 | Zinc 14/14 mg; Thiamine (B1) 1.3/1.5 mg; Vitamin B6 1.4/2.1 mg; Vitamin E 8.8/12 mg |
+| 0 | Autumn | Veg + eggs | 2127–2266 | 89–93 | 33–35 | 29–29 | 1006 | 13 | 4,814 | Thiamine (B1) 1.3/1.5 mg; Vitamin B6 1.5/2.1 mg; Vitamin E 9.4/12 mg |
+| 0 | Autumn | Non-veg | 2139–2297 | 87–92 | 30–35 | 28–30 | 939 | 13 | 5,015 | Thiamine (B1) 1.3/1.5 mg; Vitamin E 10/12 mg |
+| 1 | Winter | Vegetarian | 2349–2502 | 100–102 | 36–40 | 29–30 | 1166 | 14 | 5,008 | Vitamin B6 1.6/2.1 mg; Vitamin E 11/12 mg |
+| 1 | Winter | Veg + eggs | 2316–2476 | 104–107 | 36–40 | 28–30 | 915 | 13 | 4,917 | Riboflavin (B2) 2.1/2.1 mg; Vitamin B6 1.6/2.1 mg; Vitamin E 12/12 mg |
+| 1 | Winter | Non-veg | 2320–2504 | 100–107 | 33–40 | 27–30 | 881 | 13 | 5,173 | Thiamine (B1) 1.5/1.5 mg; Riboflavin (B2) 2.1/2.1 mg; Vitamin E 12/12 mg |
+| 1 | Summer | Vegetarian | 2457–2509 | 101–102 | 36–39 | 28–29 | 1166 | 14 | 5,038 | Thiamine (B1) 1.5/1.5 mg; Vitamin B6 2.0/2.1 mg; Vitamin E 11/12 mg |
+| 1 | Summer | Veg + eggs | 2418–2485 | 105–107 | 36–40 | 28–29 | 915 | 13 | 4,981 | Thiamine (B1) 1.4/1.5 mg; Vitamin B6 2.1/2.1 mg; Vitamin E 12/12 mg |
+| 1 | Summer | Non-veg | 2404–2510 | 101–106 | 33–40 | 27–29 | 881 | 13 | 5,153 | Thiamine (B1) 1.3/1.5 mg; Riboflavin (B2) 2.1/2.1 mg |
+| 1 | Monsoon | Vegetarian | 2458–2509 | 100–103 | 36–40 | 28–29 | 1166 | 14 | 5,132 | Thiamine (B1) 1.5/1.5 mg; Vitamin B6 2.1/2.1 mg; Vitamin E 12/12 mg |
+| 1 | Monsoon | Veg + eggs | 2416–2480 | 105–107 | 36–40 | 28–29 | 915 | 13 | 5,018 | Thiamine (B1) 1.4/1.5 mg; Vitamin B6 2.1/2.1 mg |
+| 1 | Monsoon | Non-veg | 2393–2509 | 100–106 | 33–40 | 27–29 | 881 | 13 | 5,188 | Thiamine (B1) 1.4/1.5 mg |
+| 1 | Autumn | Vegetarian | 2399–2484 | 100–101 | 38–40 | 29–30 | 1166 | 14 | 5,294 | Vitamin B6 1.7/2.1 mg; Vitamin E 12/12 mg |
+| 1 | Autumn | Veg + eggs | 2358–2458 | 104–106 | 39–40 | 28–29 | 915 | 13 | 5,193 | Thiamine (B1) 1.5/1.5 mg; Vitamin B6 1.7/2.1 mg; Vitamin E 12/12 mg |
+| 1 | Autumn | Non-veg | 2355–2507 | 100–105 | 35–40 | 27–29 | 881 | 13 | 5,424 | Thiamine (B1) 1.4/1.5 mg |
+| 2 | Winter | Vegetarian | 2560–2674 | 110–121 | 48–50 | 28–30 | 1214 | 14 | 5,581 | Vitamin B6 1.9/2.1 mg |
+| 2 | Winter | Veg + eggs | 2562–2626 | 116–124 | 48–50 | 27–29 | 928 | 13 | 5,533 | Vitamin B6 2.0/2.1 mg |
+| 2 | Winter | Non-veg | 2565–2686 | 110–124 | 43–50 | 26–30 | 884 | 13 | 5,695 | — |
+| 2 | Summer | Vegetarian | 2634–2687 | 111–121 | 44–50 | 29–29 | 1214 | 14 | 5,596 | — |
+| 2 | Summer | Veg + eggs | 2582–2635 | 114–124 | 44–49 | 28–29 | 928 | 13 | 5,550 | — |
+| 2 | Summer | Non-veg | 2582–2686 | 111–124 | 39–49 | 26–29 | 884 | 13 | 5,700 | — |
+| 2 | Monsoon | Vegetarian | 2648–2688 | 110–121 | 44–49 | 28–29 | 1214 | 14 | 5,535 | — |
+| 2 | Monsoon | Veg + eggs | 2594–2633 | 114–124 | 44–48 | 28–29 | 928 | 13 | 5,434 | — |
+| 2 | Monsoon | Non-veg | 2594–2688 | 110–124 | 39–48 | 26–29 | 884 | 13 | 5,596 | — |
+| 2 | Autumn | Vegetarian | 2598–2654 | 111–121 | 46–50 | 29–30 | 1214 | 14 | 5,696 | Vitamin B6 2.0/2.1 mg |
+| 2 | Autumn | Veg + eggs | 2563–2594 | 115–124 | 46–49 | 28–29 | 928 | 13 | 5,542 | Vitamin B6 2.1/2.1 mg |
+| 2 | Autumn | Non-veg | 2563–2677 | 111–124 | 39–49 | 26–30 | 884 | 13 | 5,700 | — |
+
+Phase bands: 0: 2090–2310 kcal, 86–95 g protein, fibre ≤ 35 g · 1: 2280–2520 kcal, 100–110 g protein, fibre ≤ 40 g · 2: 2550–2700 kcal, 110–125 g protein, fibre ≤ 50 g.
+
+Summary of the weekly averages below the EAR (from `tests/known-gaps.json`, 70 of the 36 × 22 checks):
+- **Phase 0 (2 weeks):**
+  - thiamine 12/12 variants, vitamin E 12/12, B6 8/12, riboflavin 4/12, zinc 2/12;
+  - all within ~30% of the EAR, except vitamin E (8.5–10 of 12 mg) and B6 (1.4–2.1 of 2.1 mg).
+- **Phase 1:** B6 8/12, thiamine 9/12, vitamin E 8/12, riboflavin 3/12, mostly within 5%.
+- **Phase 2:** only B6, in 4/12 variants, by ≤ 0.15 mg.
+- Iron, zinc (Phases 1–2), calcium, magnesium, folate, B12, vitamin C and vitamin A meet the EAR in every Phase 1–2 variant. A test enforces this for Phase 2.
+
+### Checks run (2 Nov 2026)
+
+`npm test`:
+```
+ℹ tests 466
+ℹ pass 466
+ℹ fail 0
+```
+
+`npx tsc --noEmit`: no output (pass).
+
+`npm run lint`: no errors, no warnings.
+
+`npx next build`:
+```
+✓ Compiled successfully
+✓ Generating static pages using 11 workers (12/12)
+○ / /health /meal-plans /meal-plans/cards /nutrition /progress /recovery /settings /training (all static)
+```
+
+**Browser** (production build, Chrome via Playwright, 320 px and 1280 px):
+- Covered all 9 routes, the 3 extra Meal-plan tabs, and the winter, summer and monsoon seasons.
+- 0 px horizontal overflow and 0 console errors everywhere.
+- Meal 1 titles change with the season: orange (kinnow) → muskmelon → mango.
+- The Health to-do reads "lost about 4 kg (68 → 64 kg) … These weights come from Settings, not a weigh-in yet".
+- On phones the section tabs then got `wrap`.
+
+**`npm run links`:**
+- 198 links: 186 ok, 2 redirected, 10 blocked automated access, 0 failed.
+- The 2 redirects (Health Canada) are now updated to their new URLs.
+- Blocked: NIH ODS (5), EFSA DOIs (3), npmjs.com, ranveerbrar.com.
+
+### Not verified
+- **Season boundaries.** I could not open an official month-by-month market calendar: the Government of India harvest-season appendix (desagri.gov.in) fails TLS verification, and Vikaspedia pages need JavaScript. The seasons follow the standard crop seasons and are labelled approximate, with a Settings override.
+- **Prices.** New seasonal produce, sunflower seeds and rice-bran oil are rough estimates (Nov 2026), not checked against any listing. Earlier prices were not re-checked.
+- **NASEM values.** Taken from Health Canada's tables (read through a fetch tool; NCBI blocked automated access). The ICMR values were read from the official PDF.
+- **IFCT copy.** The machine-readable IFCT is a third-party npm transcription (AGPL-3.0). It was spot-checked on 3 rows against the ICMR-NIN PDF, not checked in full. Only derived numbers are committed; the package is not a dependency.
+- **Biotin and manganese.** Gaps remain for some foods (shown in the app).
+- **Cooking losses** are not modelled. Raw-food values overstate vitamin C, folate and some B vitamins.
+- **Session times** use estimated constants (40 s per set, 1 min setup), not timed sessions.
+- **Mom's evening load** rises by the 15–20 min the lunches used to take in the morning. Not checked with her.
+- **Vercel deploy** not checked.
+
+
 ## Round 1
 
 Spec: `docs/brief.md` (audit-driven fix, 30 Oct 2026). Branch: `audit-fixes`. Merged to main on 2 Nov.

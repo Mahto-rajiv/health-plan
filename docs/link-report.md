@@ -1,6 +1,6 @@
 # Link check
 
-Run 2026-10-30 with `npm run links`. 193 links: 185 ok, 0 redirected, 8 blocked automated access, 0 failed.
+Run 2026-11-02 with `npm run links`. 198 links: 186 ok, 2 redirected, 10 blocked automated access, 0 failed.
 
 "Match" compares the title the app shows with the page title (YouTube via oEmbed, PubMed via Europe PMC). "check" means the words differ enough to look at by hand; "n/a" means no title could be read (PDF or blocked).
 
@@ -25,6 +25,9 @@ Run 2026-10-30 with `npm run links`. 193 links: 185 ok, 0 redirected, 8 blocked 
 | ok | 200 | ref:colemanDeload | yes | Coleman M et al. (2024). A one-week deload during resistance training. PeerJ. | Gaining more from doing less? The effects of a one-week deload period during sup | https://pubmed.ncbi.nlm.nih.gov/38274324/ |
 | ok | 200 | ref:demay2024 | yes | Demay MB et al. (2024). Vitamin D for the prevention of disease: Endocrine Socie | Vitamin D for the Prevention of Disease: An Endocrine Society Clinical Practice  | https://pubmed.ncbi.nlm.nih.gov/38828931/ |
 | ok | 200 | ref:devries | yes | Devries MC et al. (2018). Protein intake and kidney function in healthy adults:  | Changes in Kidney Function Do Not Differ between Healthy Adults Consuming Higher | https://pubmed.ncbi.nlm.nih.gov/30383278/ |
+| ok | 200 | ref:driElements | yes | Health Canada. Dietary Reference Intakes tables: reference values for elements ( | Dietary reference intakes tables: Reference values for elements - Canada.ca | https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-elements.html |
+| redirected | 200 | ref:driMacros | yes | Health Canada. Dietary Reference Intakes tables: reference values for macronutri | Dietary reference intakes tables: Reference values for macronutrients - Canada.c | https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-macronutrients-dietary-reference-intakes-tables-2005.html → https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-macronutrients.html |
+| redirected | 200 | ref:driVitamins | yes | Health Canada. Dietary Reference Intakes tables: reference values for vitamins. | Dietary reference intakes tables: Reference values for vitamins - Canada.ca | https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-vitamins-dietary-reference-intakes-tables-2005.html → https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-vitamins.html |
 | ok | 200 | ref:duncan2015 | yes | Duncan A et al. (2015). The risk of copper deficiency in patients prescribed zin | The risk of copper deficiency in patients prescribed zinc supplements. | https://pubmed.ncbi.nlm.nih.gov/26085547/ |
 | ok | 200 | ref:dunstan | yes | Dunstan DW et al. (2012). Breaking up prolonged sitting reduces postprandial glu | Breaking up prolonged sitting reduces postprandial glucose and insulin responses | https://pubmed.ncbi.nlm.nih.gov/22374636/ |
 | blocked | 403 | ref:efsaErucic | n/a | EFSA CONTAM Panel (2016). Erucic acid in feed and food. EFSA Journal 14(11):4593 | Just a moment... | https://www.efsa.europa.eu/en/efsajournal/pub/4593 → https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2016.4593 |
@@ -48,6 +51,7 @@ Run 2026-10-30 with `npm run links`. 193 links: 185 ok, 0 redirected, 8 blocked 
 | ok | 200 | ref:icmr2020 | n/a | ICMR-NIN (2020). Nutrient Requirements for Indians — brief note. | (PDF) | https://www.nin.res.in/rdabook/brief_note.pdf |
 | ok | 200 | ref:icmr2024 | yes | ICMR-NIN (2024). Dietary Guidelines for Indians — summary by Nutrition Connect ( | Dietary Guidelines for Indians (2024 Edition) by ICMR-NIN \| Nutrition Connect | https://nutritionconnect.org/resource-center/dietary-guidelines-indians-2024-edition-icmr-nin |
 | ok | 200 | ref:ifct | n/a | Longvah T et al. (2017). Indian Food Composition Tables. ICMR-NIN. | (PDF) | https://www.nin.res.in/ebooks/IFCT2017.pdf |
+| blocked | 403 | ref:ifct2017pkg | n/a | ifct2017 (npm, v2.1.2): machine-readable copy of IFCT 2017 used to build the foo | Just a moment... | https://www.npmjs.com/package/ifct2017 |
 | ok | 200 | ref:informedChoice | yes | LGC Informed Choice — what the certification covers (banned-substance testing). | Third Party Supplement Testing \| Informed Choice | https://choice.wetestyoutrust.com/about |
 | ok | 200 | ref:iraki | yes | Iraki J et al. (2019). Nutrition recommendations for bodybuilders in the off-sea | Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review | https://pubmed.ncbi.nlm.nih.gov/31247944/ |
 | ok | 200 | ref:issnCreatine | yes | Kreider RB et al. (2017). ISSN position stand: safety and efficacy of creatine s | International Society of Sports Nutrition position stand: safety and efficacy of | https://pubmed.ncbi.nlm.nih.gov/28615996/ |
@@ -97,6 +101,7 @@ Run 2026-10-30 with `npm run links`. 193 links: 185 ok, 0 redirected, 8 blocked 
 | ok | 200 | ref:trost | yes | Trost LB et al. (2006). The diagnosis and treatment of iron deficiency and its p | The diagnosis and treatment of iron deficiency and its potential relationship to | https://pubmed.ncbi.nlm.nih.gov/16635664/ |
 | ok | 200 | ref:trustified | yes | Trustified — independent Indian testing of supplements bought from retail. | Trustified \| 100% Blind Testing Program | https://www.trustified.in/ |
 | ok | 200 | ref:usdaFdc | yes | USDA FoodData Central (vitamin B12 values for milk, yogurt, cheese, egg, chicken | USDA FoodData Central | https://fdc.nal.usda.gov/ |
+| ok | 200 | ref:usdaSr28 | yes | USDA ARS (2016). National Nutrient Database for Standard Reference, Release 28 ( | SR11-SR28 : USDA ARS | https://www.ars.usda.gov/northeast-area/beltsville-md-bhnrc/beltsville-human-nutrition-research-center/methods-and-application-of-food-composition-laboratory/mafcl-site-pages/sr11-sr28/ |
 | ok | 200 | ref:uspstf2022 | yes | US Preventive Services Task Force (2022). Vitamin, mineral and multivitamin supp | Recommendation: Vitamin, Mineral, and Multivitamin Supplementation to Prevent Ca | https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/vitamin-supplementation-to-prevent-cvd-and-cancer-preventive-medication |
 | ok | 200 | ref:vanDerMerwe | yes | van der Merwe J et al. (2009). Three weeks of creatine supplementation affects D | Three weeks of creatine monohydrate supplementation affects dihydrotestosterone  | https://pubmed.ncbi.nlm.nih.gov/19741313/ |
 | ok | 200 | ref:vogiatzoglou2009 | yes | Vogiatzoglou A et al. (2009). Dietary sources of vitamin B12 and plasma B12 conc | Dietary sources of vitamin B-12 and their association with plasma vitamin B-12 c | https://pubmed.ncbi.nlm.nih.gov/19190073/ |
@@ -141,7 +146,7 @@ Run 2026-10-30 with `npm run links`. 193 links: 185 ok, 0 redirected, 8 blocked 
 | ok | 200 | tutorial:facePull | yes | Face Pull — form demo | How to do a Face Pull \| Proper Form & Technique \| NASM | https://www.youtube.com/watch?v=eTCBSFlCJ_s |
 | ok | 200 | tutorial:farmersCarry | yes | Farmer's Carry | Full Body/Integrated Exercises \| Farmer's Carry | https://www.acefitness.org/resources/everyone/exercise-library/359/farmer-s-carry/ |
 | ok | 200 | tutorial:fishCurry | yes | Bengali Fish Curry (rohu) | Bengali Fish Curry | https://www.sanjeevkapoor.com/Recipe/Bengali-Fish-Curry.html |
-| ok | 200 | tutorial:fishCurry | yes | Bihari-Style Fish Curry | Easy Bihari style Fish Curry सरसों वाली बिहारी स्टाइल मच्छी करी spicy Fish Curry | https://ranveerbrar.com/recipes/bihari-style-fish-curry/ |
+| blocked | 403 | tutorial:fishCurry | n/a | Bihari-Style Fish Curry | Bot Verification | https://ranveerbrar.com/recipes/bihari-style-fish-curry/ |
 | ok | 200 | tutorial:grilledChicken | yes | Tandoori Chicken (oven / pan) | Tandoori Chicken Recipe (Restaurant Style) - Swasthi&#039;s Recipes | https://www.indianhealthyrecipes.com/tandoori-chicken-recipe/ |
 | ok | 200 | tutorial:hangingKneeRaise | yes | Hanging Knee Raise — demo | Hanging Knee Raise | https://www.youtube.com/watch?v=RD_A-Z15ER4 |
 | ok | 200 | tutorial:hip9090 | yes | 90/90 Hip Transitions (hands supported) | 90/90 Hip Transitions (Hands Supported) | https://www.youtube.com/watch?v=Lx07WIkllbA |
@@ -187,8 +192,8 @@ Run 2026-10-30 with `npm run links`. 193 links: 185 ok, 0 redirected, 8 blocked 
 | ok | 200 | tutorial:sattuParatha | yes | Sattu Paratha | Sattu Paratha - Cook With Manali | https://www.cookwithmanali.com/sattu-paratha/ |
 | ok | 200 | tutorial:seatedRow | yes | Seated Cable Row — demo | Seated Cable Row | https://www.youtube.com/watch?v=UCXxvVItLoM |
 | ok | 200 | tutorial:seatedRow | yes | Seated Row | Seated Row \| Exercise Library \| ACE | https://www.acefitness.org/resources/everyone/exercise-library/48/seated-row/ |
-| ok | 200 | tutorial:soyaChunks | yes | Soya Chunks Curry | Soya Chunks Curry Recipe (Meal Maker Curry) - Swasthi&#039;s Recipes | https://www.indianhealthyrecipes.com/soya-chunks-curry-meal-maker-curry/ |
 | ok | 200 | tutorial:soyaChunks | yes | Soya Chunks Pulao | Soya Chunks Pulao Recipe \| Protein Rich Soya Pulao - Soya Rice | https://hebbarskitchen.com/soya-chunks-pulao-recipe-protein-rich/ |
+| ok | 200 | tutorial:soyaChunks | yes | Soya Chunks Curry | Soya Chunks Curry Recipe (Meal Maker Curry) - Swasthi&#039;s Recipes | https://www.indianhealthyrecipes.com/soya-chunks-curry-meal-maker-curry/ |
 | ok | 200 | tutorial:soyaKeema | yes | Soya Keema | Soya Keema Recipe (Soya Granules Recipe) - Swasthi&#039;s Recipes | https://www.indianhealthyrecipes.com/soya-keema/ |
 | ok | 200 | tutorial:splitSquat | yes | The Ultimate Bulgarian Split Squat Tutorial | The ULTIMATE Bulgarian Split Squat Tutorial | https://www.youtube.com/watch?v=-4LVK1crLSw |
 | ok | 200 | tutorial:splitSquat | yes | Bulgarian Split Squat | How To Do a Bulgarian Split Squat \| Exercise Library \| ACE | https://www.acefitness.org/resources/everyone/exercise-library/366/bulgarian-split-squat/ |
