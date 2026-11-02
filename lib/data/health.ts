@@ -172,7 +172,7 @@ export const HAIR = {
   ],
   nutrition: [
     { title: 'Weight loss and low intake', body: 'Losing weight and eating too little — especially too little protein — over the past 6 months is a recognised trigger for diffuse shedding (telogen effluvium), which typically starts 2–4 months after the trigger. That fits your timeline. It is plausible, not certain: the AAD gives “lost 20 pounds (~9 kg) or more” as a typical trigger, and your loss is smaller (see the to-do above). A dermatologist must confirm the cause. Eating enough is right for your health anyway, but nutrition cannot be shown to cure hair loss.', level: 'Reasonable' },
-    { title: 'Iron stores', body: 'Your blood iron markers are normal. Ferritin hasn’t been measured. Evidence linking low-normal ferritin to hair loss is mixed, but it’s cheap to check. The plans include iron foods (dals, soya, atta, greens, pumpkin seeds) with vitamin C from the season’s fruit and vegetables. The diet table below shows how much.', level: 'Mixed' },
+    { title: 'Iron stores', body: 'Your blood iron markers are normal. Ferritin hasn’t been measured. Evidence linking low-normal ferritin to hair loss is mixed, but it’s cheap to check. The plans include iron foods (dals, soya, atta, greens, pumpkin seeds) with vitamin C from the fruit and vegetables. The diet table below shows how much.', level: 'Mixed' },
     { title: 'Zinc', body: 'Vegetarians absorb less zinc because of phytates in grains and legumes. Soaking and sprouting help. The diet table below shows how much each plan gives, before absorption losses. Don’t supplement unless a test shows it’s low — too much zinc can cause problems too.', level: 'Mixed' },
     { title: 'Vitamin D', body: 'Low vitamin D is common in some hair conditions, but the link is clearest for alopecia areata, not male pattern hair loss. Correcting a low level is sensible for general health; it is not a proven hair treatment.', level: 'Weak' },
     { title: 'Biotin and “hair” supplements', body: 'No benefit without a proven deficiency, which is rare. High-dose biotin can falsify blood tests, including thyroid and heart tests. Some multi-ingredient hair products contain amounts of vitamin A or selenium that can themselves cause shedding.', level: 'Avoid' },
@@ -188,8 +188,8 @@ export const HEALTH_TODO: (string | 'weight')[] = [
   'Ask about these blood tests: ferritin (iron stores), zinc, folate, and active B12 (holotranscobalamin) — the B12 test before any B12 tablet.',
 ];
 
-// The diet coverage table is computed on the page from every plan, phase and
-// season (lib/nutrient-audit.ts), so no amounts are typed here.
+// The diet coverage table is computed on the page from every plan and phase
+// (lib/nutrient-audit.ts), so no amounts are typed here.
 
 // ─── Supplements ──────────────────────────────────────────────────────────────
 
@@ -220,7 +220,7 @@ export const SUPPLEMENTS: Supplement[] = [
     name: 'Vitamin B12',
     verdict: 'Recommended',
     dose: 'If your doctor agrees: a 3-month course of 500 µg a day, after the test below.',
-    why: 'Your level (299 pg/mL) is in NICE’s “indeterminate” range (180–350), and Indian vegetarians are a high-risk group for low B12. The plans now give about 3.5–4.8 µg a day from milk, curd and eggs (need 2.2 µg), but boiling losses and variable absorption make food alone uncertain at a borderline level.',
+    why: 'Your level (299 pg/mL) is in NICE’s “indeterminate” range (180–350), and Indian vegetarians are a high-risk group for low B12. The plans’ B12 comes from milk, curd and eggs (the “What your diet covers” table shows how much; the RDA is 2.2 µg), but boiling losses and variable absorption make food alone uncertain at a borderline level.',
     cautions: 'Order: (1) test active B12 (holotranscobalamin) before the first tablet — once you start, it stops being informative; (2) take the 3-month course; (3) retest at the end; (4) your doctor decides whether you need more, and how much. Take B12 alone, not with B6.',
     buy: 'B12 alone, not a “neuro” combination with B6, folic acid or alpha-lipoic acid, so you know each dose. Methylcobalamin (common in India, e.g. Mecobal 500) is not better or worse than cyanocobalamin. We found no independently tested B12 product in India.',
     cost: '≈ ₹315/month for the 3-month course',

@@ -2,15 +2,15 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
-import { MEAL_PLAN_DEFINITIONS, WEEKDAYS, DAYS, buildWeek, planDinners, mealsForDay, itemKey, solvedGrams, resolveMeal, type Meal } from '../lib/data/meal-plans';
+import { MEAL_PLAN_DEFINITIONS, WEEKDAYS, DAYS, buildWeek, planDinners, mealsForDay, itemKey, type Meal } from '../lib/data/meal-plans';
 import { FOODS, FOOD_IDS, type FoodId } from '../lib/data/foods';
 import { DEFAULT_PRICE_TABLE } from '../lib/data/prices';
-import { BUDGET, PHASES, PHASE_IDS, DAILY, type PhaseId } from '../lib/config';
+import { BUDGET, PHASES, PHASE_IDS, DAILY, PLAN_RULES, type PhaseId } from '../lib/config';
 import { atwaterKcal, itemsNutrients, itemsCost } from '../lib/nutrition';
 import { computePlan, computePlans, allDefaultPlans, storageAdvice } from '../lib/meal-plans';
 import { PANTRY_MONTHLY, FOOD_SAFETY } from '../lib/data/nutrition-guide';
 import { COOKING_TUTORIALS } from '../lib/data/tutorials';
-import { SEASONS, SEASON_IDS, seasonForDate, nextSeasonChange } from '../lib/data/seasons';
+import { SLOTS, altGrams } from '../lib/data/produce';
 import { QUANTITIES } from '../lib/data/plan-quantities.generated';
 import { COMPOSITION } from '../lib/data/composition.generated';
 import { SOURCES } from '../scripts/food-data/sources';
@@ -56,12 +56,14 @@ const TITLE_FOODS: [RegExp, FoodId[]][] = [
 const GRAVY_OR_DAL = /curry|gravy|\bdal\b|rajma|chole|kadhi|sambar/i;
 const DAL_FOODS: FoodId[] = ['moongDal', 'toorDal', 'rajma', 'kabuliChana', 'kalaChana', 'moongWhole'];
 
-// Weekly averages below the ICMR average need (EAR) that the solver could not
-// close within the hard rules (calorie and fibre bands, Phase 0 caps). Listed so
-// that any NEW gap fails this test, and any closed gap must be removed here.
-// Shown to the user on Meal plans → Vitamins & minerals and on the Health page.
+// Known gaps, so that any NEW gap fails a test and any closed gap must be removed
+// here. Passing these tests means every gap is documented and shown to you (Meal
+// plans → Vitamins & minerals, and the Health page), NOT that every target is met.
+// • belowEar: weekly averages below the average need (EAR).
+// • hairBelowTarget: ★ hair-linked nutrients below the RDA/AI the plan aims for (Round 3).
+// Regenerate after a re-solve with: KNOWN_GAPS_DUMP=1 npm test (prints the lists).
 const GAPS_FILE = 'tests/known-gaps.json';
-const KNOWN_BELOW_EAR = new Set<string>(existsSync(GAPS_FILE) ? (JSON.parse(readFileSync(GAPS_FILE, 'utf8')) as string[]) : []);
+const KNOWN = (existsSync(GAPS_FILE) ? JSON.parse(readFileSync(GAPS_FILE, 'utf8')) : { belowEar: [], hairBelowTarget: [] }) as { belowEar: string[]; hairBelowTarget: string[] };
 
 function allMeals(): Meal[] {
   const out = new Map<string, Meal>();
@@ -76,9 +78,8 @@ describe('plan set', () => {
 
   it('diet rules: no eggs or meat in the vegetarian plan, no meat in the egg plan, real mixed non-veg plan', () => {
     for (const ph of PHASE_IDS)
-      for (const s of SEASON_IDS)
         for (const def of MEAL_PLAN_DEFINITIONS) {
-          const foods = buildWeek(def, ph, s).flatMap((d) => d.meals.flatMap((m) => m.meal.items.map((i) => FOODS[i.food])));
+          const foods = buildWeek(def, ph).flatMap((d) => d.meals.flatMap((m) => m.meal.items.map((i) => FOODS[i.food])));
           if (def.id === 'vegetarian') assert.ok(!foods.some((f) => f.isEgg || f.isMeatOrFish), 'vegetarian contains egg/meat');
           if (def.id === 'egg') assert.ok(!foods.some((f) => f.isMeatOrFish), 'egg plan contains meat');
           if (def.id === 'egg') assert.ok(foods.some((f) => f.isEgg), 'egg plan has no eggs');
@@ -89,11 +90,11 @@ describe('plan set', () => {
 
 for (const def of MEAL_PLAN_DEFINITIONS) {
   for (const ph of PHASE_IDS) {
-    for (const season of SEASON_IDS) {
-      describe(`${def.id} · phase ${ph} · ${season}`, () => {
+    {
+      describe(`${def.id} · phase ${ph}`, () => {
         const P = PHASES[ph];
-        const week = buildWeek(def, ph, season);
-        const plan = computePlan(def, ph, season);
+        const week = buildWeek(def, ph);
+        const plan = computePlan(def, ph);
 
         it('has 7 days × exactly 4 meals in slot order', () => {
           assert.equal(week.length, 7);
@@ -153,8 +154,30 @@ for (const def of MEAL_PLAN_DEFINITIONS) {
           for (const d of plan.days) for (const n of NUTRIENTS) if (n.ul) assert.ok(d.totals[n.key] <= n.ul, `${d.day}: ${n.label} ${d.totals[n.key].toFixed(1)} > ${n.ul}`);
         });
 
-        it(`costs at most ₹${BUDGET.max} a month at default prices`, () => {
-          assert.ok(plan.monthlyCost <= BUDGET.max, `₹${Math.round(plan.monthlyCost)}`);
+        it(`costs at most ₹${BUDGET.planningMax} a month at default prices (₹${BUDGET.max} ceiling less the 10% price margin)`, () => {
+          assert.ok(plan.monthlyCost <= BUDGET.planningMax + 1, `₹${Math.round(plan.monthlyCost)}`);
+        });
+
+        // Round 3 variety and balance rules (lib/config.ts PLAN_RULES).
+        it('variety: no food gives more than 25% of the week’s energy; eggs ≤ 21 a week; milk + curd within the backstop; soya ≤ 50 g after Phase 0', () => {
+          const weekKcal = plan.days.reduce((t, d) => t + d.totals.kcal, 0);
+          const byFood = new Map<FoodId, number>();
+          let eggs = 0;
+          for (const d of plan.days) {
+            let milkCurd = 0;
+            let soya = 0;
+            for (const pm of d.meals)
+              for (const it of pm.meal.items) {
+                byFood.set(it.food, (byFood.get(it.food) ?? 0) + atwaterKcal(itemsNutrients([it])));
+                if (it.food === 'egg') eggs += it.g / 50;
+                if (it.food === 'milk' || it.food === 'curd') milkCurd += it.g;
+                if (it.food === 'soyaChunks') soya += it.g;
+              }
+            assert.ok(milkCurd <= PLAN_RULES.milkCurdMaxG + 1e-9, `${d.day}: milk + curd ${milkCurd} g`);
+            if (ph > 0) assert.ok(soya <= PLAN_RULES.soyaMaxG + 1e-9, `${d.day}: soya ${soya} g`);
+          }
+          for (const [food, kcal] of byFood) assert.ok(kcal / weekKcal <= PLAN_RULES.foodEnergyShareMax + 0.005, `${food}: ${((kcal / weekKcal) * 100).toFixed(1)}% of the week's energy`);
+          assert.ok(eggs <= PLAN_RULES.eggsPerWeek + 1e-9, `${eggs} eggs`);
         });
 
         // Brief §8: shown kcal reconcile with 4/4/9 + 2 kcal/g fibre within 3% (they are computed from the macros, so 0%).
@@ -192,46 +215,41 @@ for (const def of MEAL_PLAN_DEFINITIONS) {
   }
 }
 
-describe('seasons', () => {
-  it('cover every month exactly once, in four 3-month seasons', () => {
-    const months = SEASON_IDS.flatMap((s) => SEASONS[s].months).sort((a, b) => a - b);
-    assert.deepEqual(months, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-    for (const s of SEASON_IDS) assert.equal(SEASONS[s].months.length, 3);
-  });
-
-  it('pick the season from the date and find the next change', () => {
-    assert.equal(seasonForDate('2026-11-02'), 'autumn');
-    assert.equal(seasonForDate('2026-12-01'), 'winter');
-    assert.equal(seasonForDate('2027-03-31'), 'summer');
-    assert.deepEqual(nextSeasonChange('2026-11-02'), { date: '2026-12-01', season: 'winter' });
-    assert.deepEqual(nextSeasonChange('2026-12-15'), { date: '2027-03-01', season: 'summer' });
-  });
-
+describe('fruit and vegetables', () => {
   it('every slot’s food shares add up to 1', () => {
-    for (const s of SEASON_IDS) for (const [slot, f] of Object.entries(SEASONS[s].slots)) assert.ok(Math.abs(f.foods.reduce((a, [, x]) => a + x, 0) - 1) < 1e-9, `${s} ${slot}`);
+    for (const [slot, f] of Object.entries(SLOTS)) assert.ok(Math.abs(f.foods.reduce((a, x) => a + x.share, 0) - 1) < 1e-9, slot);
   });
 
-  it('the Meal 1 fruit changes through the year (not the same food in every season)', () => {
-    assert.ok(new Set(SEASON_IDS.map((s) => SEASONS[s].slots.fruit1.foods[0][0])).size >= 3);
-    assert.ok(new Set(SEASON_IDS.map((s) => SEASONS[s].slots.sabzi.name)).size === 4);
+  it('every fruit and vegetable except onion and tomato has an alternative, and it is a different food', () => {
+    for (const [slot, f] of Object.entries(SLOTS))
+      for (const x of f.foods) {
+        if (x.food === 'onion' || x.food === 'tomato') continue;
+        assert.ok(x.alt, `${slot} ${x.food}: no alternative`);
+        assert.notEqual(x.alt, x.food, `${slot} ${x.food}`);
+      }
   });
 
-  it('only seasonal slots change between seasons: every other item has the same amount all year', () => {
-    for (const m of allMeals())
-      for (const it of m.items)
-        if (!it.slot) for (const ph of PHASE_IDS) assert.equal(new Set(SEASON_IDS.map((s): number => solvedGrams(m, it, ph, s))).size, 1, `${m.id} ${itemKey(it)} phase ${ph}`);
+  it('every resolved fruit or vegetable item carries its alternative with an amount', () => {
+    for (const def of MEAL_PLAN_DEFINITIONS)
+      for (const ph of PHASE_IDS)
+        for (const d of buildWeek(def, ph))
+          for (const pm of d.meals)
+            for (const it of pm.meal.items)
+              if (it.slot && it.food !== 'onion' && it.food !== 'tomato') assert.ok(it.alt && it.alt.g > 0, `${pm.meal.id} ${it.food}`);
   });
 
-  it('peas appear only in winter', () => {
-    for (const s of SEASON_IDS.filter((x) => x !== 'winter')) for (const m of allMeals()) assert.ok(!resolveMeal(m, 0, s).items.some((i) => i.food === 'peas'), `${m.id} has peas in ${s}`);
+  it('a fruit swap gives about the same calories; a vegetable swap the same weight', () => {
+    const g = altGrams('papaya', 'apple', 150);
+    const kcal = (f: 'papaya' | 'apple', grams: number) => itemsNutrients([{ food: f, g: grams }]).kcal;
+    assert.ok(Math.abs(kcal('apple', g) - kcal('papaya', 150)) <= kcal('apple', 10), `${g} g apple`);
+    assert.equal(altGrams('okra', 'cauliflower', 40), 40);
   });
 });
 
 describe('across plans', () => {
-  for (const ph of PHASE_IDS)
-    for (const s of SEASON_IDS) {
-      it(`phase ${ph}, ${s}: the same day's kcal and protein are within 5% across the three plans`, () => {
-        const plans = computePlans(ph, s);
+  for (const ph of PHASE_IDS) {
+      it(`phase ${ph}: the same day's kcal and protein are within 5% across the three plans`, () => {
+        const plans = computePlans(ph);
         for (let i = 0; i < 7; i++) {
           for (const key of ['kcal', 'protein'] as const) {
             const vals = plans.map((p) => p.days[i].totals[key]);
@@ -243,28 +261,37 @@ describe('across plans', () => {
     }
 
   it('changing a price changes every cost that uses it, and nothing else', () => {
-    const base = computePlan(MEAL_PLAN_DEFINITIONS[0], 2, 'winter');
+    const base = computePlan(MEAL_PLAN_DEFINITIONS[0], 2);
     const prices = { ...DEFAULT_PRICE_TABLE, milk: DEFAULT_PRICE_TABLE.milk * 2 };
-    const edited = computePlan(MEAL_PLAN_DEFINITIONS[0], 2, 'winter', prices);
+    const edited = computePlan(MEAL_PLAN_DEFINITIONS[0], 2, prices);
     const milkLine = base.grocery.flatMap((g) => g.lines).find((l) => l.food === 'milk')!;
     assert.ok(Math.abs(edited.weeklyFoodCost - base.weeklyFoodCost - milkLine.weeklyCost) < 0.5);
     assert.deepEqual(edited.days.map((d) => d.totals), base.days.map((d) => d.totals));
   });
 
-  it('weekly averages below the EAR match the documented list (tests/known-gaps.json) — no new gaps', () => {
-    const found = new Set<string>();
-    for (const p of allDefaultPlans()) for (const r of auditPlan(p)) if (r.status === 'below-ear') found.add(`${p.def.id}|${p.phase}|${p.season}|${r.info.key}`);
-    if (process.env.KNOWN_BELOW_EAR_DUMP) console.log(JSON.stringify([...found].sort(), null, 2));
-    const added = [...found].filter((x) => !KNOWN_BELOW_EAR.has(x));
-    const closed = [...KNOWN_BELOW_EAR].filter((x) => !found.has(x));
-    assert.deepEqual(added, [], 'new nutrient gaps');
-    assert.deepEqual(closed, [], 'gaps that are now closed: remove them from tests/known-gaps.json');
+  it('nutrient gaps match the documented lists in tests/known-gaps.json: no new gaps, none silently closed', () => {
+    const belowEar = new Set<string>();
+    const hairBelowTarget = new Set<string>();
+    for (const p of allDefaultPlans())
+      for (const r of auditPlan(p)) {
+        const id = `${p.def.id}|${p.phase}|${r.info.key}`;
+        if (r.status === 'below-ear') belowEar.add(id);
+        if (r.info.hair && r.info.key !== 'biotin' && (r.status === 'below-rda' || r.status === 'below-ai')) hairBelowTarget.add(id);
+      }
+    if (process.env.KNOWN_GAPS_DUMP) console.log(JSON.stringify({ belowEar: [...belowEar].sort(), hairBelowTarget: [...hairBelowTarget].sort() }, null, 2));
+    for (const [name, found, known] of [
+      ['belowEar', belowEar, KNOWN.belowEar],
+      ['hairBelowTarget', hairBelowTarget, KNOWN.hairBelowTarget],
+    ] as const) {
+      const k = new Set(known);
+      assert.deepEqual([...found].filter((x) => !k.has(x)), [], `new ${name} gaps`);
+      assert.deepEqual(known.filter((x) => !found.has(x)), [], `${name} gaps now closed: remove them from tests/known-gaps.json`);
+    }
   });
 
-  it('Phase 2 meets the EAR for iron, zinc, calcium, folate, B12, vitamin C, vitamin A and magnesium in every plan and season', () => {
+  it('Phase 2 meets the EAR for iron, zinc, calcium, folate, B12, vitamin C, vitamin A and magnesium in every plan', () => {
     const must = ['iron', 'zinc', 'calcium', 'folate', 'b12', 'vitC', 'vitA', 'magnesium'];
-    for (const s of SEASON_IDS)
-      for (const p of computePlans(2, s)) for (const r of auditPlan(p)) if (must.includes(r.info.key)) assert.notEqual(r.status, 'below-ear', `${p.def.id} ${s} ${r.info.label}`);
+    for (const p of computePlans(2)) for (const r of auditPlan(p)) if (must.includes(r.info.key)) assert.notEqual(r.status, 'below-ear', `${p.def.id} ${r.info.label}`);
   });
 });
 
@@ -330,12 +357,11 @@ describe('reproducible quantities', () => {
     for (const m of allMeals())
       for (const it of m.items) {
         const q = QUANTITIES[m.id][itemKey(it)];
-        for (const ph of PHASE_IDS)
-          for (let s = 0; s < 4; s++) {
-            const g = q[ph][s];
-            if (it.range) assert.ok(g >= it.range[0] && g <= it.range[1], `${m.id} ${itemKey(it)}: ${g} outside ${it.range}`);
-            if (it.step) assert.equal(g % it.step, 0, `${m.id} ${itemKey(it)}: ${g} not a multiple of ${it.step}`);
-          }
+        for (const ph of PHASE_IDS) {
+          const g = q[ph];
+          if (it.range) assert.ok(g >= it.range[0] && g <= it.range[1], `${m.id} ${itemKey(it)}: ${g} outside ${it.range}`);
+          if (it.step) assert.equal(g % it.step, 0, `${m.id} ${itemKey(it)}: ${g} not a multiple of ${it.step}`);
+        }
       }
   });
 });

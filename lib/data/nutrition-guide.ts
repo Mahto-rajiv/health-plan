@@ -194,5 +194,5 @@ export const BUDGET_NOTES = [
   'Costs include every food in the plan plus ~₹300/month for spices, salt, tea, herbs and other basics. Cooking gas is not included. Supplements are costed separately on the Health page.',
   'Produce is costed as bought, so peel, seeds, pods and trimmings are paid for (e.g. 38% of a papaya, 36% of a banana, 62% of peas in the pod). The shares are USDA SR28 “refuse” values.',
   'Cost rule: when two foods are equivalent in nutrition and taste, the plan uses the cheaper one unless it has a safety or digestive downside. That is why it uses soya, dals and home-set curd, but sealed branded paneer and ghee rather than loose ones.',
-  `The budget is a ceiling of ₹${BUDGET.max.toLocaleString('en-IN')} a month with no lower target (Round 2), so the plans are built for nutrition first. The cost rises with the phases because you eat more, and changes a little with the season. New seasonal produce prices (Nov 2026) are rough estimates; check them in Settings.`,
+  `The budget is a ceiling of ₹${BUDGET.max.toLocaleString('en-IN')} a month with no lower target (Round 2), so the plans are built for nutrition first. The cost rises with the phases because you eat more. Fruit and vegetable prices added in Nov 2026 are rough estimates; check them in Settings.`,
 ];

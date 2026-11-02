@@ -9,8 +9,7 @@ import { PHASES, PHASE_IDS, type PhaseId } from '@/lib/config';
 import { formatQuantity, itemsNutrients, roundKcal } from '@/lib/nutrition';
 import { useSettings } from '@/lib/storage';
 import { useToday } from '@/lib/hooks';
-import { phaseOn, seasonOn } from '@/lib/phase';
-import { SEASONS, SEASON_IDS, type SeasonId } from '@/lib/data/seasons';
+import { phaseOn } from '@/lib/phase';
 import { Button } from '@/components/ui/Button';
 
 /** One printable card per dinner: what Mom needs at the stove, nothing else. */
@@ -22,8 +21,6 @@ export function CookingCardsView() {
   const phaseParam = Number(params.get('phase'));
   const def = MEAL_PLAN_DEFINITIONS.find((p) => p.id === (planParam ?? settings.planId)) ?? MEAL_PLAN_DEFINITIONS[0];
   const phase: PhaseId = PHASE_IDS.includes(phaseParam as PhaseId) && params.get('phase') !== null ? (phaseParam as PhaseId) : phaseOn(settings, today);
-  const seasonParam = params.get('season') as SeasonId | null;
-  const season: SeasonId = seasonParam && SEASON_IDS.includes(seasonParam) ? seasonParam : seasonOn(settings, today);
   const dinners = planDinners(def);
 
   return (
@@ -39,12 +36,12 @@ export function CookingCardsView() {
       <header>
         <h1 className="text-xl font-semibold text-ink">Dinner cooking cards</h1>
         <p className="text-sm text-muted">
-          {def.name} · {PHASES[phase].name} · {SEASONS[season].name} ({SEASONS[season].monthsLabel}) vegetables. Quantities are for one portion (raw weights); multiply for the family. At most 2 pots.
+          {def.name} · {PHASES[phase].name}. Quantities are for one portion (raw weights); multiply for the family. At most 2 pots.
         </p>
       </header>
       <div className="grid gap-4 md:grid-cols-2 print:block">
         {dinners.map(({ days, meal }) => {
-          const m = resolveMeal(meal, phase, season);
+          const m = resolveMeal(meal, phase);
           const n = itemsNutrients(m.items);
           return (
             <article key={meal.id} className="break-inside-avoid rounded-2xl border border-line bg-surface p-4 print:mb-4 print:rounded-none print:border-slate-400">
@@ -63,6 +60,11 @@ export function CookingCardsView() {
                       {formatQuantity(it)}
                       {it.note ? ` · ${it.note}` : ''}
                     </span>
+                    {it.alt && (
+                      <span className="w-full text-xs text-muted">
+                        Not in the market? {FOODS[it.alt.food].name}, {formatQuantity(it.alt)}
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>

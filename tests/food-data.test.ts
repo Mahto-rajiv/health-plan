@@ -100,7 +100,7 @@ describe('whole days are physically plausible', () => {
           if (!ref) continue;
           const factor = k === 'vitA' || k === 'vitK' ? 10 : 5;
           const bound = Math.max(factor * ref, NUTRIENT_BY_KEY[k]?.ul ?? 0);
-          assert.ok(d.totals[k] <= bound, `${p.def.id} P${p.phase} ${p.season} ${d.day}: ${k} ${d.totals[k].toFixed(1)} > ${bound}`);
+          assert.ok(d.totals[k] <= bound, `${p.def.id} P${p.phase} ${d.day}: ${k} ${d.totals[k].toFixed(1)} > ${bound}`);
         }
   });
 });

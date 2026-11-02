@@ -169,6 +169,12 @@ const META = {
     category: 'Nuts & seeds',
     buyUnit: { label: '200 g', grams: 200 },
   },
+  sesame: {
+    name: 'Sesame seeds (til, white)',
+    category: 'Nuts & seeds',
+    buyUnit: { label: '250 g', grams: 250 },
+    measure: { label: 'tbsp', grams: 9 },
+  },
   almonds: {
     name: 'Almonds',
     category: 'Nuts & seeds',

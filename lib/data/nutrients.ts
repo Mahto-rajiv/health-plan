@@ -3,9 +3,20 @@ import type { RefId } from './references';
 
 // Reference intakes for a man aged 24 (per day).
 //
-// • ICMR-NIN 2020 first (Table 3, adult men). ICMR says the EAR, not the RDA,
-//   is the value for planning an individual's diet, so the plans must reach the
-//   EAR every week and get as close to the RDA as the other rules allow.
+// • ICMR-NIN 2020 first (Table 3, adult men).
+// • Which value the plans aim for (Round 3). The two standards disagree:
+//   – ICMR-NIN 2020 brief note: "the present committee recommended EAR for
+//     population requirement/ adequacy estimations and menu or diet planning for
+//     individuals", and "The RDAs are not recommended for use in menu planning for
+//     groups or individuals". Its worry is that planning everyone at the RDA pushes
+//     a share of people toward the upper limits.
+//   – US/Canadian DRI framework (IOM 2003, planning report): an individual's diet
+//     is planned to the RDA or AI; the EAR is for assessing groups.
+//   This plan is for one person who has unexplained hair shedding and untested
+//   ferritin and zinc, so it follows the individual-planning rule where it matters:
+//   the hair-linked nutrients are planned to the RDA (or AI), the rest to at least
+//   the EAR and toward the RDA, and every upper limit is a hard limit, which
+//   answers ICMR's concern. The solver ranks: EAR first, then RDA/AI.
 // • Nutrients ICMR's summary doesn't list use the US/Canadian DRIs (National
 //   Academies), as published by Health Canada: males 19–30.
 // • Upper limits (UL) are the National Academies values. Where a UL applies only
@@ -23,7 +34,7 @@ export interface NutrientInfo {
   label: string;
   unit: 'g' | 'mg' | 'µg';
   group: NutrientGroup;
-  /** Estimated average requirement: the planning floor. */
+  /** Estimated average requirement: the minimum every plan aims to reach. */
   ear?: number;
   /** RDA, or AI when `adequateIntake` is set. */
   rda?: number;

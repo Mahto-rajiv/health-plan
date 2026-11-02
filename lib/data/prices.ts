@@ -43,6 +43,7 @@ export const DEFAULT_PRICES: Record<FoodId, PriceEntry> = {
   flax: { perKg: 220 },
   sunflowerSeeds: { perKg: 500, note: 'rough estimate (Nov 2026), not compared with any listing' },
   almonds: { perKg: 1000 },
+  sesame: { perKg: 240, note: 'rough estimate (Nov 2026), not compared with any listing' },
   walnuts: { perKg: 1300 },
   cashews: { perKg: 1000 },
   raisins: { perKg: 380 },

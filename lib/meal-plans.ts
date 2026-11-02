@@ -1,6 +1,5 @@
 import { FOODS, type FoodId, type GroceryCategory, type Nutrients } from './data/foods';
 import { MEAL_PLAN_DEFINITIONS, buildWeek, type PlanId, type PlannedDay, type PlannedMeal, type MealPlanDefinition } from './data/meal-plans';
-import { SEASON_IDS, type SeasonId } from './data/seasons';
 import type { NutrientKey } from './data/nutrient-keys';
 import { DEFAULT_PRICE_TABLE, type PriceTable } from './data/prices';
 import { FOOD_SAFETY, PANTRY_MONTHLY } from './data/nutrition-guide';
@@ -35,7 +34,6 @@ export interface GroceryLine {
 export interface ComputedPlan {
   def: MealPlanDefinition;
   phase: PhaseId;
-  season: SeasonId;
   days: ComputedDay[];
   weeklyAverage: Nutrients;
   /** Nutrients for which some food in the week has no value in its source table (so the total may be low). */
@@ -107,8 +105,8 @@ export function storageAdvice(pm: PlannedMeal): string[] {
   return out;
 }
 
-export function computePlan(def: MealPlanDefinition, phase: PhaseId, season: SeasonId, prices: PriceTable = DEFAULT_PRICE_TABLE): ComputedPlan {
-  const week = buildWeek(def, phase, season);
+export function computePlan(def: MealPlanDefinition, phase: PhaseId, prices: PriceTable = DEFAULT_PRICE_TABLE): ComputedPlan {
+  const week = buildWeek(def, phase);
   const days: ComputedDay[] = week.map((d) => {
     const items = d.meals.flatMap((m) => m.meal.items);
     return {
@@ -151,7 +149,6 @@ export function computePlan(def: MealPlanDefinition, phase: PhaseId, season: Sea
   return {
     def,
     phase,
-    season,
     days,
     weeklyAverage,
     missing: missingNutrients(week.flatMap((d) => d.meals.flatMap((m) => m.meal.items))),
@@ -165,14 +162,14 @@ export function computePlan(def: MealPlanDefinition, phase: PhaseId, season: Sea
   };
 }
 
-/** All plans for one phase and season. */
-export function computePlans(phase: PhaseId, season: SeasonId, prices: PriceTable = DEFAULT_PRICE_TABLE): ComputedPlan[] {
-  return MEAL_PLAN_DEFINITIONS.map((def) => computePlan(def, phase, season, prices));
+/** All plans for one phase. */
+export function computePlans(phase: PhaseId, prices: PriceTable = DEFAULT_PRICE_TABLE): ComputedPlan[] {
+  return MEAL_PLAN_DEFINITIONS.map((def) => computePlan(def, phase, prices));
 }
 
-/** Every plan × phase × season at default prices (36). Computed on demand so client bundles don't pay for it at load. */
+/** Every plan × phase at default prices (9). Computed on demand so client bundles don't pay for it at load. */
 export function allDefaultPlans(): ComputedPlan[] {
-  return PHASE_IDS.flatMap((ph) => SEASON_IDS.flatMap((s) => computePlans(ph, s)));
+  return PHASE_IDS.flatMap((ph) => computePlans(ph));
 }
 
 export function findPlan(plans: ComputedPlan[], id: PlanId): ComputedPlan {

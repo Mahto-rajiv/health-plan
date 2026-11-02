@@ -9,7 +9,6 @@ import { MEAL_PLAN_DEFINITIONS, type PlanId } from '@/lib/data/meal-plans';
 import { FOODS, type FoodId } from '@/lib/data/foods';
 import { DEFAULT_PRICES, PRICES_AS_OF } from '@/lib/data/prices';
 import { PHASES, PROFILE, phaseForWeek } from '@/lib/config';
-import { SEASONS, SEASON_IDS, seasonForDate, type SeasonId } from '@/lib/data/seasons';
 import { waistLimits } from '@/lib/progress';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -217,20 +216,6 @@ export function SettingsView() {
             <p className="mt-1.5 text-xs text-muted">
               Auto follows the program week ({today ? `now week ${programWeek(settings.programStart, today)} → ${PHASES[phaseForWeek(programWeek(settings.programStart, today))].name}` : '…'}).
               Pick a phase to move up early (e.g. when the Progress page suggests +200 kcal) or to stay longer.
-            </p>
-          </div>
-          <div>
-            <div className="mb-1 text-xs font-medium text-muted">Season (fruit and vegetables)</div>
-            <Segmented<string>
-              wrap
-              label="Season"
-              value={settings.season ?? 'auto'}
-              onChange={(v) => update({ season: v as 'auto' | SeasonId })}
-              options={[{ value: 'auto', label: 'Auto' }, ...SEASON_IDS.map((s) => ({ value: s, label: `${SEASONS[s].name} (${SEASONS[s].monthsLabel})` }))]}
-            />
-            <p className="mt-1.5 text-xs text-muted">
-              Auto follows the calendar ({today ? `now ${SEASONS[seasonForDate(today)].name.toLowerCase()}` : '…'}). Pick a season if your market is early or
-              late, e.g. if peas are still cheap in early March. Only the fruit and vegetables change; Meal 1 stays the same every day.
             </p>
           </div>
           <div className="rounded-xl border border-line p-3">

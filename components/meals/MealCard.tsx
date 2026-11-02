@@ -1,4 +1,4 @@
-import { Clock, Repeat, Briefcase, Timer, CookingPot, Snowflake, Leaf } from 'lucide-react';
+import { Clock, Repeat, Briefcase, Timer, CookingPot, Snowflake, ArrowLeftRight } from 'lucide-react';
 import { FOODS, type Nutrients } from '@/lib/data/foods';
 import { MEAL_SLOTS, type PlannedMeal } from '@/lib/data/meal-plans';
 import { cookingTutorials } from '@/lib/data/tutorials';
@@ -90,18 +90,17 @@ export function MealCard({ planned, totals, cost }: { planned: PlannedMeal; tota
           return (
             <li key={`${it.food}-${idx}`} className="flex items-start justify-between gap-3 px-4 py-2 text-sm">
               <div className="min-w-0">
-                <div className="text-ink">
-                  {FOODS[it.food].name}
-                  {it.slot && (
-                    <span className="ml-1.5 inline-flex items-center gap-0.5 text-[11px] text-emerald-700">
-                      <Leaf size={11} aria-hidden /> seasonal
-                    </span>
-                  )}
-                </div>
+                <div className="text-ink">{FOODS[it.food].name}</div>
                 <div className="text-xs text-muted">
                   {formatQuantity(it)}
                   {it.note && <> · {it.note}</>}
                 </div>
+                {it.alt && (
+                  <div className="mt-0.5 inline-flex items-center gap-1 text-xs text-ink-2">
+                    <ArrowLeftRight size={11} aria-hidden className="shrink-0 text-muted" />
+                    Not in the market? {FOODS[it.alt.food].name}, {formatQuantity(it.alt)}
+                  </div>
+                )}
               </div>
               <div className="tabular shrink-0 text-right text-xs text-muted">
                 <div>{Math.round(n.kcal)} kcal</div>

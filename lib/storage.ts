@@ -2,8 +2,6 @@
 
 import { useCallback, useSyncExternalStore } from 'react';
 import type { PlanId } from './data/meal-plans';
-import { SEASON_IDS, type SeasonId } from './data/seasons';
-import type { SessionId } from './data/training';
 import { PROFILE, type PhaseId } from './config';
 
 // ─── Persisted data shapes ────────────────────────────────────────────────────
@@ -16,8 +14,6 @@ export interface Settings {
   programStart: string;
   /** 'auto' follows the program week; a number pins that phase. */
   phase: 'auto' | PhaseId;
-  /** 'auto' follows the calendar (lib/data/seasons.ts); a season pins it, e.g. when your market is early or late. */
-  season: 'auto' | SeasonId;
   startWeightKg: number;
   /** Weight before the recent loss; the first checkpoint. */
   preLossWeightKg: number;
@@ -42,29 +38,6 @@ export interface BodyEntry {
   photo?: boolean;
 }
 
-export interface LoggedSet {
-  kg: number | null;
-  reps: number | null;
-  done: boolean;
-}
-
-export interface WorkoutRecord {
-  id: string;
-  date: string;
-  sessionId: SessionId;
-  sets: Record<string, LoggedSet[]>;
-  short?: boolean;
-  /** Real session length, warm-up included, if logged (Round 3: checks the time estimate). */
-  minutes?: number;
-  completedAt: string;
-}
-
-export interface WorkoutDraft {
-  sessionId: SessionId;
-  date: string;
-  sets: Record<string, LoggedSet[]>;
-}
-
 /** Four booleans per date: did you eat Meal 1–4 as planned? */
 export type MealLog = Record<string, [boolean, boolean, boolean, boolean]>;
 
@@ -77,11 +50,13 @@ export interface CheckIn {
 }
 export type CheckInLog = Record<string, CheckIn>;
 
+/** The owner starts the program on Monday 9 Nov 2026 (nothing was done before). */
+const PROGRAM_START = '2026-11-09';
+
 export const DEFAULT_SETTINGS: Settings = {
   planId: 'vegetarian',
-  programStart: '2026-11-02',
+  programStart: PROGRAM_START,
   phase: 'auto',
-  season: 'auto',
   startWeightKg: PROFILE.weightKg,
   preLossWeightKg: PROFILE.preLossWeightKg,
   targetWeightKg: PROFILE.longTermTargetKg,
@@ -96,17 +71,22 @@ const VALID_PLANS: PlanId[] = ['vegetarian', 'egg', 'nonveg'];
 
 /**
  * Settings saved by older versions: the "Preferred" plan no longer exists, and
- * 66 kg was the old default start weight (the real figure is 64 kg).
+ * 66 kg was the old default start weight (the real figure is 64 kg). The training
+ * time and season settings no longer exist. Older versions defaulted the start to
+ * 6 Oct 2026, which made the app show week 5 before anything had started: a saved
+ * start before 9 Nov moves to 9 Nov, and a phase pinned under it goes back to Auto.
  */
-function migrateSettings(s: Settings & { trainingTime?: unknown }): Settings {
-  const { trainingTime: _drop, ...rest } = s;
+function migrateSettings(s: Settings & { trainingTime?: unknown; season?: unknown }): Settings {
+  const { trainingTime: _drop, season: _season, ...rest } = s;
   void _drop;
+  void _season;
+  const early = !rest.programStart || rest.programStart < PROGRAM_START;
   return {
     ...rest,
+    ...(early ? { programStart: PROGRAM_START } : {}),
     planId: VALID_PLANS.includes(rest.planId) ? rest.planId : 'vegetarian',
     startWeightKg: rest.startWeightKg === 66 ? PROFILE.weightKg : rest.startWeightKg,
-    phase: rest.phase === 'auto' || rest.phase === 0 || rest.phase === 1 || rest.phase === 2 ? rest.phase : 'auto',
-    season: rest.season === 'auto' || SEASON_IDS.includes(rest.season as SeasonId) ? rest.season : 'auto',
+    phase: early ? 'auto' : rest.phase === 'auto' || rest.phase === 0 || rest.phase === 1 || rest.phase === 2 ? rest.phase : 'auto',
   };
 }
 
@@ -114,6 +94,7 @@ const PREFIX = 'hp:v2:';
 export const KEYS = {
   settings: `${PREFIX}settings`,
   body: `${PREFIX}body`,
+  // Workout logs are no longer written. The keys stay so Reset and backups still cover data saved by older versions.
   workouts: `${PREFIX}workouts`,
   draft: `${PREFIX}draft`,
   meals: `${PREFIX}meals`,
@@ -242,10 +223,8 @@ const EMPTY_OBJECT = {};
 
 export const useSettings = () => useStore<Settings>(KEYS.settings, DEFAULT_SETTINGS);
 export const useBodyLog = () => useStore<BodyEntry[]>(KEYS.body, EMPTY_ARRAY);
-export const useWorkoutLog = () => useStore<WorkoutRecord[]>(KEYS.workouts, EMPTY_ARRAY);
 export const useMealLog = () => useStore<MealLog>(KEYS.meals, EMPTY_OBJECT as MealLog);
 export const useCheckIns = () => useStore<CheckInLog>(KEYS.checkins, EMPTY_OBJECT as CheckInLog);
-export const useWorkoutDraft = () => useStore<WorkoutDraft | null>(KEYS.draft, null);
 export const usePriceOverrides = () => useStore<PriceOverrides>(KEYS.prices, EMPTY_OBJECT as PriceOverrides);
 
 

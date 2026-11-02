@@ -1,12 +1,12 @@
 // Weekly-average vitamins and minerals for a computed plan, compared with the
 // reference intakes in lib/data/nutrients.ts. Everything is computed from the
-// food table, so it can't go stale when meals, seasons or amounts change.
+// food table, so it can't go stale when meals or amounts change.
 import { FOODS, type FoodId } from './data/foods';
 import { NUTRIENTS, type NutrientInfo } from './data/nutrients';
 import type { NutrientKey } from './data/nutrient-keys';
 import type { ComputedPlan } from './meal-plans';
 
-export type AuditStatus = 'below-ear' | 'below-rda' | 'meets' | 'above-ul' | 'info';
+export type AuditStatus = 'below-ear' | 'below-rda' | 'below-ai' | 'meets' | 'above-ul' | 'info';
 
 export interface AuditRow {
   info: NutrientInfo;
@@ -25,14 +25,17 @@ export function statusFor(info: NutrientInfo, value: number): AuditStatus {
   if (info.infoOnly) return 'info';
   if (info.ul && value > info.ul) return 'above-ul';
   if (info.ear && value < info.ear) return 'below-ear';
-  if (info.rda && value < info.rda) return 'below-rda';
+  // Nutrients with only an adequate intake (AI) have no average need, so "above the
+  // average need" would be meaningless for them (owner's Round 3 review).
+  if (info.rda && value < info.rda) return info.adequateIntake ? 'below-ai' : 'below-rda';
   return 'meets';
 }
 
 export const STATUS_LABEL: Record<AuditStatus, string> = {
-  'below-ear': 'below the average need',
+  'below-ear': 'below the average need (EAR)',
   'below-rda': 'above the average need, below the RDA',
-  meets: 'meets the RDA',
+  'below-ai': 'below the adequate intake (no average need is set)',
+  meets: 'meets the RDA or AI',
   'above-ul': 'above the upper limit',
   info: 'for information',
 };
@@ -63,15 +66,15 @@ export function auditPlan(plan: ComputedPlan): AuditRow[] {
   });
 }
 
-/** Smallest and largest weekly average across many plans (e.g. all phases and seasons). */
+/** Smallest and largest weekly average across many plans (e.g. all phases). */
 export function auditRange(plans: ComputedPlan[]): { info: NutrientInfo; min: number; max: number; worst: AuditStatus; belowEar: string[] }[] {
   const audits = plans.map((p) => ({ p, rows: auditPlan(p) }));
-  const order: AuditStatus[] = ['above-ul', 'below-ear', 'below-rda', 'meets', 'info'];
+  const order: AuditStatus[] = ['above-ul', 'below-ear', 'below-rda', 'below-ai', 'meets', 'info'];
   return NUTRIENTS.map((info, i) => {
     const vals = audits.map((a) => a.rows[i].value);
     const statuses = audits.map((a) => a.rows[i].status);
     const worst = order.find((s) => statuses.includes(s)) ?? 'meets';
-    const belowEar = audits.filter((a) => a.rows[i].status === 'below-ear').map((a) => `${a.p.def.shortName}, Phase ${a.p.phase}, ${a.p.season}`);
+    const belowEar = audits.filter((a) => a.rows[i].status === 'below-ear').map((a) => `${a.p.def.shortName}, Phase ${a.p.phase}`);
     return { info, min: Math.min(...vals), max: Math.max(...vals), worst, belowEar };
   });
 }

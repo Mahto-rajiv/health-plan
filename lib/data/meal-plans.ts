@@ -2,7 +2,7 @@ import type { MealItem } from '../nutrition';
 import type { PhaseId } from '../config';
 import type { FoodId } from './foods';
 import type { TutorialId } from './tutorials';
-import { SEASONS, type SeasonId, type SlotId, SEASON_IDS } from './seasons';
+import { SLOTS, altGrams, type SlotId } from './produce';
 import { QUANTITIES } from './plan-quantities.generated';
 
 // ─── Four-meal structure (applies to every plan) ─────────────────────────────
@@ -47,7 +47,7 @@ export interface FoodItem extends PlanItemBase {
   slot?: never;
 }
 
-/** A seasonal slot: the food changes with the season (lib/data/seasons.ts). */
+/** A fruit or vegetable slot: the foods and their alternatives are in lib/data/produce.ts. */
 export interface SlotItem extends PlanItemBase {
   slot: SlotId;
   food?: never;
@@ -166,12 +166,15 @@ const M1_VEG = meal({
     { food: 'pumpkinSeeds', g: 5, range: [0, 15], note: 'stirred in at the end' },
     { food: 'flax', g: 5, range: [0, 10], note: 'ground, stirred in at the end' },
     { food: 'sunflowerSeeds', g: 5, range: [0, 20], note: 'stirred in at the end' },
+    { food: 'almonds', g: 5, range: [0, 20], note: 'chopped, on top (Round 3: vitamin E)' },
+    { food: 'sesame', g: 5, range: [0, 10], note: 'dry-roasted til, on top' },
+    { food: 'banana', g: 50, range: [0, 120], step: 10, note: 'sliced in, extra to the fruit on the side (Round 3: vitamin B6)' },
     { slot: 'fruit1', g: 150, range: [100, 250], note: 'cut, on the side' },
   ],
   steps: [
     'Bring the milk to a boil in a small pan.',
     'Add the oats and simmer 3–4 minutes, stirring, until thick.',
-    'Stir in the ground flaxseed and the pumpkin and sunflower seeds; top with the crushed roasted peanuts. Eat the {fruit1} alongside.',
+    'Stir in the ground flaxseed, the seeds and any banana listed above; top with the crushed roasted peanuts, chopped almonds and roasted til if listed. Eat the {fruit1} alongside.',
   ],
   activeMin: 8,
   totalMin: 10,
@@ -180,11 +183,10 @@ const M1_VEG = meal({
   substitutions: [
     { swap: 'Oats', with: 'Daliya, same weight (needs ~15 min, so cook 2 days’ worth at once)' },
     { swap: 'Peanuts', with: 'Same weight of almonds (≈ 6× the price)' },
-    { swap: 'The fruit', with: 'Any fruit in season (see the season note); papaya is in the market all year' },
     { swap: 'Pumpkin seeds', with: 'Leave out if they don’t suit you; the zinc then comes mostly from dals and atta' },
   ],
-  why: 'Quick, mostly carbohydrate with ~20 g protein, moderate in fat and fibre so it sits well on the commute. Pumpkin seeds add zinc and iron; ground flaxseed adds omega-3 (ALA). The fruit changes with the season; everything else stays the same all year.',
-  keeps: 'Grind a week’s flaxseed at a time and keep it in a closed jar in the fridge (ground flax goes stale).',
+  why: 'Quick, mostly carbohydrate with ~20 g protein, moderate in fat and fibre so it sits well on the commute. Pumpkin seeds add zinc and iron; ground flaxseed adds omega-3 (ALA).',
+  keeps: 'Grind a week’s flaxseed at a time and keep it in a closed jar in the fridge (ground flax goes stale). Dry-roast a week’s til with the peanuts on Sunday.',
   requiresReheat: false,
 });
 
@@ -198,11 +200,14 @@ const M1_EGG = meal({
     { food: 'pumpkinSeeds', g: 5, range: [0, 15], note: 'stirred in at the end' },
     { food: 'flax', g: 5, range: [0, 10], note: 'ground, stirred in at the end' },
     { food: 'sunflowerSeeds', g: 5, range: [0, 20], note: 'stirred in at the end' },
+    { food: 'almonds', g: 5, range: [0, 20], note: 'chopped, on top (Round 3: vitamin E)' },
+    { food: 'sesame', g: 5, range: [0, 10], note: 'dry-roasted til, on top' },
+    { food: 'banana', g: 50, range: [0, 120], step: 10, note: 'sliced in, extra to the fruit on the side (Round 3: vitamin B6)' },
     { slot: 'fruit1', g: 150, range: [100, 250], note: 'cut, on the side' },
   ],
   steps: [
     'Bring the milk to a boil in a small pan, add the oats and simmer 3–4 minutes.',
-    'Stir in the ground flaxseed and the pumpkin and sunflower seeds.',
+    'Stir in the ground flaxseed, the seeds and any banana listed above; top with chopped almonds and roasted til if listed.',
     'Peel the egg(s) boiled last night; season with salt and pepper. Eat the {fruit1} alongside.',
   ],
   activeMin: 7,
@@ -212,9 +217,8 @@ const M1_EGG = meal({
   substitutions: [
     { swap: 'Oats', with: 'Daliya, same weight' },
     { swap: 'Boiled eggs', with: 'A 2-egg omelette (adds ~5 min and 1 tsp oil)' },
-    { swap: 'The fruit', with: 'Any fruit in season (see the season note); papaya is in the market all year' },
   ],
-  why: 'Same base as the vegetarian Meal 1; eggs replace the peanuts for protein. The fruit changes with the season; everything else stays the same all year.',
+  why: 'Same base as the vegetarian Meal 1; eggs replace the peanuts for protein.',
   keeps: 'Grind a week’s flaxseed at a time and keep it in the fridge. Boil tomorrow’s eggs while dinner cooks (10 minutes), cool them in cold water and refrigerate. Food Standards Scotland advises eating hard-boiled eggs within 2 days.',
   tutorials: ['boiledEggs'],
   requiresReheat: false,
@@ -244,7 +248,6 @@ const M3_WEEKDAY = meal({
   substitutions: [
     { swap: 'Dates', with: 'Raisins, same weight' },
     { swap: 'Peanuts', with: 'Roasted chana, twice the weight (about 3× the fibre)' },
-    { swap: 'The fruit', with: 'Banana works in any season (in the market all year)' },
   ],
   why: 'Pre-workout 2–3 h before training: mostly carbohydrate with some protein and little fat or fibre. Nothing to cook or heat.',
   keeps: 'The curd is the perishable part. Keep it in the office fridge; without one, eat it within ~4 h of leaving home.',
@@ -265,10 +268,11 @@ const L_SATTU = meal({
     { food: 'curd', g: 225 },
     { slot: 'salad', g: [50, 50, 80], range: [40, 120], note: '{salad}' },
     { food: 'lemon', g: 5, note: 'in the filling' },
+    { food: 'sesame', g: 5, range: [0, 10], note: 'til, in the dough' },
   ],
   steps: [
     'Mix the sattu with chopped onion, green chilli, coriander, ajwain, salt, lemon juice and 1 tsp oil.',
-    'Knead the atta into a soft dough and divide it into balls.',
+    'Knead the atta (with the til, if listed) into a soft dough and divide it into balls.',
     'Stuff each ball with the filling, seal and roll out gently.',
     'Cook on a hot tawa with a little oil until there are brown spots on both sides.',
     `${OVERNIGHT} Steam makes warm parathas soggy, so let them cool fully before wrapping them in foil. Cut the salad and keep it in a closed box.`,
@@ -316,7 +320,7 @@ const L_PANEER_ROLL = meal({
   flavour: 'Cook the bhurji dry; a squeeze of lemon and chaat masala just before rolling keep it bright when cold.',
   substitutions: [
     { swap: 'Paneer', with: 'Tofu, same weight (less fat, similar protein)' },
-    { swap: 'Capsicum', with: 'Peas in winter, or grated carrot' },
+    { swap: 'Capsicum', with: 'Grated carrot, or peas' },
   ],
   why: 'Paneer and curd travel safely cold for ~4 h with the frozen bottle, and taste fine unheated.',
   keeps: COLD_PACK,
@@ -570,7 +574,6 @@ const D_PALAK_PANEER = meal({
   pots: 2,
   flavour: 'Cold water after blanching keeps the greens bright; kasuri methi and lemon at the end.',
   substitutions: [
-    { swap: 'The greens', with: 'Methi, or any leafy greens in season' },
     { swap: 'Paneer', with: 'Soaked soya chunks, 40% of the weight' },
   ],
   tutorials: ['palakPaneer', 'dal'],
@@ -598,7 +601,7 @@ const D_TOOR = meal({
   totalMin: 35,
   pots: 2,
   flavour: 'Tomato and a pinch of jaggery in the tadka for Gujarati-style dal; or garlic and red chilli for Punjabi style.',
-  substitutions: [{ swap: 'Potato', with: 'The season’s sabzi, 150 g' }],
+  substitutions: [{ swap: 'Potato', with: '{sabzi}, 150 g' }],
   tutorials: ['dal'],
   requiresReheat: false,
 });
@@ -744,7 +747,7 @@ const W_POHA = meal({
   items: [
     { food: 'poha', g: [40, 55, 60] },
     { food: 'peanuts', g: [10, 10, 15] },
-    { food: 'onion', g: [50, 50, 60], note: 'sliced (add a handful of peas in winter)' },
+    { food: 'onion', g: [50, 50, 60], note: 'sliced' },
     { food: 'oil', g: [4, 5, 5] },
     { food: 'curd', g: 250, note: 'whisked into chaas' },
     { food: 'lemon', g: 5 },
@@ -838,7 +841,7 @@ const W_MATAR_PANEER = meal({
   items: [
     { food: 'paneer', g: [50, 55, 55] },
     { food: 'soyaChunks', g: [20, 30, 30], note: 'soaked 10 min, squeezed' },
-    { slot: 'sabzi', g: [90, 90, 150], range: [60, 200], note: '{sabzi} (matar paneer in winter)' },
+    { slot: 'sabzi', g: [90, 90, 150], range: [60, 200], note: '{sabzi}' },
     { food: 'rice', g: [95, 95, 105] },
     { food: 'oil', g: [8, 8, 10] },
     { food: 'curd', g: 100 },
@@ -933,13 +936,14 @@ export const MEAL_PLAN_DEFINITIONS: MealPlanDefinition[] = [vegetarian, egg, non
 // ─── Week builder ─────────────────────────────────────────────────────────────
 
 export interface ResolvedItem extends MealItem {
-  /** Set when the item comes from a seasonal slot. */
+  /** Set when the item comes from a fruit or vegetable slot. */
   slot?: SlotId;
+  /** What to use if the market doesn't have it, and how much. */
+  alt?: MealItem;
 }
 
 export interface ResolvedMeal extends Omit<Meal, 'items'> {
   items: ResolvedItem[];
-  season: SeasonId;
 }
 
 export interface PlannedMeal {
@@ -957,28 +961,29 @@ export interface PlannedDay {
 
 export const gramsFor = (g: Grams, phase: PhaseId): number => (typeof g === 'number' ? g : g[phase]);
 
-/** The amount of an item for a phase and season: the solver's result, or the starting amount if the meal hasn't been solved. */
-export function solvedGrams(m: Meal, it: PlanItem, phase: PhaseId, season: SeasonId): number {
-  const q = (QUANTITIES as Record<string, Record<string, number[][]> | undefined>)[m.id]?.[itemKey(it)];
-  return q ? q[phase][SEASON_IDS.indexOf(season)] : gramsFor(it.g, phase);
+/** The amount of an item for a phase: the solver's result, or the starting amount if the meal hasn't been solved. */
+export function solvedGrams(m: Meal, it: PlanItem, phase: PhaseId): number {
+  const q = (QUANTITIES as Record<string, Record<string, number[]> | undefined>)[m.id]?.[itemKey(it)];
+  return q ? q[phase] : gramsFor(it.g, phase);
 }
 
-/** Replace {fruit1}, {sabzi}… with the season's food names. */
-export function fillSlots(text: string, season: SeasonId): string {
-  return text.replace(/\{(fruit1|fruit3|sabzi|salad|greens)\}/g, (_, slot: SlotId) => SEASONS[season].slots[slot].name);
+/** Replace {fruit1}, {sabzi}… with the slot's food names. */
+export function fillSlots(text: string): string {
+  return text.replace(/\{(fruit1|fruit3|sabzi|salad|greens)\}/g, (_, slot: SlotId) => SLOTS[slot].name);
 }
 
-/** The meal with quantities for one phase and season. Seasonal slots become their foods; zero-gram optional items are left out. */
-export function resolveMeal(m: Meal, phase: PhaseId, season: SeasonId): ResolvedMeal {
-  const f = (t: string) => fillSlots(t, season);
+/** The meal with quantities for one phase. Slots become their foods (each with its alternative); zero-gram optional items are left out. */
+export function resolveMeal(m: Meal, phase: PhaseId): ResolvedMeal {
+  const f = fillSlots;
   const items: ResolvedItem[] = [];
   for (const it of m.items) {
-    const g = solvedGrams(m, it, phase, season);
+    const g = solvedGrams(m, it, phase);
     if (g <= 0) continue;
     const note = it.note === undefined ? undefined : f(typeof it.note === 'string' ? it.note : it.note[phase]);
     if (it.slot) {
-      for (const [food, share] of SEASONS[season].slots[it.slot].foods) {
-        items.push({ food, g: Math.round(g * share * 10) / 10, slot: it.slot, ...(note ? { note } : {}) });
+      for (const { food, share, alt } of SLOTS[it.slot].foods) {
+        const fg = Math.round(g * share * 10) / 10;
+        items.push({ food, g: fg, slot: it.slot, ...(note ? { note } : {}), ...(alt ? { alt: { food: alt, g: altGrams(food, alt, fg) } } : {}) });
       }
     } else items.push({ food: it.food!, g, ...(note ? { note } : {}) });
   }
@@ -990,7 +995,6 @@ export function resolveMeal(m: Meal, phase: PhaseId, season: SeasonId): Resolved
     substitutions: m.substitutions.map((x) => ({ swap: f(x.swap), with: f(x.with) })),
     ...(m.why ? { why: f(m.why) } : {}),
     items,
-    season,
   };
 }
 
@@ -1002,11 +1006,11 @@ export function mealsForDay(plan: MealPlanDefinition, day: DayName): [Meal, Meal
   return [plan.meal1, plan.lunches[wd], plan.weekdayMeal3, plan.dinners[wd]];
 }
 
-export function buildWeek(plan: MealPlanDefinition, phase: PhaseId, season: SeasonId): PlannedDay[] {
+export function buildWeek(plan: MealPlanDefinition, phase: PhaseId): PlannedDay[] {
   return DAYS.map((day) => {
     const isWeekend = day === 'Saturday' || day === 'Sunday';
     const t = (slot: MealSlot) => (isWeekend ? MEAL_SLOTS[slot].weekend : MEAL_SLOTS[slot].weekday);
-    const r = (m: Meal) => resolveMeal(m, phase, season);
+    const r = (m: Meal) => resolveMeal(m, phase);
     const meal1: PlannedMeal = { slot: 1, meal: r(plan.meal1), time: t(1), tag: 'fixed-daily' };
     if (isWeekend) {
       const w = day === 'Saturday' ? plan.saturday : plan.sunday;

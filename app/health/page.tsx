@@ -13,7 +13,7 @@ import { auditRange, fmtAmount, STATUS_LABEL, type AuditStatus } from '@/lib/nut
 import { WeightTodo } from './WeightTodo';
 import type { RefId } from '@/lib/data/references';
 
-// Server component: computed once at build time from every plan × phase × season (36), at default prices.
+// Server component: computed once at build time from every plan × phase (9), at default prices.
 const ALL_PLANS = allDefaultPlans();
 const COVERAGE_BY_PLAN = MEAL_PLAN_DEFINITIONS.map((def) => ({ def, rows: auditRange(ALL_PLANS.filter((p) => p.def.id === def.id)) }));
 
@@ -34,7 +34,7 @@ const VERDICT: Record<Supplement['verdict'], BadgeTone> = {
 
 const LEVEL: Record<string, BadgeTone> = { Reasonable: 'good', Mixed: 'caution', Weak: 'neutral', Avoid: 'alert' };
 
-const COVERAGE_TONE: Record<AuditStatus, BadgeTone> = { meets: 'good', 'below-rda': 'caution', 'below-ear': 'alert', 'above-ul': 'alert', info: 'neutral' };
+const COVERAGE_TONE: Record<AuditStatus, BadgeTone> = { meets: 'good', 'below-rda': 'caution', 'below-ai': 'caution', 'below-ear': 'alert', 'above-ul': 'alert', info: 'neutral' };
 
 export default function HealthPage() {
   const groups = [...new Set(BLOOD_RESULTS.map((r) => r.group))];
@@ -159,7 +159,7 @@ export default function HealthPage() {
           <CardHeader
             title="What your diet covers"
             icon={<Salad size={18} />}
-            description="Every vitamin and mineral the food tables cover, for each plan: the lowest and highest weekly average across all phases and seasons, against ICMR-NIN 2020 (US/Canadian values where ICMR gives none). Computed from the foods, so it updates when the meals change. Supplements are only for what food can’t cover."
+            description="Every vitamin and mineral the food tables cover, for each plan: the lowest and highest weekly average across all phases, against ICMR-NIN 2020 (US/Canadian values where ICMR gives none). Computed from the foods, so it updates when the meals change. Supplements are only for what food can’t cover."
           />
           <div className="overflow-x-auto">
             <table className="tabular w-full min-w-[36rem] text-left text-sm">
@@ -211,8 +211,8 @@ export default function HealthPage() {
           </div>
           <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-muted">
             <li>
-              The badge shows the worst case across the 12 phase × season combinations. ★ = linked to hair loss when deficient (Almohanna 2019; Guo
-              &amp; Katta 2017). Per-season detail, main sources and data gaps are on Meal plans → Vitamins &amp; minerals.
+              The badge shows the worst case across the 3 phases. ★ = linked to hair loss when deficient (Almohanna 2019; Guo
+              &amp; Katta 2017). Per-phase detail, main sources and data gaps are on Meal plans → Vitamins &amp; minerals.
             </li>
             {NOT_COMPUTED.map((n) => (
               <li key={n.label}>

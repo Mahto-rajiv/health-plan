@@ -92,6 +92,7 @@ export const SOURCES: Record<string, FoodSource> = {
   pumpkinSeeds: { usda: '12014', note: 'USDA pumpkin seed kernels, dried.' },
   flax: { check: '12220', ifct: 'H014', b12: 0, note: 'IFCT linseeds.' },
   sunflowerSeeds: { check: '12036', ifct: 'H020', b12: 0, note: 'IFCT sunflower seeds (kernels).' },
+  sesame: { check: '12023', ifct: 'H011', b12: 0, note: 'IFCT gingelly (sesame) seeds, white, whole. A Gujarati staple (til in thepla, chikki); whole seeds are rich in calcium, zinc and iron.' },
   almonds: { check: '12061', ifct: 'H001', b12: 0, note: 'IFCT almond.' },
   walnuts: { check: '12155', ifct: 'H021', b12: 0, note: 'IFCT walnut.' },
   cashews: { check: '12087', ifct: 'H005', b12: 0, note: 'IFCT cashew nut.' },

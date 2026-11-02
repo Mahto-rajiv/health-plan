@@ -15,6 +15,11 @@ export const REFS = {
   frankenfield: { label: 'Frankenfield D et al. (2005). Comparison of predictive equations for resting metabolic rate. J Am Diet Assoc.', url: 'https://pubmed.ncbi.nlm.nih.gov/15883556/', note: 'Individual errors above 10% are common; South Asians were under-represented.' },
   faoEnergy: { label: 'FAO/WHO/UNU (2004). Human energy requirements — physical activity levels.', url: 'https://www.fao.org/4/y5686e/y5686e07.htm' },
   icmr2020: { label: 'ICMR-NIN (2020). Nutrient Requirements for Indians — brief note.', url: 'https://www.nin.res.in/rdabook/brief_note.pdf' },
+  iomPlanning2003: {
+    label: 'Institute of Medicine (2003). Dietary Reference Intakes: Applications in Dietary Planning. National Academies Press.',
+    url: 'https://www.nationalacademies.org/read/10609',
+    note: 'The planning goal for an individual is intake at the RDA or AI. Checked against the publisher’s summary only: the online chapters are page images that could not be read automatically.',
+  },
   icmr2024: { label: 'ICMR-NIN (2024). Dietary Guidelines for Indians — summary by Nutrition Connect (GAIN).', url: 'https://nutritionconnect.org/resource-center/dietary-guidelines-indians-2024-edition-icmr-nin', note: 'The official ICMR PDF link stopped resolving in Oct 2026; this page summarises the same guidelines.' },
   iraki: { label: 'Iraki J et al. (2019). Nutrition recommendations for bodybuilders in the off-season. Sports.', url: 'https://pubmed.ncbi.nlm.nih.gov/31247944/' },
   helms2023: { label: 'Helms ER et al. (2023). Effect of small and large energy surpluses on strength, muscle and fat. Sports Med Open.', url: 'https://pubmed.ncbi.nlm.nih.gov/37914977/', note: 'Trained lifters, not beginners; small sample (17 completers), 8 weeks.' },

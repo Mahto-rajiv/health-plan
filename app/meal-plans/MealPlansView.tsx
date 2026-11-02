@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ShoppingBasket, CalendarDays, Wallet, Scale, Printer, ShieldCheck, Leaf } from 'lucide-react';
+import { ShoppingBasket, CalendarDays, Wallet, Scale, Printer, ShieldCheck } from 'lucide-react';
 import { budgetSwaps, findPlan, ingredientValues, type ComputedPlan } from '@/lib/meal-plans';
 import { DAYS, type DayName, type PlanId } from '@/lib/data/meal-plans';
 import { BUDGET_NOTES, PANTRY_MONTHLY, FOOD_SAFETY, ENERGY_NOTE } from '@/lib/data/nutrition-guide';
@@ -11,10 +11,8 @@ import { PRICES_AS_OF } from '@/lib/data/prices';
 import { useSettings } from '@/lib/storage';
 import { useToday } from '@/lib/hooks';
 import { usePlans, usePrices } from '@/lib/plan-hooks';
-import { phaseOn, seasonOn } from '@/lib/phase';
-import { SEASONS, SEASON_IDS, nextSeasonChange, type SeasonId, type SlotId } from '@/lib/data/seasons';
+import { phaseOn } from '@/lib/phase';
 import { NutrientAudit } from '@/components/meals/NutrientAudit';
-import { longDate } from '@/lib/dates';
 import { dayName } from '@/lib/dates';
 import { formatINR, roundTo, cn } from '@/lib/utils';
 import { roundKcal } from '@/lib/nutrition';
@@ -38,11 +36,8 @@ export function MealPlansView() {
   const today = useToday();
   const activePhase = phaseOn(settings, today);
   const [pickedPhase, setPickedPhase] = useState<PhaseId | null>(null);
-  const phase = pickedPhase ?? activePhase;
-  const activeSeason = seasonOn(settings, today);
-  const [pickedSeason, setPickedSeason] = useState<SeasonId | null>(null);
-  const season = pickedSeason ?? activeSeason;
-  const plans = usePlans(phase, season);
+  const phase: PhaseId = pickedPhase ?? 0;
+  const plans = usePlans(phase);
   const [pickedDay, setPickedDay] = useState<DayName | null>(null);
   const [view, setView] = useState<View>('day');
 
@@ -67,19 +62,6 @@ export function MealPlansView() {
           {PHASES[phase].weeks[1] ? `–${PHASES[phase].weeks[1]}` : '+'}: {PHASES[phase].goal}
         </p>
       </div>
-
-      <div>
-        <div className="mb-1 text-xs font-medium text-muted">Season</div>
-        <Segmented<SeasonId>
-          wrap
-          label="Season"
-          value={season}
-          onChange={setPickedSeason}
-          options={SEASON_IDS.map((s) => ({ value: s, label: `${SEASONS[s].name}${s === activeSeason ? ' · now' : ''}` }))}
-        />
-      </div>
-
-      <SeasonNote season={season} activeSeason={activeSeason} today={today} pinned={settings.season !== 'auto'} />
 
       <PlanPicker plans={plans} value={plan.def.id} onChange={(id) => setSettings((s) => ({ ...s, planId: id }))} />
 
@@ -144,7 +126,7 @@ export function MealPlansView() {
             Exactly four meals, no snacks. <strong>Meal 1</strong> is the same every day (about 10 minutes).{' '}
             <strong>Meal 2</strong> on weekdays is eaten cold at the office: no rice, dal, gravy or reheating.{' '}
             <strong>Meal 3</strong> is the same Monday–Friday and is your pre-workout meal at 6:15–6:45 PM. Quantities change
-            with each phase. Within a season the foods are the same every day; only the fruit and vegetables change with the season.
+            with each phase. The foods stay the same all year. If a fruit or vegetable isn’t in the market, use the alternative listed under it, in the amount shown.
           </Callout>
 
           <DayTotals
@@ -219,50 +201,6 @@ function PlanStat({ label, value, className, hint }: { label: string; value: str
   );
 }
 
-const SLOT_LABEL: Record<SlotId, string> = {
-  fruit1: 'Meal 1 fruit',
-  fruit3: 'Meal 3 fruit',
-  sabzi: 'Cooked vegetables',
-  salad: 'Salad',
-  greens: 'Leafy greens',
-};
-
-function SeasonNote({ season, activeSeason, today, pinned }: { season: SeasonId; activeSeason: SeasonId; today: string | null; pinned: boolean }) {
-  const S = SEASONS[season];
-  const next = today ? nextSeasonChange(today) : null;
-  return (
-    <Card as="div" className="p-4">
-      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
-          <Leaf size={16} aria-hidden className="text-emerald-700" /> {S.name} ({S.monthsLabel}): what’s in season
-        </h2>
-        {season === activeSeason && next && !pinned && (
-          <p className="text-xs text-muted">
-            Changes to {SEASONS[next.season].name.toLowerCase()} on {longDate(next.date)}
-          </p>
-        )}
-      </div>
-      <dl className="grid gap-x-5 gap-y-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
-        {(Object.keys(SLOT_LABEL) as SlotId[]).map((slot) => (
-          <div key={slot}>
-            <dt className="text-xs text-muted">{SLOT_LABEL[slot]}</dt>
-            <dd className="text-ink">
-              {S.slots[slot].name}
-              {S.slots[slot].fallback && <span className="block text-xs text-muted">Not in the market? {S.slots[slot].fallback}</span>}
-            </dd>
-          </div>
-        ))}
-      </dl>
-      <p className="mt-3 text-xs text-muted">
-        Meal 1 is still the same every day and Meal 3 the same Monday–Friday: within a season the fruit doesn’t change. On the 1st of
-        December, March, June and September the fruit and vegetables switch to the next season’s; everything else stays as it is. Onion,
-        tomato, potato, banana and papaya are sold all year. Seasons are approximate for the North Indian plains
-        {pinned ? '; you have pinned this season in Settings.' : '; if your market is early or late, pick the season in Settings.'}
-      </p>
-    </Card>
-  );
-}
-
 function DayTotals({
   totals,
   minutes,
@@ -328,7 +266,7 @@ function GroceryView({ plan, plans }: { plan: ComputedPlan; plans: ComputedPlan[
         <CardHeader
           title="Budget"
           icon={<Wallet size={18} />}
-          description={`Up to ${formatINR(BUDGET.max)} a month; there is no lower target, so the plans are built for nutrition, not for the lowest cost. Food only — supplements are costed on the Health page. Prices are estimates (${PRICES_AS_OF}); edit them in Settings.`}
+          description={`${formatINR(BUDGET.max)} a month is the ceiling, not a target. The plans are built in this order: safety and the hard rules first, then vitamins and minerals, then less dairy, and only then the lowest cost. No average need (EAR) is given up to save money; a ★ hair nutrient’s RDA only if closing each 1% of the gap would cost over ₹300 a month. They are held to ${formatINR(BUDGET.planningMax)} at the default prices, leaving 10% for prices that are higher than estimated. Food only — supplements are costed on the Health page. Prices are estimates (${PRICES_AS_OF}); edit them in Settings.`}
         />
         <div className="tabular grid grid-cols-2 gap-4 sm:grid-cols-3">
           <div>
@@ -345,7 +283,7 @@ function GroceryView({ plan, plans }: { plan: ComputedPlan; plans: ComputedPlan[
         <div className="mt-4 overflow-x-auto">
           <table className="tabular w-full text-left text-sm">
             <caption className="mb-1 text-left text-xs text-muted">
-              All three plans in {PHASES[plan.phase].name.split(' · ')[0]}, {SEASONS[plan.season].name.toLowerCase()}
+              All three plans in {PHASES[plan.phase].name.split(' · ')[0]}
             </caption>
             <thead>
               <tr className="border-b border-line text-xs text-muted">
@@ -390,8 +328,9 @@ function GroceryView({ plan, plans }: { plan: ComputedPlan; plans: ComputedPlan[
         ) : (
           <Callout tone="good" className="mt-4" title={`Within the ${formatINR(BUDGET.max)} budget`}>
             Prices vary by city and season; edit them in Settings and the totals update. Milk and curd average{' '}
-            {Math.round(plan.dairyPerDay)} g a day in this plan: dairy is the low-fibre protein that lets the plans meet protein under the
-            fibre caps, and the main source of B12 and calcium for vegetarians.
+            {Math.round(plan.dairyPerDay)} g a day in this plan, the least the nutrient targets and fibre caps allow (the solver lowers dairy
+            right after nutrition). Dairy is the low-fibre protein that fits under the fibre caps, and the main source of B12 and calcium for
+            vegetarians.
           </Callout>
         )}
         {status === 'over' && swaps.length > 0 && (
@@ -521,7 +460,7 @@ function PrepView({ plan }: { plan: ComputedPlan }) {
         </ol>
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
-            href={`/meal-plans/cards?plan=${plan.def.id}&phase=${plan.phase}&season=${plan.season}`}
+            href={`/meal-plans/cards?plan=${plan.def.id}&phase=${plan.phase}`}
             className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-line-strong px-3 text-sm font-medium text-ink hover:bg-slate-50"
           >
             <Printer size={16} aria-hidden /> Printable dinner cooking cards

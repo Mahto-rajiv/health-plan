@@ -1,6 +1,6 @@
 # Link check
 
-Run 2026-11-02 with `npm run links`. 198 links: 186 ok, 2 redirected, 10 blocked automated access, 0 failed.
+Run 2026-11-02 with `npm run links`. 199 links: 190 ok, 0 redirected, 9 blocked automated access, 0 failed.
 
 "Match" compares the title the app shows with the page title (YouTube via oEmbed, PubMed via Europe PMC). "check" means the words differ enough to look at by hand; "n/a" means no title could be read (PDF or blocked).
 
@@ -26,8 +26,8 @@ Run 2026-11-02 with `npm run links`. 198 links: 186 ok, 2 redirected, 10 blocked
 | ok | 200 | ref:demay2024 | yes | Demay MB et al. (2024). Vitamin D for the prevention of disease: Endocrine Socie | Vitamin D for the Prevention of Disease: An Endocrine Society Clinical Practice  | https://pubmed.ncbi.nlm.nih.gov/38828931/ |
 | ok | 200 | ref:devries | yes | Devries MC et al. (2018). Protein intake and kidney function in healthy adults:  | Changes in Kidney Function Do Not Differ between Healthy Adults Consuming Higher | https://pubmed.ncbi.nlm.nih.gov/30383278/ |
 | ok | 200 | ref:driElements | yes | Health Canada. Dietary Reference Intakes tables: reference values for elements ( | Dietary reference intakes tables: Reference values for elements - Canada.ca | https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-elements.html |
-| redirected | 200 | ref:driMacros | yes | Health Canada. Dietary Reference Intakes tables: reference values for macronutri | Dietary reference intakes tables: Reference values for macronutrients - Canada.c | https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-macronutrients-dietary-reference-intakes-tables-2005.html → https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-macronutrients.html |
-| redirected | 200 | ref:driVitamins | yes | Health Canada. Dietary Reference Intakes tables: reference values for vitamins. | Dietary reference intakes tables: Reference values for vitamins - Canada.ca | https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-vitamins-dietary-reference-intakes-tables-2005.html → https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-vitamins.html |
+| ok | 200 | ref:driMacros | yes | Health Canada. Dietary Reference Intakes tables: reference values for macronutri | Dietary reference intakes tables: Reference values for macronutrients - Canada.c | https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-macronutrients.html |
+| ok | 200 | ref:driVitamins | yes | Health Canada. Dietary Reference Intakes tables: reference values for vitamins. | Dietary reference intakes tables: Reference values for vitamins - Canada.ca | https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-vitamins.html |
 | ok | 200 | ref:duncan2015 | yes | Duncan A et al. (2015). The risk of copper deficiency in patients prescribed zin | The risk of copper deficiency in patients prescribed zinc supplements. | https://pubmed.ncbi.nlm.nih.gov/26085547/ |
 | ok | 200 | ref:dunstan | yes | Dunstan DW et al. (2012). Breaking up prolonged sitting reduces postprandial glu | Breaking up prolonged sitting reduces postprandial glucose and insulin responses | https://pubmed.ncbi.nlm.nih.gov/22374636/ |
 | blocked | 403 | ref:efsaErucic | n/a | EFSA CONTAM Panel (2016). Erucic acid in feed and food. EFSA Journal 14(11):4593 | Just a moment... | https://www.efsa.europa.eu/en/efsajournal/pub/4593 → https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2016.4593 |
@@ -53,6 +53,7 @@ Run 2026-11-02 with `npm run links`. 198 links: 186 ok, 2 redirected, 10 blocked
 | ok | 200 | ref:ifct | n/a | Longvah T et al. (2017). Indian Food Composition Tables. ICMR-NIN. | (PDF) | https://www.nin.res.in/ebooks/IFCT2017.pdf |
 | blocked | 403 | ref:ifct2017pkg | n/a | ifct2017 (npm, v2.1.2): machine-readable copy of IFCT 2017 used to build the foo | Just a moment... | https://www.npmjs.com/package/ifct2017 |
 | ok | 200 | ref:informedChoice | yes | LGC Informed Choice — what the certification covers (banned-substance testing). | Third Party Supplement Testing \| Informed Choice | https://choice.wetestyoutrust.com/about |
+| ok | 200 | ref:iomPlanning2003 | yes | Institute of Medicine (2003). Dietary Reference Intakes: Applications in Dietary | Read "Dietary Reference Intakes: Applications in Dietary Planning" at NAP.edu | https://www.nationalacademies.org/read/10609 |
 | ok | 200 | ref:iraki | yes | Iraki J et al. (2019). Nutrition recommendations for bodybuilders in the off-sea | Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review | https://pubmed.ncbi.nlm.nih.gov/31247944/ |
 | ok | 200 | ref:issnCreatine | yes | Kreider RB et al. (2017). ISSN position stand: safety and efficacy of creatine s | International Society of Sports Nutrition position stand: safety and efficacy of | https://pubmed.ncbi.nlm.nih.gov/28615996/ |
 | ok | 200 | ref:jolliffe2025 | yes | Jolliffe DA et al. (2025). Vitamin D supplementation to prevent acute respirator | Vitamin D supplementation to prevent acute respiratory infections: systematic re | https://pubmed.ncbi.nlm.nih.gov/39993397/ |
@@ -146,7 +147,7 @@ Run 2026-11-02 with `npm run links`. 198 links: 186 ok, 2 redirected, 10 blocked
 | ok | 200 | tutorial:facePull | yes | Face Pull — form demo | How to do a Face Pull \| Proper Form & Technique \| NASM | https://www.youtube.com/watch?v=eTCBSFlCJ_s |
 | ok | 200 | tutorial:farmersCarry | yes | Farmer's Carry | Full Body/Integrated Exercises \| Farmer's Carry | https://www.acefitness.org/resources/everyone/exercise-library/359/farmer-s-carry/ |
 | ok | 200 | tutorial:fishCurry | yes | Bengali Fish Curry (rohu) | Bengali Fish Curry | https://www.sanjeevkapoor.com/Recipe/Bengali-Fish-Curry.html |
-| blocked | 403 | tutorial:fishCurry | n/a | Bihari-Style Fish Curry | Bot Verification | https://ranveerbrar.com/recipes/bihari-style-fish-curry/ |
+| ok | 200 | tutorial:fishCurry | yes | Bihari-Style Fish Curry | Easy Bihari style Fish Curry सरसों वाली बिहारी स्टाइल मच्छी करी spicy Fish Curry | https://ranveerbrar.com/recipes/bihari-style-fish-curry/ |
 | ok | 200 | tutorial:grilledChicken | yes | Tandoori Chicken (oven / pan) | Tandoori Chicken Recipe (Restaurant Style) - Swasthi&#039;s Recipes | https://www.indianhealthyrecipes.com/tandoori-chicken-recipe/ |
 | ok | 200 | tutorial:hangingKneeRaise | yes | Hanging Knee Raise — demo | Hanging Knee Raise | https://www.youtube.com/watch?v=RD_A-Z15ER4 |
 | ok | 200 | tutorial:hip9090 | yes | 90/90 Hip Transitions (hands supported) | 90/90 Hip Transitions (Hands Supported) | https://www.youtube.com/watch?v=Lx07WIkllbA |
