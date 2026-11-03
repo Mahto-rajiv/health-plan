@@ -23,8 +23,10 @@ import type { NutrientKey } from './nutrient-keys';
 // Each meal has *slots* (the fruit in Meal 1, the fruit in Meal 3, the cooked
 // vegetables, the salad, the greens). A slot is always the same foods, so Meal 1
 // is identical every day and Meal 3 identical Mon–Fri.
+// Round 7: the Meal 1 seed jar is a slot too (equal weights of three seeds, mixed
+// on Sunday). It is not produce, so it has no market swap.
 
-export type SlotId = 'fruit1' | 'fruit3' | 'sabzi' | 'salad' | 'greens';
+export type SlotId = 'fruit1' | 'fruit3' | 'sabzi' | 'salad' | 'greens' | 'seeds';
 
 /** One food in a slot: its share of the slot's grams, and the swap if it isn't in the market. */
 export interface SlotFood {
@@ -66,6 +68,14 @@ export const SLOTS: Record<SlotId, SlotFill> = {
     ],
   },
   greens: { name: 'palak (spinach)', foods: [{ food: 'spinach', share: 1, alt: 'amaranth' }] },
+  seeds: {
+    name: 'seed jar',
+    foods: [
+      { food: 'sunflowerSeeds', share: 1 / 3 },
+      { food: 'pumpkinSeeds', share: 1 / 3 },
+      { food: 'sesame', share: 1 / 3 },
+    ],
+  },
 };
 
 const kcalPerG = (f: FoodId) => {

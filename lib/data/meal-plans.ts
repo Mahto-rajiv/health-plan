@@ -39,6 +39,8 @@ interface PlanItemBase {
   range?: readonly [number, number];
   /** Amounts are multiples of this (default 5 g; eggs 50 g). */
   step?: number;
+  /** Never less than in the phase before (the solver solves the phases in order). */
+  rising?: true;
 }
 
 /** A fixed food, the same all year. */
@@ -156,25 +158,29 @@ const MORNING_PACK = 'Morning (about 3 minutes): pack the box straight from the 
 
 // Meal 1 ─────────────────────────────────────────────────────────────────────
 
+// Round 7 (owner): at most 5 ingredients, one seed jar, the same recipe in every
+// phase. Only the oats and milk change with the phase; everything else is fixed
+// (range [x, x]). Amounts are multiples of 5 g. The seeds weigh ~9 g a level tbsp
+// (USDA cup weights), so 15 g of the mix is about 1½ heaped tbsp.
+const SEED_JAR_G = 15;
+const SEED_JAR = { slot: 'seeds', g: SEED_JAR_G, range: [SEED_JAR_G, SEED_JAR_G], step: SEED_JAR_G, note: '1½ heaped tbsp, stirred in' } as const;
+const FRUIT1 = { slot: 'fruit1', g: 100, range: [100, 100], note: 'about ⅔ cup, cut, on the side' } as const;
+const SEED_JAR_KEEPS = `Sunday: fill the seed jar with equal weights of sunflower, pumpkin and sesame seeds (${(SEED_JAR_G * 7) / 3} g of each for the week), shake it and keep it closed in the fridge.`;
+
 const M1_VEG = meal({
   id: 'm1-veg',
   title: 'Oats cooked in milk with peanuts and seeds, and {fruit1}',
   items: [
-    { food: 'milk', g: 300 },
-    { food: 'oats', g: [55, 60, 60] },
-    { food: 'peanuts', g: [15, 25, 25], note: 'dry-roasted, crushed' },
-    { food: 'pumpkinSeeds', g: 5, range: [0, 15], note: 'stirred in at the end' },
-    { food: 'flax', g: 5, range: [0, 10], note: 'ground, stirred in at the end' },
-    { food: 'sunflowerSeeds', g: 5, range: [0, 20], note: 'stirred in at the end' },
-    { food: 'almonds', g: 5, range: [0, 20], note: 'chopped, on top (Round 3: vitamin E)' },
-    { food: 'sesame', g: 5, range: [0, 10], note: 'dry-roasted til, on top' },
-    { food: 'banana', g: 50, range: [0, 120], step: 10, note: 'sliced in, extra to the fruit on the side (Round 3: vitamin B6)' },
-    { slot: 'fruit1', g: 150, range: [100, 250], note: 'cut, on the side' },
+    { food: 'milk', g: 300, rising: true },
+    { food: 'oats', g: [55, 60, 60], rising: true },
+    { food: 'peanuts', g: 10, range: [10, 10], note: 'dry-roasted, crushed, on top' },
+    SEED_JAR,
+    FRUIT1,
   ],
   steps: [
     'Bring the milk to a boil in a small pan.',
     'Add the oats and simmer 3–4 minutes, stirring, until thick.',
-    'Stir in the ground flaxseed, the seeds and any banana listed above; top with the crushed roasted peanuts, chopped almonds and roasted til if listed. Eat the {fruit1} alongside.',
+    'Take it off the heat, stir in 1½ heaped tbsp of the seed jar and top with the crushed roasted peanuts. Eat the {fruit1} alongside.',
   ],
   activeMin: 8,
   totalMin: 10,
@@ -183,46 +189,48 @@ const M1_VEG = meal({
   substitutions: [
     { swap: 'Oats', with: 'Daliya, same weight (needs ~15 min, so cook 2 days’ worth at once)' },
     { swap: 'Peanuts', with: 'Same weight of almonds (≈ 6× the price)' },
-    { swap: 'Pumpkin seeds', with: 'Leave out if they don’t suit you; the zinc then comes mostly from dals and atta' },
+    { swap: 'Pumpkin seeds', with: 'Leave them out of the jar if they don’t suit you; the zinc then comes mostly from dals and atta' },
   ],
-  why: 'Quick, mostly carbohydrate with ~20 g protein, moderate in fat and fibre so it sits well on the commute. Pumpkin seeds add zinc and iron; ground flaxseed adds omega-3 (ALA).',
-  keeps: 'Grind a week’s flaxseed at a time and keep it in a closed jar in the fridge (ground flax goes stale). Dry-roast a week’s til with the peanuts on Sunday.',
+  why: 'Quick, mostly carbohydrate with ~20 g protein, moderate in fat and fibre so it sits well on the commute. The seed jar adds zinc and iron (pumpkin seeds) and vitamin E (sunflower seeds).',
+  keeps: `${SEED_JAR_KEEPS} Dry-roast a week’s peanuts at the same time.`,
   requiresReheat: false,
 });
 
-const M1_EGG = meal({
-  id: 'm1-egg',
-  title: 'Oats cooked in milk with boiled eggs and seeds, and {fruit1}',
-  items: [
-    { food: 'milk', g: 200 },
-    { food: 'oats', g: 70 },
-    { food: 'egg', g: [50, 100, 100], step: 50, range: [50, 100], note: 'boiled last night' },
-    { food: 'pumpkinSeeds', g: 5, range: [0, 15], note: 'stirred in at the end' },
-    { food: 'flax', g: 5, range: [0, 10], note: 'ground, stirred in at the end' },
-    { food: 'sunflowerSeeds', g: 5, range: [0, 20], note: 'stirred in at the end' },
-    { food: 'almonds', g: 5, range: [0, 20], note: 'chopped, on top (Round 3: vitamin E)' },
-    { food: 'sesame', g: 5, range: [0, 10], note: 'dry-roasted til, on top' },
-    { food: 'banana', g: 50, range: [0, 120], step: 10, note: 'sliced in, extra to the fruit on the side (Round 3: vitamin B6)' },
-    { slot: 'fruit1', g: 150, range: [100, 250], note: 'cut, on the side' },
-  ],
-  steps: [
-    'Bring the milk to a boil in a small pan, add the oats and simmer 3–4 minutes.',
-    'Stir in the ground flaxseed, the seeds and any banana listed above; top with chopped almonds and roasted til if listed.',
-    'Peel the egg(s) boiled last night; season with salt and pepper. Eat the {fruit1} alongside.',
-  ],
-  activeMin: 7,
-  totalMin: 10,
-  pots: 1,
-  flavour: 'Elaichi or cinnamon in the oats; chaat masala or black pepper on the eggs.',
-  substitutions: [
-    { swap: 'Oats', with: 'Daliya, same weight' },
-    { swap: 'Boiled eggs', with: 'A 2-egg omelette (adds ~5 min and 1 tsp oil)' },
-  ],
-  why: 'Same base as the vegetarian Meal 1; eggs replace the peanuts for protein.',
-  keeps: 'Grind a week’s flaxseed at a time and keep it in the fridge. Boil tomorrow’s eggs while dinner cooks (10 minutes), cool them in cold water and refrigerate. Food Standards Scotland advises eating hard-boiled eggs within 2 days.',
-  tutorials: ['boiledEggs'],
-  requiresReheat: false,
-});
+// Veg + Eggs has 1 egg, Non-veg 2. Solver (Round 7): with 2 eggs here, Veg + Eggs
+// Phase 0 has no plan that keeps saturated fat under 10% of kcal within the 35 g
+// fibre cap (its egg lunch and egg dinner already add saturated fat); Non-veg does.
+const m1Egg = (id: string, eggs: 1 | 2, why: string) =>
+  meal({
+    id,
+    title: `Oats cooked in milk with seeds, ${eggs === 1 ? 'a boiled egg' : '2 boiled eggs'} and {fruit1}`,
+    items: [
+      { food: 'milk', g: 200, rising: true },
+      { food: 'oats', g: 70, rising: true },
+      { food: 'egg', g: eggs * 50, step: 50, range: [eggs * 50, eggs * 50], note: 'boiled last night' },
+      SEED_JAR,
+      FRUIT1,
+    ],
+    steps: [
+      'Bring the milk to a boil in a small pan, add the oats and simmer 3–4 minutes.',
+      'Take it off the heat and stir in 1½ heaped tbsp of the seed jar.',
+      `Peel the ${eggs === 1 ? 'egg' : '2 eggs'} boiled last night; season with salt and pepper. Eat the {fruit1} alongside.`,
+    ],
+    activeMin: 7,
+    totalMin: 10,
+    pots: 1,
+    flavour: `Elaichi or cinnamon in the oats; chaat masala or black pepper on the ${eggs === 1 ? 'egg' : 'eggs'}.`,
+    substitutions: [
+      { swap: 'Oats', with: 'Daliya, same weight' },
+      { swap: eggs === 1 ? 'Boiled egg' : 'Boiled eggs', with: `A ${eggs}-egg omelette (adds ~5 min and 1 tsp oil)` },
+    ],
+    why,
+    keeps: `${SEED_JAR_KEEPS} Boil tomorrow’s ${eggs === 1 ? 'egg' : 'eggs'} while dinner cooks (10 minutes), cool in cold water and refrigerate. Food Standards Scotland advises eating hard-boiled eggs within 2 days.`,
+    tutorials: ['boiledEggs'],
+    requiresReheat: false,
+  });
+
+const M1_EGG = m1Egg('m1-egg', 1, 'Same base as the vegetarian Meal 1; an egg replaces the peanuts. One egg, not two: this plan already has an egg lunch and an egg dinner, and with a second egg here Phase 0 can’t keep saturated fat under 10% of calories within the fibre cap.');
+const M1_NONVEG = m1Egg('m1-nonveg', 2, 'The Veg + Eggs Meal 1 with 2 eggs: this plan’s chicken and fish meals leave room for the second egg within the saturated-fat limit.');
 
 // Meal 3 ─────────────────────────────────────────────────────────────────────
 
@@ -876,7 +884,7 @@ const vegetarian: MealPlanDefinition = {
   sunday: { meal2: D_RAJMA, meal3: W_SHAKE, meal4: W_MATAR_PANEER },
   prepStrategy: [
     'Sunday: dry-roast the week’s peanuts; buy paneer in sealed packs (freeze the extra in portions).',
-    'Sunday: grind the week’s flaxseed and keep it in a closed jar in the fridge.',
+    'Sunday: fill the seed jar for Meal 1 (equal weights of sunflower, pumpkin and sesame seeds) and keep it in the fridge.',
     'Sunday to Thursday evening: cook the next day’s office lunch with or after dinner (about 15–20 minutes), cool it and refrigerate it within 2 hours. Weekday mornings are then just Meal 1 and ~3 minutes of packing.',
     'Every night: set curd from 1 L milk for the next day.',
     'Friday night: soak the kala chana for Saturday; Saturday night: soak the rajma for Sunday. Thursday night: boil the potatoes with dinner for Friday’s parathas.',
@@ -889,7 +897,7 @@ const egg: MealPlanDefinition = {
   name: 'Plan 2 — Vegetarian + eggs',
   shortName: 'Veg + eggs',
   diet: 'Vegetarian + eggs',
-  summary: 'The vegetarian plan with eggs at breakfast, one egg lunch and one egg dinner.',
+  summary: 'The vegetarian plan with an egg at breakfast, one egg lunch and one egg dinner.',
   meal1: M1_EGG,
   weekdayMeal3: M3_WEEKDAY,
   lunches: { Monday: L_SATTU, Tuesday: L_EGG_ROLL, Wednesday: L_CHILLA, Thursday: L_SOYA_ROLL, Friday: L_ALOO_PANEER },
@@ -898,7 +906,7 @@ const egg: MealPlanDefinition = {
   sunday: { meal2: D_RAJMA, meal3: W_SHAKE, meal4: W_MATAR_PANEER },
   prepStrategy: [
     'Every night: boil the next morning’s eggs while dinner cooks and refrigerate them (eat hard-boiled eggs within 2 days).',
-    'Sunday: grind the week’s flaxseed and keep it in a closed jar in the fridge.',
+    'Sunday: fill the seed jar for Meal 1 (equal weights of sunflower, pumpkin and sesame seeds) and keep it in the fridge.',
     'Sunday to Thursday evening: cook the next day’s office lunch with or after dinner (about 15–20 minutes), cool it and refrigerate it within 2 hours. Weekday mornings are then just Meal 1 and ~3 minutes of packing.',
     'Every night: set curd from 1 L milk for the next day.',
     'Friday night: soak the kala chana for Saturday; Saturday night: soak the rajma for Sunday. Thursday night: boil the potatoes with dinner for Friday’s parathas.',
@@ -912,7 +920,7 @@ const nonveg: MealPlanDefinition = {
   shortName: 'Non-veg',
   diet: 'Mixed: vegetarian meals plus eggs, chicken and fish',
   summary: 'A mixed plan: eggs at breakfast, chicken twice and fish once a week, the rest vegetarian.',
-  meal1: M1_EGG,
+  meal1: M1_NONVEG,
   weekdayMeal3: M3_WEEKDAY,
   lunches: { Monday: L_SATTU, Tuesday: L_CHILLA, Wednesday: L_CHICKEN_ROLL, Thursday: L_ALOO_PANEER, Friday: L_EGG_ROLL },
   dinners: { Monday: D_MOONG, Tuesday: D_CHICKEN, Wednesday: D_PALAK_PANEER, Thursday: D_FISH, Friday: D_EGG_CURRY },
@@ -920,7 +928,7 @@ const nonveg: MealPlanDefinition = {
   sunday: { meal2: D_RAJMA, meal3: W_SHAKE, meal4: D_CHICKEN },
   prepStrategy: [
     'Every night: boil the next morning’s eggs while dinner cooks and refrigerate them.',
-    'Sunday: grind the week’s flaxseed and keep it in a closed jar in the fridge.',
+    'Sunday: fill the seed jar for Meal 1 (equal weights of sunflower, pumpkin and sesame seeds) and keep it in the fridge.',
     'Sunday to Thursday evening: cook the next day’s office lunch with or after dinner (about 15–20 minutes), cool it and refrigerate it within 2 hours. Weekday mornings are then just Meal 1 and ~3 minutes of packing.',
     'Buy chicken on Monday and Saturday, or freeze portions and thaw in the fridge overnight.',
     'Tuesday: cook the extra chicken for Wednesday’s roll (lift it out before adding water). Wednesday night: boil the potatoes with dinner for Thursday’s parathas.',
@@ -969,7 +977,7 @@ export function solvedGrams(m: Meal, it: PlanItem, phase: PhaseId): number {
 
 /** Replace {fruit1}, {sabzi}… with the slot's food names. */
 export function fillSlots(text: string): string {
-  return text.replace(/\{(fruit1|fruit3|sabzi|salad|greens)\}/g, (_, slot: SlotId) => SLOTS[slot].name);
+  return text.replace(/\{(fruit1|fruit3|sabzi|salad|greens|seeds)\}/g, (_, slot: SlotId) => SLOTS[slot].name);
 }
 
 /** The meal with quantities for one phase. Slots become their foods (each with its alternative); zero-gram optional items are left out. */

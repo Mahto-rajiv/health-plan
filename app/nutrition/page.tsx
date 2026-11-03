@@ -13,7 +13,7 @@ import { DAILY, PHASES, PHASE_IDS } from '@/lib/config';
 
 export const metadata: Metadata = { title: 'Nutrition' };
 
-const SLOT_NAME = { fruit1: 'Papaya', fruit3: 'Banana', sabzi: 'Vegetables', salad: 'Salad', greens: 'Greens' } as const;
+const SLOT_NAME = { fruit1: 'Papaya', fruit3: 'Banana', sabzi: 'Vegetables', salad: 'Salad', greens: 'Greens', seeds: 'Seed jar' } as const;
 
 /** Grams of an item in a phase. */
 const rampCell = (m: Meal, it: PlanItem, p: PhaseId): string => String(solvedGrams(m, it, p));

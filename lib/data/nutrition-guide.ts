@@ -170,7 +170,7 @@ export const FOOD_SAFETY = {
   ],
   buying: [
     'Nuts, peanuts, roasted chana and sattu: buy from a shop with high turnover and keep them airtight, dry and cool. Throw away any that look mouldy, discoloured or shrivelled, or taste bitter — that is how aflatoxin contamination usually shows.',
-    'Ground flaxseed and nuts go rancid: buy small packs and keep them in the fridge once opened.',
+    'Seeds and nuts go rancid: buy small packs and keep them, and the seed jar, in the fridge once opened.',
     'Paneer: buy a sealed pack whose label says it is made from milk. Products labelled “analogue” are made with vegetable fat and are not the same food.',
     'Milk for home-set curd: packaged pasteurised milk can be used as it is; boil loose milk first and cool it to lukewarm before adding the starter.',
     'Rajma and other dry beans must be soaked and then boiled or pressure-cooked until completely soft. Raw or undercooked kidney beans contain a toxin that causes vomiting.',

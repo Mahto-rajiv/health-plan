@@ -227,10 +227,13 @@ describe('fruit and vegetables', () => {
     for (const [slot, f] of Object.entries(SLOTS)) assert.ok(Math.abs(f.foods.reduce((a, x) => a + x.share, 0) - 1) < 1e-9, slot);
   });
 
+  // The Meal 1 seed jar is a slot but not produce: it has no market swap.
+  const isProduce = (f: FoodId) => FOODS[f].category === 'Fruit' || FOODS[f].category === 'Vegetables';
+
   it('every fruit and vegetable except onion and tomato has an alternative, and it is a different food', () => {
     for (const [slot, f] of Object.entries(SLOTS))
       for (const x of f.foods) {
-        if (x.food === 'onion' || x.food === 'tomato') continue;
+        if (x.food === 'onion' || x.food === 'tomato' || !isProduce(x.food)) continue;
         assert.ok(x.alt, `${slot} ${x.food}: no alternative`);
         assert.notEqual(x.alt, x.food, `${slot} ${x.food}`);
       }
@@ -242,7 +245,7 @@ describe('fruit and vegetables', () => {
         for (const d of buildWeek(def, ph))
           for (const pm of d.meals)
             for (const it of pm.meal.items)
-              if (it.slot && it.food !== 'onion' && it.food !== 'tomato') assert.ok(it.alt && it.alt.g > 0, `${pm.meal.id} ${it.food}`);
+              if (it.slot && isProduce(it.food) && it.food !== 'onion' && it.food !== 'tomato') assert.ok(it.alt && it.alt.g > 0, `${pm.meal.id} ${it.food}`);
   });
 
   it('a fruit swap gives about the same calories; a vegetable swap the same weight', () => {
@@ -324,6 +327,29 @@ describe('across plans', () => {
 
 describe('meal content', () => {
   const meals = allMeals();
+
+  it('Meal 1 (Round 7): ≤ 5 ingredients, one seed jar, multiples of 5 g, the same recipe in every phase; only oats and milk change, and never go down', () => {
+    for (const p of MEAL_PLAN_DEFINITIONS) {
+      const m = p.meal1;
+      assert.ok(m.items.length <= 5, `${m.id}: ${m.items.length} ingredients`);
+      assert.equal(m.items.filter((it) => it.slot === 'seeds').length, 1, `${m.id}: seed jar`);
+      assert.ok(!m.items.some((it) => it.food && FOODS[it.food].category === 'Nuts & seeds' && it.food !== 'peanuts'), `${m.id}: loose seeds outside the jar`);
+      for (const it of m.items) {
+        const q = QUANTITIES[m.id][itemKey(it)];
+        for (const g of q) assert.equal(g % 5, 0, `${m.id} ${itemKey(it)}: ${g} g`);
+        if (it.food === 'oats' || it.food === 'milk') assert.ok(q[0] <= q[1] && q[1] <= q[2], `${m.id} ${it.food}: ${q}`);
+        else assert.ok(q.every((g) => g === q[0] && g > 0), `${m.id} ${itemKey(it)} changes by phase: ${q}`);
+      }
+    }
+    // Each seed in the jar too, as resolved for the app.
+    for (const p of MEAL_PLAN_DEFINITIONS) for (const ph of PHASE_IDS) for (const it of buildWeek(p, ph)[0].meals[0].meal.items) assert.equal(it.g % 5, 0, `${p.id} P${ph} ${it.food}: ${it.g} g`);
+  });
+
+  it('Meal 1: Veg + Eggs has 1 egg, Non-veg 2 (Veg + Eggs Phase 0 is infeasible with 2)', () => {
+    const eggs = (id: string) => MEAL_PLAN_DEFINITIONS.find((p) => p.id === id)!.meal1.items.find((it) => it.food === 'egg')!.g;
+    assert.equal(eggs('egg'), 50);
+    assert.equal(eggs('nonveg'), 100);
+  });
 
   it('Meal 1 takes ≤ 10 minutes; weekday Meal 3 needs no cooking', () => {
     for (const p of MEAL_PLAN_DEFINITIONS) {

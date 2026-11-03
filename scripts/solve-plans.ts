@@ -26,6 +26,7 @@
 //   • Variety: no food > 25% of the week's energy; eggs ≤ 21 a week; every item
 //     inside its range; milk + curd ≤ 1,100 g a day (backstop).
 //   • The three plans' kcal and protein on the same day within 5% of each other.
+//   • Items marked `rising` (Meal 1 oats and milk) are never less than in the phase before.
 //   • Monthly cost ≤ CAP (default BUDGET.planningMax) at default prices.
 // A hard dairy cap was tried first: Phases 0–1 are infeasible below ~1,100 g/day in the
 // vegetarian plan, because the calories then have to come from atta, rice and pulses,
@@ -123,7 +124,7 @@ export interface PhaseResult {
   plans: { plan: PlanId; monthlyCost: number; weekly: Partial<Record<NutrientKey, number>> }[];
 }
 
-async function solvePhase(highs: Awaited<ReturnType<typeof highsLoader>>, ph: PhaseId, cap: number): Promise<PhaseResult> {
+async function solvePhase(highs: Awaited<ReturnType<typeof highsLoader>>, ph: PhaseId, cap: number, prev?: Map<string, number>): Promise<PhaseResult> {
   const P = PHASES[ph];
   const vars: Var[] = [];
   const varOf = new Map<string, Var>();
@@ -134,7 +135,8 @@ async function solvePhase(highs: Awaited<ReturnType<typeof highsLoader>>, ph: Ph
       const anchors = [0, 1, 2].map((p) => gramsFor(it.g, p as PhaseId));
       const [rLo, rHi] = it.range ?? [Math.round(0.6 * Math.min(...anchors)), Math.round(1.4 * Math.max(...anchors))];
       const step = stepOf(it);
-      const v: Var = { name: `x${i++}`, meal: m, item: it, key, step, lo: rLo, hi: rHi, anchor: anchors[ph] };
+      const lo = it.rising && prev?.has(`${m.id}|${key}`) ? Math.max(rLo, prev.get(`${m.id}|${key}`)!) : rLo;
+      const v: Var = { name: `x${i++}`, meal: m, item: it, key, step, lo, hi: rHi, anchor: anchors[ph] };
       vars.push(v);
       varOf.set(`${m.id}|${key}`, v);
     }
@@ -299,7 +301,7 @@ export async function solveAll(cap: number): Promise<{ results: Record<PhaseId, 
   const results = {} as Record<PhaseId, PhaseResult>;
   const only = process.env.PHASE ? [Number(process.env.PHASE) as PhaseId] : PHASE_IDS;
   for (const ph of only) {
-    const r = await solvePhase(highs, ph, cap);
+    const r = await solvePhase(highs, ph, cap, results[(ph - 1) as PhaseId]?.grams);
     results[ph] = r;
     for (const [k, g] of r.grams) {
       const [mealId, key] = k.split('|');
