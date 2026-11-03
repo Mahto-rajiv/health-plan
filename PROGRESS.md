@@ -1,6 +1,42 @@
 # Progress
 
-## Round 5 (3 Nov 2026): branch `round5-fixes`, not pushed
+## Round 6 (3 Nov 2026): branch `round6-cleanup`, not pushed
+
+Small cleanup only.
+
+### Status
+- [x] **Personal details** removed from this file and `docs/brief*.md`. The engineering history is kept. Each brief has a one-line note saying what was removed.
+- [x] **Recovery → "Am I recovering?":** the signs no longer depend on logged lifts.
+  - Good: "Your usual weights feel the same or lighter".
+  - Warning: "Weights feeling heavier than usual for several sessions in a row".
+- [x] **Nutrition → "When to change the food"** is simpler and needs only the weekly weigh-in.
+  - Removed: the waist rule, the pre-loss checkpoint, and the target-weight callout with its 2 references.
+  - Kept: the Phase 0 rule, the Phase 2 "+150 kcal after 4 weeks" rule, the "slow down" rule and the "maintain when life is busy" rule.
+- Blocked: none. Nothing pushed.
+
+### Still in git history
+- Personal data appears from `4fe085b` onward:
+  - in the code: blood results, weights and health notes, until Rounds 4–5 removed them;
+  - in `docs/brief*.md` and `PROGRESS.md`, up to `f90a242` (the current `origin/main`).
+- 5 branches on GitHub hold it: `main`, `audit-fixes`, `round2-seasonal`, `round4-fixes` and `round5-fixes`.
+- Some commit messages also name the features, e.g. `a7907b3` "Blood results: vitamin D …".
+- Merging this branch cleans only the current files.
+
+### To rewrite it safely (not done; each step needs your go-ahead)
+1. Make the GitHub repo private first, so nothing more is copied while you work.
+2. Make a mirror backup: `git clone --mirror git@github-hp:Mahto-rajiv/health-plan.git hp-backup.git`.
+3. In a fresh clone, run `git filter-repo`:
+   - `--replace-text` with a list of the personal strings, to remove them from every file in every commit;
+   - `--path docs/brief.md --invert-paths` and similar if you'd rather drop whole files;
+   - `--replace-message` for the commit messages.
+4. Check the result before pushing: `git log --all -S'<string>'` should return nothing for each string, and the tests and build should still pass at the new `main`.
+5. Force-push all branches and delete the old ones on GitHub. This is a destructive step.
+6. Ask GitHub Support to remove cached views of the old commits. Old SHAs can stay reachable by URL until then.
+7. Re-clone every local copy. Vercel keeps old deployments, so delete those if they matter.
+
+Anyone who already cloned or forked the repo keeps the old history; a rewrite can't recall it.
+
+## Round 5 (3 Nov 2026): branch `round5-fixes`, merged to main and pushed
 
 The brief: make the app view-only and simple; remove tracking and medical content; fix saturated fat and the beetroot swap.
 
@@ -40,10 +76,10 @@ The brief: make the app view-only and simple; remove tracking and medical conten
 | Progress page, weight and waist log, charts, sample data, `lib/progress.ts` | Tracking |
 | Today: weight card, meal ticks, "This week" adherence, recovery check-in | Tracking |
 | Recovery check-in form | Tracking |
-| Health page: blood-results form, blood-test explanations, hair section, weight to-do, diet coverage table | Medical. The audit is still on Meal plans → Vitamins & minerals. |
-| Supplements that depend on a test or a doctor: vitamin D, B12, iron/zinc/biotin, multivitamin, omega-3; the quality and certification notes | Medical |
-| Every doctor / dermatologist / "get it checked" line; the `medical` Callout tone; 46 references only that content used | Medical |
-| Settings page: weights, height, target, intake estimate, name, program start, phase override, deload toggle, price table, backup, restore, Reset | Tracking or stored input |
+| Health page: test-result form, test explanations, symptom section, to-do list, diet coverage table | Medical. The audit is still on Meal plans → Vitamins & minerals. |
+| Supplements whose dose depends on a test: vitamin D, B12, iron/zinc/biotin, multivitamin, omega-3; the quality and certification notes | Medical |
+| Every referral and "get it checked" line; the `medical` Callout tone; 46 references only that content used | Medical |
+| Settings page: personal entries, intake estimate, name, program start, phase override, deload toggle, price table, backup, restore, Reset | Tracking or stored input |
 | Price overrides and the over-budget swap list | Reachable only with edited prices; at the default prices every plan is under the ceiling |
 | Old storage keys (body, workouts, draft, meals, checkins, prices, blood) | Not read any more |
 | `recharts` | Only the charts used it |
@@ -65,12 +101,12 @@ The brief: make the app view-only and simple; remove tracking and medical conten
 - **Phase 2 rate rules:** kept as text. Of the waist rules, only "half your height → stop gaining" is kept.
 
 ### Tests removed
-- `tests/progress.test.ts`, which tested deleted features: weight decisions, weights in Settings, blood-result bands, no blood values in code.
+- `tests/progress.test.ts`, which tested deleted features: weight decisions, Settings entries, test-result bands, no personal values in code.
   - Its "Starts Mon 9 Nov" test moved to `tests/training.test.ts`.
 - The deload variants in the session-length tests: the deload computation is gone; the text remains.
 - Added:
   - phase by date (weeks 1–2, 3–4, 5+);
-  - an app-text check: no doctor/consult/medical wording except the footer.
+  - an app-text check: no referral or medical wording except the footer (word list in `tests/budget.test.ts`).
 
 ### Not verified
 - **Milk data:** 01174 is 2% fat, not 1.5%, so milk and curd fat is a little overstated, and so is saturated fat.
@@ -78,8 +114,8 @@ The brief: make the app view-only and simple; remove tracking and medical conten
 - **Paneer saturated fat:** scaled from the IFCT fat correction, not checked against the PDF.
 - **Trans fat:** the tables have no value for oil or oats.
 - **Phase 0 solve:** stopped at the 120 s limit (not proven optimal).
-- **Browser storage:** old keys (with weights or blood values) stay in a browser that used the old app. The app no longer reads them. Picking a plan rewrites the settings key with only the plan, which drops the old weights stored there. To clear everything, clear this site's data in the browser.
-- **Stale docs:** `docs/cost-sweep.md` was not regenerated, so its "Hair" column header is stale.
+- **Browser storage:** old keys (with personal entries) stay in a browser that used the old app. The app no longer reads them. Picking a plan rewrites the settings key with only the plan, which drops the old entries stored there. To clear everything, clear this site's data in the browser.
+- **Stale docs:** `docs/cost-sweep.md` was not regenerated, so one column header still uses the old name for the ★ nutrients.
 - **Vercel:** not checked this round.
 
 ## Round 4 (3 Nov 2026): branch `round4-fixes`, merged to main and pushed
@@ -87,7 +123,7 @@ The brief: make the app view-only and simple; remove tracking and medical conten
 The second brief pasted (6 items) is followed. From the first version, "Reset everything" was checked (item 5 there) and "when to add weight" was checked but not changed (see Notes).
 
 ### Status
-- [x] 1. **Privacy:** blood results and body weights are out of the code. They are typed into the app and stored only in this browser (`3c4f9ea`, `a7907b3`).
+- [x] 1. **Privacy:** personal values are out of the code. They are typed into the app and stored only in this browser (`3c4f9ea`, `a7907b3`).
 - [x] 2. **"Starts Mon 9 Nov"** replaces the week number before the program start on Training, Dashboard and Settings (`4f6bf2e`).
 - [x] 3. **Food swaps:** better choices, plus a note on what each swap loses (`27409af`).
 - [x] 4. **Carrot** is now in the daily salad (`bb06f5b`).
@@ -96,50 +132,9 @@ The second brief pasted (6 items) is followed. From the first version, "Reset ev
 - Blocked: none. Nothing pushed.
 
 ### 1. Privacy
-**What changed**
-- `lib/data/health.ts`:
-  - `BLOOD_RESULTS` (your values, statuses and the test date) is replaced by `BLOOD_TESTS`: each test's name, unit, typical range, status bands and a general explanation.
-  - Any text that stated your results is reworded, in the B12 and vitamin D supplement notes, the hair notes and the diet table.
-- **Health page:** a "Blood results" form for each test. Status badges and the Summary card are worked out from what you type.
-  - Saved under `hp:v2:blood` in localStorage.
-  - Included in Download backup, and deleted by Reset everything.
-- **Weights:** `PROFILE.weightKg` and `PROFILE.preLossWeightKg` are removed. `Settings.startWeightKg` and `preLossWeightKg` are optional and blank by default; you type them in Settings.
-- **Without weights entered:**
-  - the Dashboard, Progress and the Health to-do ask for them;
-  - the weight decisions use your first weekly average as the baseline;
-  - the checkpoint message is skipped.
-- **Text that stated the weights is reworded:** the nutrition guide, the Phase 2 goal, the BMR line (now a 1,600–1,700 kcal range) and the Progress placeholder.
-- **Made-up values replace your real ones in:** the test fixtures (70/74 kg) and the sample chart data (70 kg start, 80 cm waist).
-- **Reset everything** now warns that it deletes your weights and blood results, that they can't be recovered, and that you should download a backup first.
-
-**If you already saved settings in this browser:** the weights you already saved stay there; they live in localStorage, not in the code. A browser that never saved settings will show blank weights. Type them once in Settings.
-
-**Still in the code (not asked to remove; say if you want them out):**
-- age 24, height 180 cm, the 75 kg target;
-- the hair history: 6 months of shedding, the dermatologist to-do;
-- that weight was lost while eating under ~2,000 kcal;
-- the phase calorie bands.
-
-  A careful reader can roughly work out your weight from the BMR range and the calorie bands.
-
-**Still in git history.** The repo has 31 commits; every one from `4dfc74f` (7 Oct) to `a7907b3` holds personal data:
-- the blood values, from `4dfc74f` onward;
-- the two weights in `lib/config.ts`, from `5c40469` (30 Oct) onward;
-- `origin/main` still serves them in `lib/data/health.ts` and `lib/config.ts`;
-- `docs/brief.md` and the Round 1–3 notes in this file also hold the weights. I did not edit your briefs.
-
-  Merging this branch removes them from the current files only.
-
-**To remove them from history** (each step needs your go-ahead; none was done):
-1. Make the GitHub repo private (Settings → General → Danger zone). Vercel still deploys from private repos.
-2. Rewrite history with `git filter-repo` (replace the values or drop the files), then force-push every branch (`main`, `audit-fixes`, `round2-seasonal`). Anyone who cloned or forked keeps the old copy.
-3. Ask GitHub Support to purge cached views of the old commits.
-
-**Protecting the deployed site:** after this branch is merged, the site holds no blood values or weights; they exist only in your browser. If you also want to hide the rest (hair notes, age, height):
-- turn on Vercel Deployment Protection (Vercel Authentication) for the project, so only your Vercel login can open it;
-- or put the site behind a password.
-
-I did not check which of these your Vercel plan includes.
+- Personal values were moved out of the code. They were typed into the app and kept only in the browser's localStorage. Round 5 removed those fields.
+- The test fixtures and sample data use made-up values.
+- What remains in git history: see Round 6.
 
 ### 2. "Starts Mon 9 Nov"
 - New `startsLabel(start, today)` in `lib/dates.ts` returns "Starts Mon 9 Nov" before the start date, otherwise null.
@@ -227,7 +222,7 @@ I did not check which of these your Vercel plan includes.
   - **Gut:** Phase 1 starts after two weeks at 35 g.
 - **Result after the final solve:**
   - Weekly averages below the EAR: **16 → 4**. All 4 are in Phase 0: thiamine (1.38–1.41 of 1.5 mg) in all three plans, and the egg plan's B6, right at the EAR.
-  - Hair nutrients below the RDA/AI: 33 → 34. Eight riboflavin and vitamin E entries moved up from "below the EAR" to "below the RDA", which adds them to this list. Seven entries left it: Phase 1 zinc in all three plans, Phase 2 iron (egg and non-veg), and the non-veg vitamin E (Phases 1 and 2) now meet the RDA.
+  - ★ nutrients below the RDA/AI: 33 → 34. Eight riboflavin and vitamin E entries moved up from "below the EAR" to "below the RDA", which adds them to this list. Seven entries left it: Phase 1 zinc in all three plans, Phase 2 iron (egg and non-veg), and the non-veg vitamin E (Phases 1 and 2) now meet the RDA.
   - **Dairy:** the vegetarian plan now uses 1,086–1,099 g/day of milk + curd, just under the 1,100 g backstop. This goes against "dairy should not carry the diet".
 
 ### 6. Reports, links, browser
@@ -236,13 +231,13 @@ I did not check which of these your Vercel plan includes.
 - **Links:** `npm run links`: 199 links, 190 ok, 0 redirected, 9 blocked automated access (EFSA ×3, NIH ODS ×5, npmjs.com), 0 failed.
 - **Browser check:** headless Chrome over CDP against the production build (`next start`), with a script in the scratchpad (not committed).
   - Every route (/, /training, /meal-plans, /meal-plans/cards, /nutrition, /health, /progress, /recovery, /settings) at 375, 768 and 1280 px.
-  - Run twice: with empty storage, and with sample weights and blood values in localStorage.
+  - Run twice: with empty storage, and with made-up sample entries in localStorage.
   - **54 page loads: 0 px horizontal overflow, 0 console errors or exceptions.**
   - Text checked:
     - "Starts Mon 9 Nov" on /, /training and /settings;
     - no "Program week";
-    - with empty storage, the weight prompts appear;
-    - with the sample data, "70 kg start / 74 kg checkpoint" and "Vitamin D (25-OH): 25 ng/mL (borderline)" appear;
+    - with empty storage, the entry prompts appear;
+    - with the sample entries, the values computed from them appear;
     - swap notes appear on both meal pages.
   - I looked at one screenshot (/health at 375 px, sample data) by eye. The rest were checked by these numbers and text only.
 
@@ -255,7 +250,7 @@ Compared the `it(...)`/`describe(...)` names at `efc6611~1` with now (`git show 
 | `describe('seasons')`: "cover every month exactly once…", "only seasonal slots change between seasons…", "peas appear only in winter", "pick the season from the date…", "the Meal 1 fruit changes through the year…" | `9f089ff` | Seasons removed. Replaced by `describe('fruit and vegetables')` (shares add to 1, every food has a swap, swap amounts). |
 | `costs at most ₹${BUDGET.max} a month` | `9f089ff` | Tightened, not dropped: now `costs at most ₹${BUDGET.planningMax}` (₹5,400, the 10% price margin). |
 | "Phase 2 meets the EAR for iron, zinc, … in every plan **and season**" | `9f089ff` | Same test without the season dimension. |
-| "weekly averages below the EAR match the documented list — no new gaps" | `9f089ff` | Stricter replacement: "nutrient gaps match tests/known-gaps.json: no new gaps, **none silently closed**", now also covering hair nutrients below the RDA/AI. |
+| "weekly averages below the EAR match the documented list — no new gaps" | `9f089ff` | Stricter replacement: "nutrient gaps match tests/known-gaps.json: no new gaps, **none silently closed**", now also covering ★ nutrients below the RDA/AI. |
 | `${id}: ≤ 5 exercises and ≤ 45 min` | `f054440` | Tightened to ≤ 42 min (3-min buffer under the 45-min cap). |
 | "a weekday session is offered only before 9:00 PM" | `d7459bf` | Tested `todayTraining()`, which read the time and the workout log. Removed with logging (your request). The 9 PM rule is now text only ("tomorrow line names … the 9 PM cut-off" checks the wording). |
 | "never two sessions in one day" | `d7459bf` | Needed the workout log to know a session was done. No log now, so the app can't enforce it; the Week tab states the rule. |
@@ -287,7 +282,7 @@ Wrote lib/data/plan-quantities.generated.ts (24 meals).
 
 Cost sweep (`TL=120 GAP=0.01 npm run solve:sweep`; table from `docs/cost-sweep.md`):
 
-| Ceiling ₹ | Phase | Cost ₹/month (min–max) | Below EAR (variants: nutrients) | Hair nutrients below RDA/AI | Other nutrients below RDA/AI |
+| Ceiling ₹ | Phase | Cost ₹/month (min–max) | Below EAR (variants: nutrients) | ★ nutrients below RDA/AI | Other nutrients below RDA/AI |
 |---|---|---|---|---|---|
 | 4,500 | — | **no plan possible** at this ceiling (Phase 2, cap ₹4500: Infeasible) | | | |
 | 5,000 | 0 | 4,810–5,000 | Thiamine (B1) 3, Vitamin B6 1 | Iron 3, Zinc 3, Vitamin A 3, Riboflavin (B2) 3, Vitamin E 3 | Thiamine (B1) 3, Vitamin B6 3, Vitamin K 3, Omega-3 (ALA) 3 |
@@ -340,7 +335,7 @@ BUILD:
 - **Swap amounts** (orange 70–90 g, dates 30–50 g) come from the food table. They were not checked against real portions, and the swap foods are not in the nutrient audit.
 - **Fat at 35%:** saturated fat is not tracked, so the extra curd, paneer and oil were not checked against a saturated-fat limit.
 - **Solver optimality:** Phase 1 stopped at the 120 s time limit (close to the optimum, not proven). Phases 0 and 2 solved to optimal.
-- **Git history** still contains the personal data (see 1).
+- **Git history** still contains the personal data (see Round 6).
 
 ## Round 3 (2–3 Nov 2026): branch `round3-trust`, merged to main and pushed
 
@@ -348,7 +343,7 @@ Spec: `docs/brief-round3.md`. Commits: `efc6611`, `f054440`, `d7459bf`, `9f089ff
 
 ### Status
 - [x] **Food data you can trust:** found the root cause of the bad values and added plausibility tests (`efc6611`).
-- [x] **Hair-linked nutrients** planned to the RDA/AI where the hard rules allow it.
+- [x] **★ nutrients** (iron, zinc, riboflavin, folate, B12, vitamins A and E, selenium, biotin) planned to the RDA/AI where the hard rules allow it.
 - [x] **Cost ranked last:** the solver is weighted, with a ₹5,400 planning ceiling and a cost sweep.
 - [x] **Dairy:** the solver minimises it right after nutrient adequacy.
 - [x] **Menu foods added** so the solver can reach B1, B6 and E.
@@ -367,8 +362,8 @@ Spec: `docs/brief-round3.md`. Commits: `efc6611`, `f054440`, `d7459bf`, `9f089ff
 | Non-veg B6 19–33 mg, biotin 146–222 µg | **Right: a data error** | The fish rows (IFCT groups P–S) in the `ifct2017` npm package stored B6 in mg but it was read as g, 1,000× too high (rohu 240 mg/100 g instead of 0.24). Folate had been moved into the biotin column. Paneer fat/carbs and lemon carbs were also wrong. All were fixed against the IFCT PDF in `scripts/food-data/build.ts` and `sources.ts`. The package also stores "not analysed" as 0; an IFCT 0 is now filled from the closest USDA food and labelled. Where IFCT and USDA differ by more than 4×, the lower value is used. |
 | Dairy 880–1,214 g/day; Phase 2 at the ₹5,700 cap | Right | Dairy is now minimised after nutrients and before cost: 901–969 g/day on average per phase. A fixed cap below ~1,100 g is **infeasible** for the vegetarian plan in Phases 0–1. With less dairy, the calories must come from atta, rice and pulses, which break the 35/40 g fibre caps. `PLAN_RULES.milkCurdMaxG` = 1,100 is only a backstop. |
 | Solver only changes grams of menu foods | Right | Added sesame, almonds and banana to Meal 1, and sesame to the sattu paratha (B1, B6, E, minerals). |
-| "Plan to the EAR" may be backwards | **Partly.** ICMR really says to use the EAR for planning | ICMR-NIN 2020 brief note: *"the present committee recommended EAR for population requirement/ adequacy estimations and menu or diet planning for individuals"*. IOM 2003 says to plan an individual to the RDA/AI. Decision: the hair-linked nutrients are planned to the RDA/AI, the rest to at least the EAR, and every UL is a hard limit. The reasoning is in `lib/data/nutrients.ts`. |
-| 466 tests pass but 70 gaps are whitelisted | Right | `tests/known-gaps.json` now lists 16 below the EAR and 33 hair nutrients below target. The audit shows them in the app. |
+| "Plan to the EAR" may be backwards | **Partly.** ICMR really says to use the EAR for planning | ICMR-NIN 2020 brief note: *"the present committee recommended EAR for population requirement/ adequacy estimations and menu or diet planning for individuals"*. IOM 2003 says to plan an individual to the RDA/AI. Decision: the ★ nutrients are planned to the RDA/AI, the rest to at least the EAR, and every UL is a hard limit. The reasoning is in `lib/data/nutrients.ts`. |
+| 466 tests pass but 70 gaps are whitelisted | Right | `tests/known-gaps.json` now lists 16 below the EAR and 33 ★ nutrients below target. The audit shows them in the app. |
 | AI-only nutrients labelled "above the average need" | Right | New status `below-ai`: "below the adequate intake (no average need is set)". |
 | Weekday sessions 44.2–44.7 of 45 min | Right | Face pull is now paired with incline press, and hanging knee raise with calf raise. No sets were removed. The estimate is 41.2–41.7 min, leaving a 3-min buffer. A real session was **not** timed: the workout logger was later removed. |
 | Seasons for Ahmedabad | Done, then removed | You asked for no seasons. `lib/data/produce.ts` now has one menu (papaya, banana, bhindi/lauki/kaddu sabzi, cucumber salad, palak). Each food has one alternative (apple; cauliflower, brinjal, carrot; amaranth). Fruit swaps keep the same calories and vegetable swaps keep the same weight. Onion and tomato have no swap. Nutrients and cost are for the main food only. |
@@ -452,7 +447,7 @@ Wrote lib/data/plan-quantities.generated.ts (24 meals).
 - **Prices** for the added foods (sesame, almonds) are estimates and were not checked against listings.
 - **Session times** are still estimated constants; no session was timed.
 - **Before 9 Nov** the app shows "Program week 1" (the week number is clamped). Left as is.
-- **Old browser data:** test weights or meal ticks may still be in storage. Settings → "Reset everything" clears them.
+- **Old browser data:** test entries or meal ticks may still be in storage. Settings → "Reset everything" clears them.
 
 ## Round 2 (2 Nov 2026) — branch `round2-seasonal`, nothing pushed
 
@@ -469,8 +464,8 @@ Spec: `docs/brief-round2.md` (overrides `docs/brief.md` where they differ).
 | Warm-up not visible as steps; session-length arithmetic | Yes | The warm-up is 3 jargon lines. `estimateMinutes` leaves out changeover time and warm-up sets for the second heavy lift. Upper B in week 3 computes to exactly 45:00, so in real life it runs over the 45-min cap. |
 | Monday needs ~28 min of morning cooking | Yes | True. 25–31 min of hands-on cooking before leaving on 4 of 5 weekdays (Meal 1 + a lunch made in the morning). |
 | Monday's per-meal costs add to ₹123 but the monthly figure implies more | Yes | Both numbers are right but unexplained. Monday is the cheapest day (₹123, against a ₹136 weekly average), and the monthly figure adds ₹300 of pantry items (≈ ₹10 a day) that no meal shows. |
-| Hand-typed Health numbers will go stale | Yes | True. "≈13 mg zinc", "14–19 mg iron", "about 4 kg (68 → 64)", "mostly the daily papaya" are all typed text. |
-| Weight-loss to-do / Phase 0 shouldn't hardcode the weight | Yes | True. The to-do says "about 4 kg (68 → 64 kg)" as fixed text. |
+| Hand-typed Health numbers will go stale | Yes | True. "≈13 mg zinc", "14–19 mg iron", a weight change, "mostly the daily papaya" are all typed text. |
+| The weight to-do / Phase 0 shouldn't hardcode the weight | Yes | True. The to-do had the weights as fixed text. |
 
 ### Status
 - [x] **Inspection** (above).
@@ -481,7 +476,7 @@ Spec: `docs/brief-round2.md` (overrides `docs/brief.md` where they differ).
 - [x] **Full vitamin and mineral audit:** 22 nutrients plus 2 fats, with gaps shown.
 - [x] **Weekday mornings:** at most 15 min hands-on (now 13–14; was 25–31).
 - [x] **Budget:** a single ₹6,000 ceiling.
-- [x] **Health page:** computed table, and the weight to-do read from your own log.
+- [x] **Health page:** computed table; the to-do reads the log instead of typed numbers.
 - [x] **Tests, lint, typecheck, build, browser check, link check** (output below).
 - In progress: none. Blocked: none.
 
@@ -514,14 +509,14 @@ Spec: `docs/brief-round2.md` (overrides `docs/brief.md` where they differ).
 - **ICMR-NIN 2020, adult men** (EAR and RDA, Table 3 of the brief note), read from the official PDF: iron, zinc, calcium, magnesium, vitamins A, B1, B2, B3, B6, folate, B12 and C, plus ICMR's 2.2 g omega-3 and 6.6 g omega-6.
 - **US/Canadian DRIs for men 19–30** (Health Canada tables) where ICMR's summary has none: phosphorus, potassium, copper, selenium, manganese, vitamins E and K, biotin, and the upper limits.
 - **Planning floor is the EAR.** ICMR's note says the EAR, not the RDA, is the value for planning an individual's diet. So the plans must reach the EAR, and the solver pushes toward the RDA.
-- **Hair flag (★).** Shown on nutrients whose deficiency is linked to hair loss in the two reviews already cited (Almohanna 2019, Guo & Katta 2017). The text says plainly that enough prevents a deficiency; more than enough doesn't grow hair.
+- **★ flag.** Marks a set of nutrients that get extra weight in the plan (in Round 3 they were planned to the RDA/AI).
 
 **4. Gaps in the data, shown rather than guessed.**
 - **Missing values count as 0.** The app names the foods involved next to the total, e.g. "No data for oats, soya chunks…: total may be low".
 - **Remaining gaps:**
   - Biotin is missing for 6 foods. Milk and curd biotin is filled from IFCT cow milk, and the source note says so.
   - Manganese is missing for oil.
-- **Vitamin D is not counted from food.** IFCT reports vitamin D in plant foods, e.g. 13 µg per 100 g of atta, which other tables don't show. It's covered by sun and the existing 1,000 IU D3.
+- **Vitamin D is not counted from food.** IFCT reports vitamin D in plant foods, e.g. 13 µg per 100 g of atta, which other tables don't show. It is left out of the audit.
 - **Iodine** is in neither table; it comes from iodised salt.
 - **Two IFCT inconsistencies found and recorded in the tests.** The app's own kcal are computed from macros and are not affected by either.
   - Chicken leg N001 is printed as 1,605 kJ, but its own protein and fat give 798 kJ. The breast row is consistent, so this looks like a misprint.
@@ -560,11 +555,8 @@ Spec: `docs/brief-round2.md` (overrides `docs/brief.md` where they differ).
 - The day view now explains the gap your review spotted: today's food, this week's average day, and ≈ ₹10 a day of pantry items that no meal shows.
 
 **9. Weight.**
-- The Health to-do now uses your log:
-  - **Before:** the earliest recalled weight, otherwise Settings.
-  - **Now:** the latest weekly-average weigh-in, otherwise Settings.
-- Until you log a real weigh-in, it says the numbers come from Settings and links to Progress.
-- Phase 0's calorie band is unchanged: it comes from brief §3. If the weekly trend still falls, Progress already suggests +200 kcal.
+- The Health to-do reads the latest weekly-average weigh-in (before: the earliest recalled weight), otherwise Settings.
+- Phase 0's calorie band is unchanged: it comes from brief §3.
 
 **10. Training.**
 - **Warm-up:** each session has a numbered warm-up of 10–11 min. Each step has a name, how to do it, a dose and its minutes, in this order: 5 min easy cardio, 2–3 drills for the day, 3 lighter sets for the first lift. Later heavy lifts get 1 lighter set each.
@@ -668,7 +660,7 @@ Summary of the weekly averages below the EAR (from `tests/known-gaps.json`, 70 o
 - Covered all 9 routes, the 3 extra Meal-plan tabs, and the winter, summer and monsoon seasons.
 - 0 px horizontal overflow and 0 console errors everywhere.
 - Meal 1 titles change with the season: orange (kinnow) → muskmelon → mango.
-- The Health to-do reads "lost about 4 kg (68 → 64 kg) … These weights come from Settings, not a weigh-in yet".
+- The Health to-do says its numbers come from Settings, not a weigh-in yet.
 - On phones the section tabs then got `wrap`.
 
 **`npm run links`:**
@@ -697,7 +689,7 @@ Spec: `docs/brief.md` (audit-driven fix, 30 Oct 2026). Branch: `audit-fixes`. Me
 ### Done (30 Oct 2026)
 - [x] **1. Inspection.** Findings are below and were recorded before any change.
 - [x] **2. Weight, phase and calorie model.**
-  - One config, `lib/config.ts`, holds the profile (64 kg now, 68 kg six months ago, 180 cm, 24), the phases, the budget and the energy factors.
+  - One config, `lib/config.ts`, holds the profile, the phases, the budget and the energy factors.
   - Phases:
     - Phase 0 (weeks 1–2): 2,090–2,310 kcal, 85.5–94.5 g protein, fibre ≤ 35 g, soya ≤ 20 g, sattu ≤ 25 g.
     - Phase 1 (weeks 3–4): 2,280–2,520 kcal, 99.75–110.25 g protein, fibre ≤ 40 g.
@@ -705,7 +697,7 @@ Spec: `docs/brief.md` (audit-driven fix, 30 Oct 2026). Branch: `audit-fixes`. Me
     - Fat is 25–30% of energy in every phase.
   - kcal are computed from the macros: 4/4/9, plus 2 kcal per g of fibre (FAO 2003). Carbs are available carbohydrate.
   - Settings now has an Auto/0/1/2 phase override and an optional current-intake estimate.
-  - Old saved settings are migrated: the "Preferred" plan → Vegetarian, a stored 66 kg → 64 kg, and the morning/evening toggle is removed.
+  - Old saved settings are migrated: the "Preferred" plan → Vegetarian, the old default weight is replaced, and the morning/evening toggle is removed.
 - [x] **3. Meal structure, 3 plans × 3 phases.** The "Preferred" plan is removed.
   - Weekday Meal 2 is a cold office lunch: sattu paratha, paneer/egg/soya/chicken rolls, besan chilla, aloo-paneer paratha. No rice, dal, gravy or reheating.
   - Meal 3 is the same Mon–Fri at 6:15–6:45 PM, with no cooking.
@@ -721,9 +713,9 @@ Spec: `docs/brief.md` (audit-driven fix, 30 Oct 2026). Branch: `audit-fixes`. Me
   - Removed: the 7–8:30 PM default, the "slept by 11:30" gate and the catch-up slots.
   - Added: RIR with RPE, injury prevention, a deload at the latest every 8–10 weeks, and a 12:30 AM bedtime.
 - [x] **5. Health.**
-  - New to-do card: dermatologist, tell the doctor about the ~4 kg loss, and ask for ferritin, zinc, folate and active B12.
-  - The hair text is replaced: weight loss is a plausible trigger and needs a dermatologist. The AAD's 20 lb threshold is stated.
-  - B12 is shortened to: test, course, retest, doctor decides. The lung-cancer cohort detail is dropped.
+  - New to-do card at the top of the page.
+  - A symptom note that overclaimed what the plan can do is replaced.
+  - The B12 entry is shortened. The lung-cancer cohort detail is dropped.
   - The stray "₹3,000–4,000" is removed.
   - The diet coverage table now shows Phase 0 → Phase 2.
 - [x] **6. Budget and prices.**
@@ -794,10 +786,10 @@ Micronutrients (weekly average, all plans):
 Measured with scripts in the session scratchpad; nothing below is guessed.
 
 **Profile and targets**
-- `lib/storage.ts` defaults: start weight 66 kg, plan `preferred`, a morning/evening `trainingTime` toggle. The sample data (`lib/data/sample.ts`) trends up from 66 kg; the Progress weight field's placeholder is 66.0.
-- `lib/data/nutrition-guide.ts` and `/nutrition`: Mifflin-St Jeor with 66 kg, maintenance "≈ 2,450–2,700 kcal", fixed target 2,700 kcal (2,600–2,800), and "Your weight is currently stable". All wrong for 64 kg after losing ~4 kg on < 2,000 kcal.
+- `lib/storage.ts` defaults: an out-of-date start weight, plan `preferred`, a morning/evening `trainingTime` toggle. The sample data (`lib/data/sample.ts`) and the Progress weight placeholder use the same old weight.
+- `lib/data/nutrition-guide.ts` and `/nutrition`: Mifflin-St Jeor with the old weight, a fixed target of 2,700 kcal (2,600–2,800), and "Your weight is currently stable". All out of date against brief §1.
 - The dashboard's calorie and protein bars use the fixed 2,700 kcal / 125 g targets.
-- The checkpoint is 72 kg (`lib/progress.ts`, `GAIN_RULES`); the brief sets 68 kg.
+- The weight checkpoint (`lib/progress.ts`, `GAIN_RULES`) doesn't match the brief.
 - There are no phases: every plan is built for 2,500–2,900 kcal from day 1.
 
 **Macros**
@@ -824,9 +816,9 @@ Measured with scripts in the session scratchpad; nothing below is guessed.
 - `NEVER_DO`, progression, deload signals, RIR, cardio and mobility content are sound and can be kept.
 
 **Progress**
-- `assessGain` needs 4 weekly averages and has no rule for a falling trend: "too slow" only adds +150 kcal, and there is no doctor prompt.
+- `assessGain` needs 4 weekly averages and has no rule for a falling trend: "too slow" only adds +150 kcal.
 - The waist chart's 85/90 cm lines and its 70–92 axis are hard-coded, not derived from height.
-- Past dates can be entered already, but there is no way to mark a recalled weight (e.g. "68 kg six months ago"). Such a weight would be averaged into the trend.
+- Past dates can be entered already, but there is no way to mark a recalled weight (e.g. one from six months ago). Such a weight would be averaged into the trend.
 - Waist, strength (e1RM), consistency and adherence charts work; there is no photo tracking at all. The current "photos" support is advice text only.
 
 **Recovery and dashboard**
@@ -836,7 +828,7 @@ Measured with scripts in the session scratchpad; nothing below is guessed.
 - No price table, phase, current-intake estimate or historical weight.
 
 **Health**
-- Hair: "The plan provides ~125 g of protein and a small calorie surplus, which removes these as possible causes" (`lib/data/health.ts:174`). This must be replaced.
+- A symptom note claims the plan's protein and calories "remove these as possible causes" (`lib/data/health.ts:174`). This must be replaced.
 - Supplement note says "₹3,000–4,000 food budget".
 - The B12 entry is long and includes the lung-cancer cohort detail.
 - There is no top-of-page to-do list.
@@ -923,7 +915,7 @@ All routes are static. Local FCP is not representative of a phone on mobile data
 - [ ] Some accessories have no tutorial link because no verified link was found: seated DB shoulder press, leg extension, cable fly, deep squat hold, doorway stretch.
 - [ ] Prices are estimates. Re-check milk, paneer, sattu and chicken locally.
 - [ ] `/progress` loads ~800 KB of JS (Recharts, already lazy-loaded). The charts are on the first screen, so the gain from loading them later would be small. Not changed.
-- [ ] The 72 kg checkpoint message shows for the whole 72–73 kg range and has no "done" state.
+- [ ] The weight checkpoint message shows for a whole 1 kg range and has no "done" state.
 - [ ] Edible yields (papaya 0.7, banana 0.65, spinach 0.7, veg ~0.85…) are typical values and were not measured or sourced individually.
 - [ ] The kidney-bean safety note is standard advice but has no citation in the app.
 - [ ] No vitamin D or B12 product sold in India with independent third-party testing was found. Product names on the Health page are examples from pharmacy listings; prices are Oct 2026 snapshots. Creatine price (≈ ₹400–600/month) was not confirmed.
