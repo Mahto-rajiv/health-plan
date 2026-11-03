@@ -30,8 +30,8 @@ export const DESK = {
 };
 
 export const RECOVERY_SIGNS = {
-  good: ['Waking up without struggling most days', 'Lifts holding or improving week to week', 'Soreness gone within ~48 h', 'Steady mood and appetite'],
-  watch: ['Two or more main lifts going backwards in the same week', 'Sleeping under 6.5 h for several nights', 'Aching joints (not muscles) or lingering soreness beyond 72 h', 'Low motivation for over a week, or frequent colds'],
+  good: ['Waking up without struggling most days', 'Your usual weights feel the same or lighter', 'Soreness gone within about 2 days', 'Steady mood and appetite'],
+  watch: ['Weights feeling heavier than usual for several sessions in a row', 'Sleeping under 6.5 h for several nights', 'Aching joints (not muscles), or soreness lasting more than 3 days', 'Low motivation for over a week, or frequent colds'],
   actions: [
     'One bad session: ignore it.',
     'A bad week: check sleep and whether you ate all 4 meals. Keep loads, skip the last set of each exercise.',
