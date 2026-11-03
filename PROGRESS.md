@@ -1,6 +1,88 @@
 # Progress
 
-## Round 4 (3 Nov 2026): branch `round4-fixes`, not pushed
+## Round 5 (3 Nov 2026): branch `round5-fixes`, not pushed
+
+The brief: make the app view-only and simple; remove tracking and medical content; fix saturated fat and the beetroot swap.
+
+### Status
+- [x] **Saturated fat** is in the audit and is a hard limit in the solver: under 10% of energy every day (`615c513`).
+- [x] **Beetroot for carrot:** the swap note says "almost no vitamin A" at any amount (`d928305`).
+- [x] **View-only:** tracking, Health, Progress and Settings removed; the phase follows the date (`eaf0319`).
+- Blocked: none. Nothing pushed.
+
+### Saturated fat
+- **Before (Round 4 plans): every plan was over the limit.** Weekly averages as % of energy:
+  - Phase 0: vegetarian 13.5, egg 12.9, non-veg 12.4;
+  - Phase 1: 12.7, 12.0, 11.7;
+  - Phase 2: 12.8, 12.1, 11.4.
+- **Why the menu changed, not only the solver.** With whole-milk values, a 10% daily limit was infeasible in Phase 0 even at ₹9,000. It became feasible only with fibre at 42 g or more, or with the limit at 12%. So milk and curd now use double-toned milk: USDA SR28 01174, "2% fat, no added vitamins A/D", standing in for 1.5% Indian double-toned milk. Then all 9 plans solve.
+- **After:** every day of every plan is under 10%. The highest day is 9.7%. Trans fat is 0.26–0.35% on average (limit 1%); that is a lower bound.
+
+| Phase | Average cost (₹/month) | Milk + curd (g/day) | Shortfall score |
+|---|---|---|---|
+| 0 | 4,943 → 4,721 | 1,020 → 926 | 750 → 925 |
+| 1 | 5,262 → 5,275 | 967 → 939 | 211 → 273 |
+| 2 | 5,355 → 5,342 | 995 → 930 | 124 → 204 |
+
+- **Nutrient effects:**
+  - Riboflavin rose to 2.2–2.5 mg.
+  - Vitamin A fell by about 100 µg.
+  - Below the EAR: 4 → 5. Added: Phase 0 vegetarian B6.
+  - ★ nutrients below the RDA: 34 → 31. Added: Phase 2 non-veg vitamin E. Removed: egg vitamin E (Phases 0 and 2), and Phase 2 vegetarian riboflavin and vitamin E.
+- **Where it shows:**
+  - The audit (Meal plans → Vitamins & minerals) has a "Fat limits" box: average, highest day and limit.
+  - The plan report has a "Sat fat %" column.
+  - `tests/plans.test.ts` checks every day.
+
+### View-only: removed
+| What | Why |
+|---|---|
+| Progress page, weight and waist log, charts, sample data, `lib/progress.ts` | Tracking |
+| Today: weight card, meal ticks, "This week" adherence, recovery check-in | Tracking |
+| Recovery check-in form | Tracking |
+| Health page: blood-results form, blood-test explanations, hair section, weight to-do, diet coverage table | Medical. The audit is still on Meal plans → Vitamins & minerals. |
+| Supplements that depend on a test or a doctor: vitamin D, B12, iron/zinc/biotin, multivitamin, omega-3; the quality and certification notes | Medical |
+| Every doctor / dermatologist / "get it checked" line; the `medical` Callout tone; 46 references only that content used | Medical |
+| Settings page: weights, height, target, intake estimate, name, program start, phase override, deload toggle, price table, backup, restore, Reset | Tracking or stored input |
+| Price overrides and the over-budget swap list | Reachable only with edited prices; at the default prices every plan is under the ceiling |
+| Old storage keys (body, workouts, draft, meals, checkins, prices, blood) | Not read any more |
+| `recharts` | Only the charts used it |
+
+### Kept
+- **Today:** the session and today's meals (calories and protein, no ticks), plus tonight's prep and tomorrow's session.
+- **Training:** warm-ups, alternatives and swaps, the week, the program, cardio and mobility, progression, and easy (deload) weeks as text.
+- **Meal plans:** swaps, the audit, grocery list, costs and food safety.
+- **Nutrition:** targets, meal timing, gut ramp, hydration. Creatine and protein powder are now here.
+- **Recovery:** the guidance only.
+- **Safety lines, as plain "stop" wording:**
+  - pain: "Sharp pain, joint pain, or tingling … Stop that exercise and use the listed alternative";
+  - stomach red flags: "Stop changing the diet if you notice any of these: they are not a diet problem".
+- **The footer:** "Educational guidance, not medical advice." It now shows on phones too.
+- **Phase:** follows the date from `PROGRAM_START` (Mon 9 Nov 2026) in `lib/config.ts`. Before the start, the app shows "Starts Mon 9 Nov".
+- **Weight rule (static):** weigh once a week. If you are still losing after 2 weeks in Phase 0, add 55 g raw rice at dinner (≈ 195 kcal).
+  - Rice, because the extra keeps every Phase 0 day under 10% saturated fat (max 9.0%). Fibre goes to 36.2 g, just over the 35 g cap.
+  - 37 g peanuts would reach 10.0%, and 400 ml milk 10.8%.
+- **Phase 2 rate rules:** kept as text. Of the waist rules, only "half your height → stop gaining" is kept.
+
+### Tests removed
+- `tests/progress.test.ts`, which tested deleted features: weight decisions, weights in Settings, blood-result bands, no blood values in code.
+  - Its "Starts Mon 9 Nov" test moved to `tests/training.test.ts`.
+- The deload variants in the session-length tests: the deload computation is gone; the text remains.
+- Added:
+  - phase by date (weeks 1–2, 3–4, 5+);
+  - an app-text check: no doctor/consult/medical wording except the footer.
+
+### Not verified
+- **Milk data:** 01174 is 2% fat, not 1.5%, so milk and curd fat is a little overstated, and so is saturated fat.
+- **Milk price:** ₹58/L was not re-checked for double-toned milk.
+- **Paneer saturated fat:** scaled from the IFCT fat correction, not checked against the PDF.
+- **Trans fat:** the tables have no value for oil or oats.
+- **Phase 0 solve:** stopped at the 120 s limit (not proven optimal).
+- **Browser storage:** old keys (with weights or blood values) stay in a browser that used the old app. The app no longer reads them. Picking a plan rewrites the settings key with only the plan, which drops the old weights stored there. To clear everything, clear this site's data in the browser.
+- **Stale docs:** `docs/cost-sweep.md` was not regenerated, so its "Hair" column header is stale.
+- **Vercel:** not checked this round.
+
+## Round 4 (3 Nov 2026): branch `round4-fixes`, merged to main and pushed
 
 The second brief pasted (6 items) is followed. From the first version, "Reset everything" was checked (item 5 there) and "when to add weight" was checked but not changed (see Notes).
 
