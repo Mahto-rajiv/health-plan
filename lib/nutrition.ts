@@ -133,9 +133,12 @@ export function formatQuantity(item: MealItem): string {
   const measure = 'measure' in food ? food.measure : undefined;
   if (measure) {
     if (measure.label === 'tsp' || measure.label === 'tbsp') {
+      // Spoons to the nearest ½ ("≈ 1 tbsp", not "1.1 tbsp"); below ¼ spoon, grams only.
       const count = item.g / measure.grams;
-      const pretty = Number.isInteger(count) ? String(count) : count.toFixed(1);
-      return `${item.g} g (${pretty} ${measure.label})`;
+      const half = Math.round(count * 2) / 2;
+      if (!half) return `${item.g} g`;
+      const pretty = `${Math.floor(half) || ''}${half % 1 ? '½' : ''}`;
+      return `${item.g} g (${half === count ? '' : '≈ '}${pretty} ${measure.label})`;
     }
     const count = Math.round(item.g / measure.grams);
     if (count >= 1) return `${item.g} g (${count} ${count === 1 ? measure.label : `${measure.label}s`})`;

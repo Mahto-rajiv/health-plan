@@ -2,7 +2,7 @@ import { Clock, Repeat, Briefcase, Timer, CookingPot, Snowflake, ArrowLeftRight 
 import { FOODS, type Nutrients } from '@/lib/data/foods';
 import { MEAL_SLOTS, type PlannedMeal } from '@/lib/data/meal-plans';
 import { cookingTutorials } from '@/lib/data/tutorials';
-import { formatQuantity, itemNutrients, roundKcal } from '@/lib/nutrition';
+import { formatQuantity, itemNutrients, itemsNutrients, roundKcal } from '@/lib/nutrition';
 import { storageAdvice } from '@/lib/meal-plans';
 import { formatINR } from '@/lib/utils';
 import { Badge } from '../ui/Badge';
@@ -33,6 +33,17 @@ export function MacroLine({ n, compact }: { n: Nutrients; compact?: boolean }) {
       )}
     </div>
   );
+}
+
+/** The Meal 1 seed jar is three foods (for nutrients and shopping) but one ingredient in the kitchen: show it as one row. */
+function displayItems(items: PlannedMeal['meal']['items']) {
+  const jar = items.filter((it) => it.slot === 'seeds');
+  const rows = items.filter((it) => it.slot !== 'seeds').map((it) => ({ it, name: FOODS[it.food].name, qty: formatQuantity(it), note: it.note, n: itemNutrients(it) }));
+  if (jar.length) {
+    const g = Math.round(jar.reduce((t, it) => t + it.g, 0));
+    rows.splice(items.indexOf(jar[0]), 0, { it: jar[0], name: 'Seed jar (equal parts sunflower, pumpkin and sesame seeds)', qty: `${g} g`, note: jar[0].note, n: itemsNutrients(jar) });
+  }
+  return rows;
 }
 
 export function MealCard({ planned, totals, cost }: { planned: PlannedMeal; totals: Nutrients; cost: number }) {
@@ -85,15 +96,14 @@ export function MealCard({ planned, totals, cost }: { planned: PlannedMeal; tota
       </header>
 
       <ul className="divide-y divide-line">
-        {meal.items.map((it, idx) => {
-          const n = itemNutrients(it);
+        {displayItems(meal.items).map(({ it, name, qty, note, n }, idx) => {
           return (
             <li key={`${it.food}-${idx}`} className="flex items-start justify-between gap-3 px-4 py-2 text-sm">
               <div className="min-w-0">
-                <div className="text-ink">{FOODS[it.food].name}</div>
+                <div className="text-ink">{name}</div>
                 <div className="text-xs text-muted">
-                  {formatQuantity(it)}
-                  {it.note && <> · {it.note}</>}
+                  {qty}
+                  {note && <> · {note}</>}
                 </div>
                 {it.alt && (
                   <div className="mt-0.5 inline-flex items-center gap-1 text-xs text-ink-2">
