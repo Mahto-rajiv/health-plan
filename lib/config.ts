@@ -2,21 +2,8 @@
 // Every "within / over budget" label, every phase target and every default
 // profile value in the app is read from here. Change a number once, here.
 
-/**
- * Facts from the owner (Oct 2026). Defaults for Settings; Settings can override them.
- * Body weights are not here: the repo and site are public, so the start and
- * pre-loss weights are entered in Settings and stay in this browser only.
- */
-export const PROFILE = {
-  sex: 'male',
-  age: 24,
-  heightCm: 180,
-  longTermTargetKg: 75,
-  /** Self-estimate of current intake, not measured. */
-  intakeNow: { kcal: 2000, protein: 60 },
-  /** Estimate: weight fell over 6 months on < ~2,000 kcal, so maintenance is a little above that. */
-  maintenanceEstimate: [2000, 2100] as [number, number],
-} as const;
+/** The program starts on Monday 9 Nov 2026. The phase follows the date only: weeks 1–2, 3–4, 5+. */
+export const PROGRAM_START = '2026-11-09';
 
 /**
  * Food budget in ₹ per month. Round 3 (owner): ₹6,000 is a ceiling, not a target;
@@ -89,7 +76,7 @@ export const PHASES: Record<PhaseId, Phase> = {
     id: 0,
     name: 'Phase 0 · Stop the loss',
     weeks: [1, 2],
-    goal: 'Stop the weight loss: weekly average within ±0.5 kg of your start. Lets your gut get used to more food and fibre.',
+    goal: 'Stop the weight loss. Lets your gut get used to more food and fibre.',
     kcal: [2090, 2310],
     protein: [85.5, 94.5],
     fibreMax: 35,

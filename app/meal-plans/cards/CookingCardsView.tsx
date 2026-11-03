@@ -20,7 +20,7 @@ export function CookingCardsView() {
   const planParam = params.get('plan') as PlanId | null;
   const phaseParam = Number(params.get('phase'));
   const def = MEAL_PLAN_DEFINITIONS.find((p) => p.id === (planParam ?? settings.planId)) ?? MEAL_PLAN_DEFINITIONS[0];
-  const phase: PhaseId = PHASE_IDS.includes(phaseParam as PhaseId) && params.get('phase') !== null ? (phaseParam as PhaseId) : phaseOn(settings, today);
+  const phase: PhaseId = PHASE_IDS.includes(phaseParam as PhaseId) && params.get('phase') !== null ? (phaseParam as PhaseId) : phaseOn(today);
   const dinners = planDinners(def);
 
   return (

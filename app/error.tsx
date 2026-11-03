@@ -13,13 +13,12 @@ export default function Error({ error, retry }: { error: Error & { digest?: stri
   return (
     <div className="mx-auto max-w-lg space-y-4 py-10">
       <Callout tone="caution" title="Something went wrong on this page">
-        Your logged data is still in this browser. Try again; if it keeps happening, the saved data may be in an old format — download a
-        backup from Settings first, then reset.
+        Try again. If it keeps happening, reload the page.
       </Callout>
       <div className="flex flex-wrap gap-2">
         <Button onClick={() => retry()}>Try again</Button>
-        <Link href="/settings" className="inline-flex min-h-10 items-center rounded-lg border border-line-strong px-4 text-sm font-medium text-ink hover:bg-slate-50">
-          Open Settings
+        <Link href="/" className="inline-flex min-h-10 items-center rounded-lg border border-line-strong px-4 text-sm font-medium text-ink hover:bg-slate-50">
+          Go to Today
         </Link>
       </div>
     </div>

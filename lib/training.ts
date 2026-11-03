@@ -2,33 +2,24 @@ import { FLEX_WINDOWS, SESSIONS, WEEKDAY_GYM_CUTOFF, type Exercise, type Session
 import { dayName } from './dates';
 
 /**
- * Week-dependent prescription. Weeks 1–2 are the learning phase. A deload is
- * not scheduled automatically: the user switches it on (Settings) when fatigue
- * signals appear, and it applies to that calendar week only.
+ * Week-dependent sets and effort. Weeks 1–2 are the learning phase. An easy
+ * (deload) week is described in the Training text, not computed here.
  */
-export function phaseFor(week: number, deload = false): 'learn' | 'build' | 'deload' {
-  if (deload) return 'deload';
-  if (week <= 2) return 'learn';
-  return 'build';
+export function phaseFor(week: number): 'learn' | 'build' {
+  return week <= 2 ? 'learn' : 'build';
 }
 
-export function setsFor(ex: Exercise, week: number, deload = false): number {
-  const phase = phaseFor(week, deload);
+export function setsFor(ex: Exercise, week: number): number {
   if (ex.fromWeek && week < ex.fromWeek) return 0;
-  if (phase === 'learn') return ex.sets.learn;
-  if (phase === 'deload') return Math.max(1, Math.ceil(ex.sets.build / 2));
-  return ex.sets.build;
+  return phaseFor(week) === 'learn' ? ex.sets.learn : ex.sets.build;
 }
 
-export function rirFor(ex: Exercise, week: number, deload = false): string {
-  const phase = phaseFor(week, deload);
-  if (phase === 'learn') return /^\d/.test(ex.rir) ? '3–4' : ex.rir;
-  if (phase === 'deload') return /^\d/.test(ex.rir) ? '4+' : ex.rir;
-  return ex.rir;
+export function rirFor(ex: Exercise, week: number): string {
+  return phaseFor(week) === 'learn' && /^\d/.test(ex.rir) ? '3–4' : ex.rir;
 }
 
-export function activeExercises(sessionId: SessionId, week: number, deload = false) {
-  return SESSIONS[sessionId].exercises.filter((ex) => setsFor(ex, week, deload) > 0);
+export function activeExercises(sessionId: SessionId, week: number) {
+  return SESSIONS[sessionId].exercises.filter((ex) => setsFor(ex, week) > 0);
 }
 
 const FLEX: ('lowerB' | 'upperB')[] = ['lowerB', 'upperB'];
@@ -79,10 +70,10 @@ export const warmupMinutes = (sessionId: SessionId) => SESSIONS[sessionId].warmu
  * Rest is counted after every set. A superset partner adds only its work time
  * (its rest and setup are shared with the exercise it is paired with).
  */
-export function sessionTime(sessionId: SessionId, week: number, deload = false): SessionTime {
+export function sessionTime(sessionId: SessionId, week: number): SessionTime {
   const s = SESSIONS[sessionId];
-  const exercises = activeExercises(sessionId, week, deload).map((ex) => {
-    const sets = setsFor(ex, week, deload);
+  const exercises = activeExercises(sessionId, week).map((ex) => {
+    const sets = setsFor(ex, week);
     const work = ex.perSide ? TIME_MODEL.perSideWorkSec : TIME_MODEL.workSec;
     const rampSets = ex.rampSets ?? 0;
     const minutes = ex.supersetWith
@@ -97,8 +88,8 @@ export function sessionTime(sessionId: SessionId, week: number, deload = false):
 }
 
 /** Session length rounded to the nearest minute, for display. */
-export function estimateMinutes(sessionId: SessionId, week: number, deload = false): number {
-  return Math.round(sessionTime(sessionId, week, deload).total);
+export function estimateMinutes(sessionId: SessionId, week: number): number {
+  return Math.round(sessionTime(sessionId, week).total);
 }
 
 /** What the schedule says for a date (used by the dashboard's "tomorrow"). */

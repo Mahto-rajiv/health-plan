@@ -654,13 +654,12 @@ export const PHASES: Phase[] = [
     details: [
       'Most beginners add weight to the main lifts every week or two here.',
       'Box jumps start in week 3 on Saturdays.',
-      'Measure your waist and take photos every 4 weeks.',
     ],
   },
   {
     weeks: 'When needed',
     name: 'Deload week (easy week)',
-    summary: 'Same exercises, about half the sets, about 10% lighter, stop with 4+ reps left. Turn it on in Settings.',
+    summary: 'Same exercises, about half the sets, about 10% lighter, stop with 4+ reps left.',
     details: [
       'Take one when the warning signs below show up, or at the latest every 8–10 weeks. Many beginners won’t need one sooner.',
       'A busy work week, illness or travel is a good time for it.',
@@ -695,7 +694,7 @@ export const PROGRESSION_RULES = [
   },
   {
     title: 'Pain or just hard work?',
-    body: 'Muscle burn and tiredness are fine. Sharp pain, joint pain, or tingling is not. Stop that exercise and use the listed alternative. If it lasts more than a week, get it checked.',
+    body: 'Muscle burn and tiredness are fine. Sharp pain, joint pain, or tingling is not. Stop that exercise and use the listed alternative.',
   },
 ];
 
@@ -762,7 +761,7 @@ export const INJURY_PREVENTION = [
   'Form before weight. In weeks 1–2, stop with 3–4 good reps left.',
   'Use the safety pins or bars for squat and bench, and clips on the bar.',
   'Add weight in small steps (2.5 kg on a barbell), and only after every set hits the top of the rep range.',
-  'Muscle burn is fine. Sharp pain, joint pain or tingling is not: stop that exercise and use the alternative. If it lasts more than a week, get it checked.',
+  'Muscle burn is fine. Sharp pain, joint pain or tingling is not: stop that exercise and use the alternative.',
   'Sleep 7+ hours and eat all four meals. Tiredness and too little food raise the risk of injury.',
 ];
 

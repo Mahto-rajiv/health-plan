@@ -1,14 +1,13 @@
 # Health Plan
 
-A personal, evidence-based training, nutrition, recovery and progress app. It is frontend-only: Next.js 16, React 19, TypeScript, Tailwind CSS 4 and Recharts. There is no backend, database or login. Everything you log is stored in the browser's `localStorage`.
+A personal, evidence-based app for viewing training, meal plans, nutrition and recovery guidance. It is view-only: nothing is logged or tracked. It is frontend-only: Next.js 16, React 19, TypeScript and Tailwind CSS 4. There is no backend, database or login. The only thing stored (in the browser's `localStorage`) is which meal plan you picked.
 
 ```bash
 npm install
 npm run dev          # http://localhost:3000
 npm run build        # production build (all routes are statically prerendered)
-npm test             # 104 rule tests: meal structure, phase targets, fibre caps, cold office lunch,
-                     # kcal reconciliation, cross-plan spread, costs from the price table, budget labels,
-                     # training limits and schedule, weight decisions
+npm test             # rule tests: meal structure, phase targets, fibre caps, fat limits, cold office lunch,
+                     # kcal reconciliation, costs from the price table, budget labels, training limits and schedule
 npm run typecheck
 npm run links        # checks every external URL; writes docs/link-report.md (needs network)
 npm run plans:report # day-by-day calories, macros, micronutrients and cost for each plan and phase
@@ -16,44 +15,40 @@ npm run plans:report # day-by-day calories, macros, micronutrients and cost for 
 
 ## Pages
 
-| Route | What it does |
+| Route | What it shows |
 |---|---|
-| `/` | Dashboard: today's workout, meal checklist with calorie and protein progress, weight trend and quick weigh-in, this week's adherence, strength, recovery check-in, tonight's prep |
-| `/training` | Workout logger (kg/reps per set, rest timer, previous performance, progression hints, drafts survive reloads), weekly schedule, rescheduling rules, full program with verified tutorials, cardio and mobility, progression and deloads, history |
-| `/meal-plans` | Three 7-day plans × three phases, grocery list, budget (from `lib/config.ts`) with computed swaps, cost per serving and per 10 g protein, food safety; `/meal-plans/cards` prints the dinner cooking cards |
-| `/nutrition` | Targets and how they were derived, meal timing, training-day guidance, the weight-gain decision system, digestion, hydration |
-| `/progress` | Weight and waist logging; charts for weight, waist, strength, consistency and adherence (labelled sample data until you have your own); the "should I keep gaining?" assessment |
-| `/recovery` | Daily check-in, sleep plan, desk-job movement, rest days, recovery signs |
-| `/health` | Blood results explained (not diagnosed), hair-loss guidance, supplements |
-| `/settings` | Profile and goal, active plan, phase override, current-intake estimate, editable price table, deload week, backup, restore and reset |
+| `/` | Today: the session, today's meals with calories and protein, tonight's prep and tomorrow's session |
+| `/training` | Today's warm-up and workout with alternatives, the week and rescheduling rules, the full program with tutorials, cardio and mobility, progression and easy (deload) weeks |
+| `/meal-plans` | Three 7-day plans × three phases with swaps, vitamins and minerals (nutrient audit, fat limits), grocery list and cost, food safety; `/meal-plans/cards` prints the dinner cooking cards |
+| `/nutrition` | Targets and how they were derived, meal timing, training-day guidance, when to change the food, digestion, hydration, supplements |
+| `/recovery` | Sleep plan, desk-job movement, rest days, recovery signs |
+
+The phase follows the date only: weeks 1–2, 3–4 and 5+ from Mon 9 Nov 2026 (`PROGRAM_START` in `lib/config.ts`).
 
 ## Code layout
 
 ```
 lib/data/          content as data, with no UI code
-  foods.ts         food database (per 100 g: macros, iron, calcium, zinc, vitamin C, B12)
-  prices.ts        default prices (estimates, dated); Settings overrides them
+  foods.ts         food database
+  prices.ts        default prices (estimates, dated)
   meal-plans.ts    3 plan definitions, per-phase quantities; buildWeek() enforces the 4-meal structure
   training.ts      sessions, exercises, phases, rescheduling rules, cardio, mobility
-  nutrition-guide.ts, health.ts, recovery.ts
+  nutrition-guide.ts, recovery.ts
   tutorials.ts     verified external links (exercise + cooking)
   references.ts    verified citations
-  sample.ts        deterministic, clearly-labelled sample data
-lib/config.ts      profile, phases, budget and energy factors (single source of truth)
+lib/config.ts      program start, phases, budget and energy factors (single source of truth)
+lib/phase.ts       program week and phase for a date
 lib/nutrition.ts   nutrient/cost maths (kcal from macros; all totals computed, never typed in)
 lib/meal-plans.ts  computed plans: daily totals, ranges, grocery list, monthly cost
-lib/training.ts    weekly schedule (fixed weekend, flexible weekday sessions), session length, progression hints, e1RM
-lib/progress.ts    weekly averages, gain-rate assessment, adherence series
-lib/storage.ts     hydration-safe localStorage store (useSyncExternalStore), export/import
-components/        UI primitives, app shell, charts (Recharts lazy-loaded), feature components
+lib/training.ts    weekly schedule (fixed weekend, flexible weekday sessions), session length
+lib/storage.ts     hydration-safe localStorage store for the picked plan
+components/        UI primitives, app shell, feature components
 ```
-
-The stored data shapes (`Settings`, `BodyEntry`, `WorkoutRecord`, `MealLog`, `CheckInLog`) are plain JSON. A backend can replace `lib/storage.ts` without touching the pages.
 
 ## Content notes
 
 - Nutrient values are based on IFCT 2017 and USDA data. Treat them as estimates. The UI rounds them on purpose.
-- All prices are estimates (Oct 2026) and can be edited in Settings.
+- All prices are estimates (Oct 2026).
 - Produce is costed as bought: each food has an approximate edible yield (`edible` in `foods.ts`), so peel, seeds and trimmings count toward the cost and the grocery weights.
 - Tutorial links and references were verified when they were added. Re-check them occasionally, because external links can change.
 - This is educational guidance, not medical advice.

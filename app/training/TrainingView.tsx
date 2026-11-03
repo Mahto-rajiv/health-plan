@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { Clock, Dumbbell } from 'lucide-react';
 import { DAYS } from '@/lib/data/meal-plans';
 import { SESSIONS, WEEK_PLAN, WEEKDAY_GYM_CUTOFF, type SessionId } from '@/lib/data/training';
-import { useSettings } from '@/lib/storage';
 import { useToday } from '@/lib/hooks';
-import { dayName, longDate, programWeek, startsLabel, weekStart } from '@/lib/dates';
+import { dayName, longDate } from '@/lib/dates';
+import { weekLabel, weekOn } from '@/lib/phase';
 import { estimateMinutes, sessionsFor } from '@/lib/training';
 import { cn } from '@/lib/utils';
 import { Segmented } from '@/components/ui/Segmented';
@@ -58,13 +58,11 @@ export function TrainingView() {
 
 function TodayTab() {
   const today = useToday();
-  const [settings] = useSettings();
   const [picked, setPicked] = useState<SessionId | null>(null);
 
   if (!today) return <div className="h-64 animate-pulse rounded-2xl bg-slate-100" aria-hidden />;
 
-  const week = programWeek(settings.programStart, today);
-  const deload = settings.deloadWeek === weekStart(today);
+  const week = weekOn(today);
   const options = sessionsFor(today);
   const sessionId = picked && options.includes(picked) ? picked : options[0];
   const session = SESSIONS[sessionId];
@@ -76,14 +74,13 @@ function TodayTab() {
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
           <span>{longDate(today)}</span>
           <span aria-hidden>·</span>
-          <span>{startsLabel(settings.programStart, today) ?? `Program week ${week}`}</span>
-          {deload && <Badge tone="info">Deload (easy) week</Badge>}
+          <span>{weekLabel(today)}</span>
         </div>
         <div className="mt-2 flex items-start gap-3">
           {weekday ? <Clock className="mt-0.5 shrink-0 text-accent" size={20} aria-hidden /> : <Dumbbell className="mt-0.5 shrink-0 text-accent" size={20} aria-hidden />}
           <div className="min-w-0">
             <h2 className="text-base font-semibold text-ink">
-              {session.name} · about {estimateMinutes(sessionId, week, deload)} min
+              {session.name} · about {estimateMinutes(sessionId, week)} min
             </h2>
             <p className="mt-0.5 text-sm text-ink-2">
               {weekday
@@ -106,8 +103,8 @@ function TodayTab() {
         )}
       </Card>
 
-      <WarmupSteps key={`warmup-${sessionId}`} sessionId={sessionId} week={week} deload={deload} />
-      <SessionExercises sessionId={sessionId} week={week} deload={deload} />
+      <WarmupSteps key={`warmup-${sessionId}`} sessionId={sessionId} week={week} />
+      <SessionExercises sessionId={sessionId} week={week} />
     </div>
   );
 }

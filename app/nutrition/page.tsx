@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
-import { Calculator, Clock, Droplets, Scale, Sprout, TrendingUp } from 'lucide-react';
+import { Calculator, Clock, Droplets, Pill, Scale, Sprout, TrendingUp } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Callout } from '@/components/ui/Callout';
 import { ButtonLink } from '@/components/ui/Button';
 import { References } from '@/components/References';
-import { ENERGY_MATH, ENERGY_NOTE, GAIN_RULES, GUT, HYDRATION, TARGETS, TRAINING_DAY } from '@/lib/data/nutrition-guide';
+import { ENERGY_MATH, ENERGY_NOTE, GAIN_RULES, GUT, HYDRATION, SUPPLEMENTS, TARGETS, TRAINING_DAY } from '@/lib/data/nutrition-guide';
 import { MEAL_PLAN_DEFINITIONS, MEAL_SLOTS, fillSlots, itemKey, solvedGrams, type Meal, type MealSlot, type PlanItem } from '@/lib/data/meal-plans';
 import type { PhaseId } from '@/lib/config';
 import { FOODS } from '@/lib/data/foods';
@@ -81,8 +81,8 @@ export default function NutritionPage() {
             </dl>
             <p className="mt-3 text-sm text-ink-2">
               You lost weight over about 6 months on under ~2,000 kcal, so your maintenance was probably a little above that: about 2,000–2,100 kcal.
-              That is an estimate from your own figures, not a measurement. Phase 0 adds ~100–200 kcal for that, plus ~100–200 kcal for the new
-              training. Your weekly weight averages then show where you really are.
+              That is an estimate, not a measurement. Phase 0 adds ~100–200 kcal for that, plus ~100–200 kcal for the new training. Your weekly
+              weigh-in then shows where you really are.
             </p>
             <p className="mt-2 text-xs text-muted">{ENERGY_NOTE}</p>
             <References ids={['mifflin', 'frankenfield', 'faoEnergy', 'faoFoodEnergy', 'icmr2020']} />
@@ -165,16 +165,12 @@ export default function NutritionPage() {
                 {GAIN_RULES.target}
               </Callout>
               <div>
-                <div className="mb-1 font-medium text-ink">How to measure</div>
-                <ul className="list-disc space-y-1 pl-5">
-                  {GAIN_RULES.measure.map((m) => (
-                    <li key={m}>{m}</li>
-                  ))}
-                </ul>
+                <div className="mb-1 font-medium text-ink">How to weigh</div>
+                <p>{GAIN_RULES.weigh}</p>
               </div>
             </div>
             <div>
-              <div className="mb-2 text-sm font-medium text-ink">Decide on weekly averages</div>
+              <div className="mb-2 text-sm font-medium text-ink">When to change the food</div>
               <ul className="divide-y divide-line rounded-xl border border-line">
                 {GAIN_RULES.decisions.map((d) => (
                   <li key={d.when} className="grid gap-1 p-3 text-sm sm:grid-cols-[1fr_1fr] sm:gap-4">
@@ -183,9 +179,6 @@ export default function NutritionPage() {
                   </li>
                 ))}
               </ul>
-              <ButtonLink href="/progress" className="mt-3 w-full sm:w-auto">
-                See your current status
-              </ButtonLink>
             </div>
           </div>
           <References ids={[...GAIN_RULES.refs, ...GAIN_RULES.targetRefs]} />
@@ -239,7 +232,7 @@ export default function NutritionPage() {
               </table>
             </div>
             <p className="mt-3 text-xs text-muted">{GUT.curdNote}</p>
-            <Callout tone="medical" className="mt-4" title="See a doctor rather than adjusting diet if you notice">
+            <Callout tone="caution" className="mt-4" title="Stop changing the diet if you notice any of these: they are not a diet problem">
               <ul className="mt-1 list-disc space-y-0.5 pl-4">
                 {GUT.redFlags.map((r) => (
                   <li key={r}>{r}</li>
@@ -258,6 +251,19 @@ export default function NutritionPage() {
             <References ids={['efsaWater', 'namWater', 'icmr2024', 'odsIodine']} />
           </Card>
         </div>
+
+        <Card>
+          <CardHeader title="Supplements" icon={<Pill size={18} />} description="Food first. The plans reach the calorie and protein targets without any." />
+          <ul className="grid gap-3 lg:grid-cols-2">
+            {SUPPLEMENTS.map((x) => (
+              <li key={x.name} className="rounded-xl border border-line p-3.5 text-sm">
+                <div className="font-semibold text-ink">{x.name}</div>
+                <p className="mt-1.5 text-ink-2">{x.body}</p>
+              </li>
+            ))}
+          </ul>
+          <References ids={SUPPLEMENTS.flatMap((x) => x.refs)} />
+        </Card>
       </div>
     </>
   );

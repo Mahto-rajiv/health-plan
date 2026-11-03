@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
-import { Armchair, BatteryCharging, CalendarDays, MoonStar } from 'lucide-react';
+import { Armchair, CalendarDays, MoonStar } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { ButtonLink } from '@/components/ui/Button';
 import { References } from '@/components/References';
-import { CheckInForm } from '@/components/recovery/CheckInForm';
 import { DESK, RECOVERY_SIGNS, REST_DAYS, SLEEP } from '@/lib/data/recovery';
 
 export const metadata: Metadata = { title: 'Recovery' };
@@ -17,29 +16,23 @@ export default function RecoveryPage() {
         description="Sleep, rest days and movement outside the gym. Training is where you create the stimulus; recovery is where you adapt to it."
       />
       <div className="space-y-5">
-        <div className="grid gap-5 lg:grid-cols-[1fr_1.1fr]">
-          <Card>
-            <CardHeader title="Daily check-in" icon={<BatteryCharging size={18} />} description="Takes 20 seconds. Feeds the dashboard and deload decisions." />
-            <CheckInForm />
-          </Card>
-          <Card>
-            <CardHeader title="Sleep" icon={<MoonStar size={18} />} description={SLEEP.target} />
-            <p className="text-sm text-ink-2">{SLEEP.current}</p>
-            <ol className="mt-3 space-y-2.5">
-              {SLEEP.plan.map((p, i) => (
-                <li key={p.title} className="flex gap-3 text-sm">
-                  <span className="tabular flex size-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent-strong">{i + 1}</span>
-                  <span>
-                    <span className="font-medium text-ink">{p.title}. </span>
-                    <span className="text-ink-2">{p.body}</span>
-                  </span>
-                </li>
-              ))}
-            </ol>
-            <p className="mt-3 text-xs text-muted">{SLEEP.why}</p>
-            <References ids={SLEEP.refs} />
-          </Card>
-        </div>
+        <Card>
+          <CardHeader title="Sleep" icon={<MoonStar size={18} />} description={SLEEP.target} />
+          <p className="text-sm text-ink-2">{SLEEP.current}</p>
+          <ol className="mt-3 space-y-2.5">
+            {SLEEP.plan.map((p, i) => (
+              <li key={p.title} className="flex gap-3 text-sm">
+                <span className="tabular flex size-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent-strong">{i + 1}</span>
+                <span>
+                  <span className="font-medium text-ink">{p.title}. </span>
+                  <span className="text-ink-2">{p.body}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-3 text-xs text-muted">{SLEEP.why}</p>
+          <References ids={SLEEP.refs} />
+        </Card>
 
         <div className="grid gap-5 lg:grid-cols-2">
           <Card>

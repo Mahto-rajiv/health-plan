@@ -19,14 +19,14 @@ export function NutrientAudit({ plan }: { plan: ComputedPlan }) {
   const rows = auditPlan(plan);
   const groups = ['Minerals', 'Vitamins', 'Fats'] as const;
   const below = rows.filter((r) => r.status === 'below-ear');
-  const hairShort = rows.filter((r) => r.info.hair && (r.status === 'below-rda' || r.status === 'below-ai') && r.info.key !== 'biotin');
+  const starShort = rows.filter((r) => r.info.rdaTarget && (r.status === 'below-rda' || r.status === 'below-ai') && r.info.key !== 'biotin');
   const fat = fatLimits(plan);
   const satOver = fat.satPctMaxDay >= fat.satLimitPct;
   return (
     <div className="space-y-4">
       <p className="text-sm text-ink-2">
-        Weekly average per day for {plan.def.shortName}, Phase {plan.phase}. ★ marks nutrients
-        linked to hair loss when you are deficient. Getting enough prevents a deficiency; more than enough doesn’t grow hair.
+        Weekly average per day for {plan.def.shortName}, Phase {plan.phase}. ★ marks nutrients the plan aims to meet at the RDA (or AI),
+        not just the average need.
       </p>
       <details className="rounded-lg border border-line px-3 py-2 text-sm text-ink-2">
         <summary className="cursor-pointer font-medium text-ink">Which number the plan aims for, and why</summary>
@@ -37,18 +37,18 @@ export function NutrientAudit({ plan }: { plan: ComputedPlan }) {
           </li>
           <li>
             ICMR (India, 2020) says to plan a diet to the EAR. The US/Canadian framework (IOM 2003) says to plan one person’s diet to the RDA
-            or AI. You have hair shedding with ferritin and zinc not yet tested, so this plan aims for the{' '}
-            <strong>RDA (or AI) for the ★ nutrients</strong>, at least the EAR for the rest, and never above an upper limit.
+            or AI. This plan is for one person, so it aims for the <strong>RDA (or AI) for the ★ nutrients</strong>, at least the EAR
+            for the rest, and never above an upper limit.
           </li>
           <li>The bold number in the last-but-one column is what the plan aims for.</li>
         </ul>
       </details>
-      {(below.length > 0 || hairShort.length > 0) && (
+      {(below.length > 0 || starShort.length > 0) && (
         <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-800">
           <p className="font-medium">Known gaps in this plan</p>
           <ul className="mt-1 list-disc space-y-0.5 pl-5">
             {below.length > 0 && <li>Below the average need: {below.map((r) => r.info.label).join(', ')}.</li>}
-            {hairShort.length > 0 && <li>★ below the RDA/AI it aims for: {hairShort.map((r) => r.info.label).join(', ')}.</li>}
+            {starShort.length > 0 && <li>★ below the RDA/AI it aims for: {starShort.map((r) => r.info.label).join(', ')}.</li>}
           </ul>
           <p className="mt-1 text-xs">Why, and what to do: see the notes under the table.</p>
         </div>
@@ -89,7 +89,7 @@ export function NutrientAudit({ plan }: { plan: ComputedPlan }) {
                   <tr key={r.info.key} className="align-top">
                     <th scope="row" className="py-1.5 pr-2 font-normal text-ink">
                       {r.info.label}
-                      {r.info.hair && <span title="Linked to hair loss when deficient"> ★</span>}
+                      {r.info.rdaTarget && <span title="Planned to the RDA (or AI)"> ★</span>}
                       {r.missing.length > 0 && (
                         <span className="block text-[11px] text-amber-700">
                           No data for {r.missing.map((f) => FOODS[f].name.split(' (')[0].toLowerCase()).join(', ')}: total may be low
@@ -102,8 +102,8 @@ export function NutrientAudit({ plan }: { plan: ComputedPlan }) {
                     </td>
                     <td className="px-2 py-1.5 text-right text-ink-2">{fmtAmount(r.lowestDay)}</td>
                     <td className="px-2 py-1.5 text-right text-ink-2">
-                      <span className={cn(!r.info.hair && r.info.ear && 'font-semibold text-ink')}>{r.info.ear ? fmtAmount(r.info.ear) : '—'}</span> ·{' '}
-                      <span className={cn((r.info.hair || !r.info.ear) && !r.info.infoOnly && 'font-semibold text-ink')}>
+                      <span className={cn(!r.info.rdaTarget && r.info.ear && 'font-semibold text-ink')}>{r.info.ear ? fmtAmount(r.info.ear) : '—'}</span> ·{' '}
+                      <span className={cn((r.info.rdaTarget || !r.info.ear) && !r.info.infoOnly && 'font-semibold text-ink')}>
                         {r.info.rda ? `${fmtAmount(r.info.rda)}${r.info.adequateIntake ? ' (AI)' : ''}` : '—'}
                       </span>
                       {r.info.ul && <span className="block text-[11px] text-muted">limit {fmtAmount(r.info.ul)}</span>}
@@ -131,19 +131,18 @@ export function NutrientAudit({ plan }: { plan: ComputedPlan }) {
             lowers vitamin C, folate and some B vitamins, so real intake of those is somewhat lower than shown. Weekly averages are used because
             the body stores most of these; the lowest single day is shown so you can see how much the days vary.
           </li>
-          {(below.length > 0 || hairShort.length > 0) && (
+          {(below.length > 0 || starShort.length > 0) && (
             <li>
               Why gaps remain: the solver closes as much of every gap as the hard limits allow (the phase’s calorie, protein and fibre
               limits, the upper limits, the dairy and variety rules) and prices every 1% of an average need at ₹1,000 a month, so a gap below the average need is never a saving. The foods richest
               in B6, B1 and vitamin E per calorie are vegetables, seeds and nuts, and the fibre cap limits how much of them fits, most of all in
-              Phase 0 (35 g). Phases 0 and 1 last two weeks each. If a gap matters to you, raise it with your doctor along with the ferritin
-              and zinc tests; a supplement is their call, not this app’s.
+              Phase 0 (35 g). Phases 0 and 1 last two weeks each.
             </li>
           )}
           <li>Biotin isn’t planned: 7 foods (oats, soya chunks, oil, ghee, kabuli chana, pumpkin seeds, fish) have no biotin value in either table, so its total is too low by an unknown amount. Biotin deficiency is rare on a mixed diet.</li>
         </ul>
       </div>
-      <References ids={[...new Set(NUTRIENTS.flatMap((n) => n.source)), 'ifct', 'ifct2017pkg', 'iomPlanning2003', 'almohanna', 'guoKatta']} />
+      <References ids={[...new Set(NUTRIENTS.flatMap((n) => n.source)), 'ifct', 'ifct2017pkg', 'iomPlanning2003']} />
     </div>
   );
 }

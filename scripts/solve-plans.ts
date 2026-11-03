@@ -13,7 +13,7 @@
 // rest is one objective whose weights are exchange rates in ₹ a month (per plan):
 //   • each 1% of an EAR still short       = ₹1,000  (more than any plan costs, so cost
 //                                                    can never trade an EAR away)
-//   • each 1% of a ★ RDA/AI still short   = ₹300    (★ = hair-linked: iron, zinc,
+//   • each 1% of a ★ RDA/AI still short   = ₹300    (★ = planned to the RDA: iron, zinc,
 //                                                    riboflavin, folate, B12, A, E, selenium)
 //   • each 1% of another RDA/AI short     = ₹30
 //   • each 1 g/day of milk + curd         = ₹10     (owner: dairy must not carry the diet)
@@ -52,7 +52,7 @@ const UPPER: Partial<Record<NutrientKey, number>> = Object.fromEntries(NUTRIENTS
 /** Planned toward. Biotin is left out: 7 foods have no biotin value, so its total is unreliable (shown in the app). */
 export const TARGETS = NUTRIENTS.filter((n) => !n.infoOnly && n.key !== 'biotin');
 export const W_EAR = 1000;
-export const W_RDA_HAIR = 300;
+export const W_RDA_STAR = 300;
 export const W_RDA = 30;
 /** Exchange rates (₹/month per plan): 1% of an EAR short = ₹1,000; 1% of a ★ RDA/AI = ₹300;
  *  1% of another RDA/AI = ₹30; 1 g/day of milk + curd = ₹10. Shortfall units are 1000/EAR,
@@ -112,7 +112,7 @@ function stepOf(it: PlanItem): number {
   return g < 20 ? 1 : 5;
 }
 
-export const isHair = (t: NutrientInfo) => !!t.hair;
+export const isRdaTarget = (t: NutrientInfo) => !!t.rdaTarget;
 /** The RDA-level target: the RDA, or the AI where there is no RDA. */
 const upperTarget = (t: NutrientInfo) => t.rda;
 
@@ -245,7 +245,7 @@ async function solvePhase(highs: Awaited<ReturnType<typeof highsLoader>>, ph: Ph
         if (top) {
           const sv = `sr_${t.key}_${p.id}`;
           con(new Map([...avg, [sv, 1]]), '>=', top);
-          add(adequacy, sv, (isHair(t) ? W_RDA_HAIR : W_RDA) / top);
+          add(adequacy, sv, (isRdaTarget(t) ? W_RDA_STAR : W_RDA) / top);
         }
       }
     });
@@ -316,7 +316,7 @@ export function shortfalls(weekly: Partial<Record<NutrientKey, number>>) {
     key: t.key,
     label: t.label,
     unit: t.unit,
-    hair: isHair(t),
+    rdaTarget: isRdaTarget(t),
     value: weekly[t.key] ?? 0,
     belowEar: !!t.ear && (weekly[t.key] ?? 0) < t.ear - 1e-9,
     belowTop: !!t.rda && (weekly[t.key] ?? 0) < t.rda - 1e-9,

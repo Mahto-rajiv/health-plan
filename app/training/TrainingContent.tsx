@@ -68,7 +68,7 @@ export function ProgramDetails() {
           <Card key={id}>
             <CardHeader
               title={s.name}
-              description={`${s.focus} About ${estimateMinutes(id, 1)} min in weeks 1–2, ${estimateMinutes(id, 3)} min from week 3, ${estimateMinutes(id, 3, true)} min in an easy week.`}
+              description={`${s.focus} About ${estimateMinutes(id, 1)} min in weeks 1–2, ${estimateMinutes(id, 3)} min from week 3.`}
             />
             <TimeBreakdown id={id} />
             <div className="my-4">

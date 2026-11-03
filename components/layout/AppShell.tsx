@@ -2,14 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
-import { MoreHorizontal, X } from 'lucide-react';
 import { NAV, isActive } from './nav';
 import { cn } from '@/lib/utils';
 
 function Logo() {
   return (
-    <Link href="/" className="flex items-center gap-2.5" aria-label="Health Plan — dashboard">
+    <Link href="/" className="flex items-center gap-2.5" aria-label="Health Plan — today">
       <span className="flex size-8 items-center justify-center rounded-lg bg-accent text-sm font-semibold text-white">HP</span>
       <span className="leading-tight">
         <span className="block text-sm font-semibold text-ink">Health Plan</span>
@@ -21,48 +19,6 @@ function Logo() {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [moreOpen, setMoreOpen] = useState(false);
-  const primary = NAV.filter((n) => n.primary);
-  const secondary = NAV.filter((n) => !n.primary);
-  const moreActive = secondary.some((n) => isActive(pathname, n.href));
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const sheetRef = useRef<HTMLDivElement>(null);
-
-  // "More" sheet behaves as a modal dialog: focus moves in, Tab stays inside,
-  // Escape closes it, focus returns to the trigger, and the page behind doesn't scroll.
-  useEffect(() => {
-    if (!moreOpen) return;
-    const sheet = sheetRef.current;
-    const trigger = triggerRef.current;
-    const focusables = () => [...(sheet?.querySelectorAll<HTMLElement>('a[href], button:not([tabindex="-1"])') ?? [])];
-    focusables()[0]?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setMoreOpen(false);
-        return;
-      }
-      if (e.key !== 'Tab') return;
-      const list = focusables();
-      if (!list.length) return;
-      const first = list[0];
-      const last = list[list.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', onKey);
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = overflow;
-      trigger?.focus();
-    };
-  }, [moreOpen]);
 
   return (
     <div className="min-h-dvh">
@@ -98,7 +54,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </ul>
         </nav>
         <p className="border-t border-line px-5 py-3 text-xs leading-relaxed text-muted">
-          Educational guidance, not medical advice. Data stays in this browser.
+          Educational guidance, not medical advice.
         </p>
       </aside>
 
@@ -109,12 +65,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <main id="main" className="pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-10 lg:pl-60 print:p-0">
         <div className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6 sm:py-7 lg:px-8">{children}</div>
+        <p className="px-4 pb-4 text-center text-xs text-muted lg:hidden print:hidden">Educational guidance, not medical advice.</p>
       </main>
 
       {/* Mobile / tablet bottom navigation */}
       <nav aria-label="Main" className="print:hidden pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface lg:hidden">
         <ul className="mx-auto grid max-w-xl grid-cols-5">
-          {primary.map((item) => {
+          {NAV.map((item) => {
             const active = isActive(pathname, item.href);
             return (
               <li key={item.href}>
@@ -132,59 +89,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </li>
             );
           })}
-          <li>
-            <button
-              ref={triggerRef}
-              type="button"
-              onClick={() => setMoreOpen((o) => !o)}
-              aria-expanded={moreOpen}
-              aria-controls="more-sheet"
-              className={cn(
-                'flex h-14 w-full flex-col items-center justify-center gap-0.5 text-[11px] font-medium',
-                moreActive || moreOpen ? 'text-accent' : 'text-muted',
-              )}
-            >
-              <MoreHorizontal size={20} aria-hidden />
-              More
-            </button>
-          </li>
         </ul>
       </nav>
-
-      {moreOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-labelledby="more-heading" id="more-sheet">
-          <button type="button" tabIndex={-1} aria-label="Close menu" className="absolute inset-0 bg-slate-900/30" onClick={() => setMoreOpen(false)} />
-          <div ref={sheetRef} className="absolute inset-x-0 bottom-0 rounded-t-2xl border-t border-line bg-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-xl">
-            <div className="mb-3 flex items-center justify-between">
-              <span id="more-heading" className="text-sm font-semibold">More</span>
-              <button type="button" onClick={() => setMoreOpen(false)} className="rounded-lg p-2.5 text-muted hover:bg-slate-100" aria-label="Close">
-                <X size={18} aria-hidden />
-              </button>
-            </div>
-            <ul className="grid grid-cols-2 gap-2">
-              {secondary.map((item) => {
-                const active = isActive(pathname, item.href);
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      onClick={() => setMoreOpen(false)}
-                      aria-current={active ? 'page' : undefined}
-                      className={cn(
-                        'flex items-center gap-3 rounded-xl border px-3 py-3 text-sm font-medium',
-                        active ? 'border-accent/30 bg-accent-soft text-accent-strong' : 'border-line text-ink',
-                      )}
-                    >
-                      <item.icon size={18} aria-hidden className={active ? 'text-accent' : 'text-muted'} />
-                      {item.label}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

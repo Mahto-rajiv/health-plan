@@ -31,3 +31,30 @@ describe('budget labels', () => {
     assert.deepEqual(offenders, []);
   });
 });
+
+describe('app text', () => {
+  it('has no doctor or consultation wording; only the footer says "not medical advice"', () => {
+    const files: string[] = [];
+    const walk = (dir: string) => {
+      for (const f of readdirSync(dir)) {
+        const p = join(dir, f);
+        if (statSync(p).isDirectory()) walk(p);
+        else if (/\.(ts|tsx)$/.test(f)) files.push(p);
+      }
+    };
+    for (const d of ['app', 'components', 'lib']) walk(d);
+    const re = /doctor|dermatolog|physician|clinician|consult|prescri|medical|get it checked/i;
+    const footer = 'Educational guidance, not medical advice.';
+    const offenders: string[] = [];
+    for (const f of files) {
+      // Reference titles are citations (e.g. "WHO Expert Consultation", "J Assoc Physicians India"), not advice.
+      if (f.endsWith('lib/data/references.ts')) continue;
+      readFileSync(f, 'utf8')
+        .split('\n')
+        .forEach((line, i) => {
+          if (re.test(line.replaceAll(footer, ''))) offenders.push(`${f}:${i + 1}`);
+        });
+    }
+    assert.deepEqual(offenders, []);
+  });
+});

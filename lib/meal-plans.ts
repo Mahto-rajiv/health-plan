@@ -7,7 +7,7 @@ import { PHASE_IDS, type PhaseId } from './config';
 import { boughtGrams, itemCost, itemsCost, itemsNutrients, missingNutrients, sumNutrients } from './nutrition';
 
 // Everything here is computed from the plan definitions and a price table, so
-// totals can never drift from the foods listed or the prices in Settings.
+// totals can never drift from the foods listed or the prices in lib/data/prices.ts.
 
 export interface ComputedDay extends PlannedDay {
   totals: Nutrients;
@@ -174,87 +174,6 @@ export function allDefaultPlans(): ComputedPlan[] {
 
 export function findPlan(plans: ComputedPlan[], id: PlanId): ComputedPlan {
   return plans.find((p) => p.def.id === id) ?? plans[0];
-}
-
-// ─── Budget swaps ─────────────────────────────────────────────────────────────
-// Only shown when a plan is over the budget ceiling (BUDGET.max) (e.g. after you enter higher
-// prices). There is no lower target, so the plans don't push you to swap.
-
-interface SwapRule {
-  id: string;
-  label: string;
-  note: string;
-  from: FoodId[];
-  /** Replacement per gram of the original food. */
-  to: { food: FoodId; perGram: number }[];
-  /** Share of the original grams that is swapped (0.5 = half of it). */
-  share: number;
-  /** Phases where the swap would break a phase cap. */
-  notInPhases?: PhaseId[];
-}
-
-// Protein-matched where the food is a main protein source, weight-matched otherwise.
-const SWAP_RULES: SwapRule[] = [
-  {
-    id: 'paneer-soya',
-    label: 'Replace half the paneer with soya chunks',
-    note: 'Protein-matched (100 g paneer ≈ 36 g dry soya + 1 tsp ghee). Not offered in Phase 0, where soya is capped at 20 g a day.',
-    from: ['paneer'],
-    to: [
-      { food: 'soyaChunks', perGram: 0.36 },
-      { food: 'ghee', perGram: 0.05 },
-    ],
-    share: 0.5,
-    notInPhases: [0],
-  },
-  {
-    id: 'oats-daliya',
-    label: 'Use daliya (broken wheat) instead of oats',
-    note: 'Same dry weight, similar protein and fibre. It needs ~15 minutes, so cook 2 days’ worth at once (Meal 1 then takes more than 10 minutes on the cooking day).',
-    from: ['oats'],
-    to: [{ food: 'daliya', perGram: 1 }],
-    share: 1,
-  },
-  {
-    id: 'chicken-soya',
-    label: 'Replace half the chicken with soya chunks',
-    note: 'Protein-matched (100 g raw chicken ≈ 43 g dry soya). Cook it in the same masala.',
-    from: ['chicken'],
-    to: [{ food: 'soyaChunks', perGram: 0.43 }],
-    share: 0.5,
-    notInPhases: [0],
-  },
-];
-
-export interface BudgetSwap {
-  id: string;
-  label: string;
-  note: string;
-  monthlySaving: number;
-  proteinDeltaPerDay: number;
-  kcalDeltaPerDay: number;
-}
-
-/** Savings are computed from the plan's actual weekly quantities and the current prices. */
-export function budgetSwaps(plan: ComputedPlan, prices: PriceTable = DEFAULT_PRICE_TABLE): BudgetSwap[] {
-  const items = plan.days.flatMap((d) => d.meals.flatMap((m) => m.meal.items));
-  return SWAP_RULES.filter((rule) => !rule.notInPhases?.includes(plan.phase)).map((rule) => {
-    const original = items.filter((it) => rule.from.includes(it.food));
-    const replacement = original.flatMap((it) => rule.to.map((t) => ({ food: t.food, g: it.g * t.perGram })));
-    const before = itemsNutrients(original);
-    const after = itemsNutrients(replacement);
-    const saving = (itemsCost(original, prices) - itemsCost(replacement, prices)) * rule.share;
-    return {
-      id: rule.id,
-      label: rule.label,
-      note: rule.note,
-      monthlySaving: (saving * 30) / 7,
-      proteinDeltaPerDay: ((after.protein - before.protein) * rule.share) / 7,
-      kcalDeltaPerDay: ((after.kcal - before.kcal) * rule.share) / 7,
-    };
-  })
-    .filter((s) => s.monthlySaving >= 30)
-    .sort((a, b) => b.monthlySaving - a.monthlySaving);
 }
 
 // ─── Ingredient value ─────────────────────────────────────────────────────────

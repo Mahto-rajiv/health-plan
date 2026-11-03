@@ -60,10 +60,10 @@ const DAL_FOODS: FoodId[] = ['moongDal', 'toorDal', 'rajma', 'kabuliChana', 'kal
 // here. Passing these tests means every gap is documented and shown to you (Meal
 // plans → Vitamins & minerals, and the Health page), NOT that every target is met.
 // • belowEar: weekly averages below the average need (EAR).
-// • hairBelowTarget: ★ hair-linked nutrients below the RDA/AI the plan aims for (Round 3).
+// • rdaBelowTarget: ★ nutrients (planned to the RDA) below the RDA/AI the plan aims for (Round 3).
 // Regenerate after a re-solve with: KNOWN_GAPS_DUMP=1 npm test (prints the lists).
 const GAPS_FILE = 'tests/known-gaps.json';
-const KNOWN = (existsSync(GAPS_FILE) ? JSON.parse(readFileSync(GAPS_FILE, 'utf8')) : { belowEar: [], hairBelowTarget: [] }) as { belowEar: string[]; hairBelowTarget: string[] };
+const KNOWN = (existsSync(GAPS_FILE) ? JSON.parse(readFileSync(GAPS_FILE, 'utf8')) : { belowEar: [], rdaBelowTarget: [] }) as { belowEar: string[]; rdaBelowTarget: string[] };
 
 function allMeals(): Meal[] {
   const out = new Map<string, Meal>();
@@ -298,17 +298,17 @@ describe('across plans', () => {
 
   it('nutrient gaps match the documented lists in tests/known-gaps.json: no new gaps, none silently closed', () => {
     const belowEar = new Set<string>();
-    const hairBelowTarget = new Set<string>();
+    const rdaBelowTarget = new Set<string>();
     for (const p of allDefaultPlans())
       for (const r of auditPlan(p)) {
         const id = `${p.def.id}|${p.phase}|${r.info.key}`;
         if (r.status === 'below-ear') belowEar.add(id);
-        if (r.info.hair && r.info.key !== 'biotin' && (r.status === 'below-rda' || r.status === 'below-ai')) hairBelowTarget.add(id);
+        if (r.info.rdaTarget && r.info.key !== 'biotin' && (r.status === 'below-rda' || r.status === 'below-ai')) rdaBelowTarget.add(id);
       }
-    if (process.env.KNOWN_GAPS_DUMP) console.log(JSON.stringify({ belowEar: [...belowEar].sort(), hairBelowTarget: [...hairBelowTarget].sort() }, null, 2));
+    if (process.env.KNOWN_GAPS_DUMP) console.log(JSON.stringify({ belowEar: [...belowEar].sort(), rdaBelowTarget: [...rdaBelowTarget].sort() }, null, 2));
     for (const [name, found, known] of [
       ['belowEar', belowEar, KNOWN.belowEar],
-      ['hairBelowTarget', hairBelowTarget, KNOWN.hairBelowTarget],
+      ['rdaBelowTarget', rdaBelowTarget, KNOWN.rdaBelowTarget],
     ] as const) {
       const k = new Set(known);
       assert.deepEqual([...found].filter((x) => !k.has(x)), [], `new ${name} gaps`);

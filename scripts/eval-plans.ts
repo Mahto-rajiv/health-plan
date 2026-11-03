@@ -21,8 +21,8 @@ for (const p of plans) {
   const morning = p.days.filter((d) => !d.isWeekend).map((d) => d.morningMinutes);
   const audit = auditPlan(p);
   const below = audit.filter((a) => a.status === 'below-ear').map((a) => `${a.info.label} ${fmtAmount(a.value)}/${fmtAmount(a.info.ear!)} ${a.info.unit}`);
-  const hair = audit
-    .filter((a) => a.info.hair && a.info.key !== 'biotin' && (a.status === 'below-rda' || a.status === 'below-ai'))
+  const star = audit
+    .filter((a) => a.info.rdaTarget && a.info.key !== 'biotin' && (a.status === 'below-rda' || a.status === 'below-ai'))
     .map((a) => `${a.info.label} ${fmtAmount(a.value)}/${fmtAmount(a.info.rda!)} ${a.info.unit}`);
   let dairyProtein = 0;
   let protein = 0;
@@ -34,7 +34,7 @@ for (const p of plans) {
         if (it.food === 'milk' || it.food === 'curd' || it.food === 'paneer') dairyProtein += g;
       }
   lines.push(
-    `| ${p.phase} | ${p.def.shortName} | ${r('kcal')} | ${r('protein')} | ${r('fiber')} | ${Math.round(Math.min(...fat))}–${Math.round(Math.max(...fat))} | ${fatLimits(p).satPct.toFixed(1)}, ${fatLimits(p).satPctMaxDay.toFixed(1)} | ${Math.round(p.dairyPerDay)} | ${Math.round((dairyProtein / protein) * 100)} | ${Math.max(...morning)} | ${Math.round(p.monthlyCost).toLocaleString('en-IN')} | ${below.join('; ') || '—'} | ${hair.join('; ') || '—'} |`,
+    `| ${p.phase} | ${p.def.shortName} | ${r('kcal')} | ${r('protein')} | ${r('fiber')} | ${Math.round(Math.min(...fat))}–${Math.round(Math.max(...fat))} | ${fatLimits(p).satPct.toFixed(1)}, ${fatLimits(p).satPctMaxDay.toFixed(1)} | ${Math.round(p.dairyPerDay)} | ${Math.round((dairyProtein / protein) * 100)} | ${Math.max(...morning)} | ${Math.round(p.monthlyCost).toLocaleString('en-IN')} | ${below.join('; ') || '—'} | ${star.join('; ') || '—'} |`,
   );
 }
 lines.push('', `Phase bands: ${[0, 1, 2].map((ph) => `${ph}: ${PHASES[ph as 0].kcal.join('–')} kcal, ${PHASES[ph as 0].protein.map(Math.round).join('–')} g protein, fibre ≤ ${PHASES[ph as 0].fibreMax} g`).join(' · ')}.`, '');

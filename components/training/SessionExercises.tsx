@@ -15,21 +15,19 @@ const effort = (rir: string) => (/^\d(?:–\d)?\+?$/.test(rir) ? `stop with ${ri
  * Today's exercises, in order: how many sets, reps, rest, and a swap that
  * works the same muscles when the machine or bench is taken. Nothing is logged.
  */
-export function SessionExercises({ sessionId, week, deload }: { sessionId: SessionId; week: number; deload: boolean }) {
+export function SessionExercises({ sessionId, week }: { sessionId: SessionId; week: number }) {
   const session = SESSIONS[sessionId];
-  const exercises = activeExercises(sessionId, week, deload);
+  const exercises = activeExercises(sessionId, week);
   const nameOf = (id: string) => session.exercises.find((e) => e.id === id)?.name.replace(/ \(.*\)$/, '') ?? id;
   return (
     <Card>
       <CardHeader title={`Workout · ${exercises.length} exercises`} icon={<Flame size={18} />} description="Do them in this order, after the warm-up." />
-      {deload ? (
-        <p className="mb-3 rounded-xl bg-sky-50 p-3 text-xs font-medium text-sky-900">Easy (deload) week: half the sets, about 10% lighter. The set counts below already include this.</p>
-      ) : week <= 2 ? (
+      {week <= 2 ? (
         <p className="mb-3 rounded-xl bg-amber-50 p-3 text-xs font-medium text-amber-900">Learning weeks (1–2): fewer sets, and stop with 3–4 good reps left. The set counts below already include this.</p>
       ) : null}
       <ol className="space-y-3">
         {exercises.map((ex, i) => {
-          const sets = setsFor(ex, week, deload);
+          const sets = setsFor(ex, week);
           const tutorials = (ex.tutorials ?? []).flatMap((id) => EXERCISE_TUTORIALS[id] as Tutorial[]);
           return (
             <li key={ex.id} className="rounded-xl border border-line p-3">
@@ -44,7 +42,7 @@ export function SessionExercises({ sessionId, week, deload }: { sessionId: Sessi
                     <span className="font-semibold">
                       {sets} {sets === 1 ? 'set' : 'sets'}
                     </span>{' '}
-                    × {ex.reps} · {effort(rirFor(ex, week, deload))} ·{' '}
+                    × {ex.reps} · {effort(rirFor(ex, week))} ·{' '}
                     {ex.supersetWith ? `straight after ${nameOf(ex.supersetWith)}, then rest` : `rest ${rest(ex.restSec)}`}
                   </p>
                   <p className="mt-2 flex gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs text-ink-2">

@@ -16,9 +16,9 @@ async function main() {
     `Generated ${new Date().toISOString().slice(0, 10)} by \`npm run solve:sweep\` (HiGHS, ${process.env.TL} s per phase, default prices). ` +
       'Each row: the solver with that monthly ceiling. Nutrient gaps are priced far above cost (scripts/solve-plans.ts), so the solver closes as much of them as the hard rules and the ceiling allow and only then saves money; the cost shown is what the plan actually costs (it can be well under the ceiling). The solver stops at a time limit, so it is close to, not proven at, the optimum: differences of one variant between rows can be search noise.',
     '',
-    'Counts are over the 3 plans per phase (weekly averages). "Hair" = iron, zinc, riboflavin, folate, B12, vitamins A and E, selenium (biotin is not planned: 7 foods have no biotin data).',
+    'Counts are over the 3 plans per phase (weekly averages). "★" = iron, zinc, riboflavin, folate, B12, vitamins A and E, selenium (biotin is not planned: 7 foods have no biotin data).',
     '',
-    '| Ceiling ₹ | Phase | Cost ₹/month (min–max) | Below EAR (variants: nutrients) | Hair nutrients below RDA/AI | Other nutrients below RDA/AI |',
+    '| Ceiling ₹ | Phase | Cost ₹/month (min–max) | Below EAR (variants: nutrients) | ★ nutrients below RDA/AI | Other nutrients below RDA/AI |',
     '|---|---|---|---|---|---|',
   ];
   for (const cap of CAPS) {
@@ -40,7 +40,7 @@ async function main() {
       };
 
       lines.push(
-        `| ${cap.toLocaleString('en-IN')} | ${ph} | ${Math.round(Math.min(...costs)).toLocaleString('en-IN')}–${Math.round(Math.max(...costs)).toLocaleString('en-IN')} | ${tally((s) => s.belowEar)} | ${tally((s) => s.hair && s.belowTop)} | ${tally((s) => !s.hair && s.belowTop)} |`,
+        `| ${cap.toLocaleString('en-IN')} | ${ph} | ${Math.round(Math.min(...costs)).toLocaleString('en-IN')}–${Math.round(Math.max(...costs)).toLocaleString('en-IN')} | ${tally((s) => s.belowEar)} | ${tally((s) => s.rdaTarget && s.belowTop)} | ${tally((s) => !s.rdaTarget && s.belowTop)} |`,
       );
     }
   }

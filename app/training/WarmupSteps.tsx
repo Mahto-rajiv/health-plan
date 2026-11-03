@@ -5,9 +5,9 @@ import { activeExercises, warmupMinutes } from '@/lib/training';
 import { Card, CardHeader } from '@/components/ui/Card';
 
 /** The session's warm-up as numbered steps, done in order before the first exercise. */
-export function WarmupSteps({ sessionId, week = 3, deload = false }: { sessionId: SessionId; week?: number; deload?: boolean }) {
+export function WarmupSteps({ sessionId, week = 3 }: { sessionId: SessionId; week?: number }) {
   const session = SESSIONS[sessionId];
-  const later = activeExercises(sessionId, week, deload).filter((ex) => ex.rampSets);
+  const later = activeExercises(sessionId, week).filter((ex) => ex.rampSets);
 
   const steps = (
     <ol className="space-y-2">

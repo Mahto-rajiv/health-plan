@@ -6,8 +6,7 @@ import type { FoodId } from './foods';
 // listings in Oct 2026 (milk, eggs, chicken, fruit, soya, oats, sattu, daliya),
 // the rest are local-shop estimates. Seasonal produce added in Nov 2026 is a
 // rough estimate only (marked in its note). Your shop may differ by ±15% or more.
-// Settings → Prices lets you overwrite any of them; every cost and grocery
-// total in the app is recomputed from the edited table.
+// Every cost and grocery total in the app is computed from this table.
 
 export const PRICES_AS_OF = '2026-10';
 export const PRICES_BASIS = 'Estimate';
@@ -84,12 +83,3 @@ export type PriceTable = Record<FoodId, number>;
 export const DEFAULT_PRICE_TABLE = Object.fromEntries(
   Object.entries(DEFAULT_PRICES).map(([k, v]) => [k, v.perKg]),
 ) as PriceTable;
-
-/** User overrides on top of the defaults; ignores unknown foods and non-positive values. */
-export function resolvePrices(overrides: Partial<Record<string, number>> | null | undefined): PriceTable {
-  const out = { ...DEFAULT_PRICE_TABLE };
-  for (const [k, v] of Object.entries(overrides ?? {})) {
-    if (k in out && typeof v === 'number' && Number.isFinite(v) && v > 0) out[k as FoodId] = v;
-  }
-  return out;
-}

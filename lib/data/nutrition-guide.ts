@@ -44,7 +44,7 @@ export const TARGETS: Target[] = [
   {
     key: 'fiber',
     label: 'Fibre',
-    value: '≤ 35 → ≤ 40 → ≤ 50 g',
+    value: '≤ 35 → ≤ 45 → ≤ 50 g',
     basis: 'Capped per phase so your gut can adjust: your intake has been low, and a sudden jump in fibre is a common cause of gas and bloating. Phase 2 still gives ~40–50 g, above the WHO minimum of 25 g.',
     refs: ['whoFats', 'icmr2020', 'niddkGas'],
   },
@@ -77,33 +77,41 @@ export const ENERGY_MATH = [
   { label: 'Phase 2 · week 5 on (slow gain)', value: '2,550–2,700 kcal' },
 ];
 
-// ─── Weight-gain rules (shown on Nutrition + Progress) ───────────────────────
+// ─── Weight-gain rules (static; the app stores no weights) ───────────────────
 
 export const GAIN_RULES = {
-  rate: 'First stop the loss (Phase 0: weekly average within ±0.5 kg of your start). Then +0.5–1.0 kg per month (≈ 0.2–0.35% of body weight per week). After ~6 months, as beginner gains slow, +0.3–0.7 kg per month.',
+  rate: 'First stop the loss (Phase 0). Then +0.5–1.0 kg per month (≈ 0.2–0.35% of body weight per week). After ~6 months, as beginner gains slow, +0.3–0.7 kg per month.',
   why: 'A review of off-season nutrition suggests 0.25–0.5% of body weight per week for novices. This plan sits in the lower half of that range because your goals are strength, health and a moderate physique, not maximum size. In trials, bigger surpluses mostly added fat, not more muscle. Beginners gain muscle well even on small surpluses, because training is the main driver.',
   refs: ['helms2023', 'garthe', 'iraki', 'slater', 'benito'] as RefId[],
   timeline: 'At that rate, each kilo back takes 1–2 months, counted from when the loss has stopped, until you reach your pre-loss weight (the first checkpoint). Much of what you notice early will be strength and shape, not scale weight.',
-  target: 'Your pre-loss weight (set in Settings) is the first checkpoint: it is the weight you had before the loss. There, compare waist, photos and lifts, then decide whether to continue toward 75 kg (BMI 23.1, which sits at the Asian action point of BMI 23).',
+  target: 'Your pre-loss weight is the first checkpoint. There, compare waist and lifts, then decide whether to continue toward 75 kg (BMI 23.1, which sits at the Asian action point of BMI 23).',
   targetRefs: ['whoAsianBmi', 'misra'] as RefId[],
+  /** How to weigh. Nothing is logged in the app. */
+  weigh: 'Weigh yourself once a week: same day, in the morning, after the toilet and before food or water. A single reading can swing by 0.5–1.5 kg, so look at the direction over 2–3 weeks.',
   decisions: [
-    { when: 'Phase 0 or 1, and the weekly average is still falling after 2 weeks although you ate the plan', then: 'Add ~200 kcal (move to the next phase early, or +350 ml milk) and tell a doctor about the unexplained weight loss.' },
-    { when: 'Phase 2: rate 0.5–1.0 kg/month, waist stable or rising slowly, lifts improving', then: 'Continue — change nothing.' },
-    { when: 'Phase 2: rate < 0.5 kg/month for 4+ weeks and you ate the plan most days', then: 'Add ~150 kcal (e.g. +250 ml milk or +1 roti) and re-check in 4 weeks.' },
-    { when: 'Rate > 1.2 kg/month after the first month', then: 'Slow down: remove ~150 kcal (one roti or a third of the dinner rice).' },
-    { when: 'Waist rising more than ~1 cm per kg gained', then: 'Slow down — more of the gain is fat than muscle.' },
-    { when: 'Waist reaches 47% of your height (85 cm at 180 cm)', then: 'Maintain for 4–8 weeks (drop the surplus) and reassess.' },
-    { when: 'Waist reaches half your height (90 cm at 180 cm, also the Asian-Indian cut-off for men)', then: 'Stop gaining. Maintain, or a short gentle cut if needed.' },
+    { when: 'Phase 0: still losing weight after 2 weeks although you ate the plan', then: 'Add about 200 kcal a day: 55 g raw rice more at dinner (≈ 195 kcal), cooked and drained as usual.' },
+    { when: 'Phase 2: gaining less than 0.5 kg a month for 4+ weeks, and you ate the plan most days', then: 'Add ~150 kcal (e.g. +1 roti) and look again in 4 weeks.' },
+    { when: 'Gaining more than 1.2 kg a month after the first month', then: 'Slow down: remove ~150 kcal (one roti or a third of the dinner rice).' },
+    { when: 'Waist reaches half your height (90 cm at 180 cm, also the Asian-Indian cut-off for men)', then: 'Stop gaining. Maintain.' },
     { when: 'Weight reaches your pre-loss weight', then: 'Checkpoint: maintain 4–6 weeks and reassess the 75 kg goal.' },
     { when: 'Poor sleep, illness or a heavy work stretch', then: 'Maintain instead of gaining until life settles.' },
   ],
-  measure: [
-    'Weigh 3–4 mornings a week after the toilet, before food or water. Compare weekly averages only — single weigh-ins swing by 0.5–1.5 kg.',
-    'Waist weekly: tape at the navel, relaxed, after a normal exhale.',
-    'Photos every 4 weeks: same place, light and time (keep them on your phone; the app stores only the date you took them).',
-    'Lifts: the Progress page tracks estimated strength from your logged sets.',
-  ],
 };
+
+// ─── Supplements (only ones that need no test) ───────────────────────────────
+
+export const SUPPLEMENTS: { name: string; body: string; refs: RefId[] }[] = [
+  {
+    name: 'Creatine monohydrate (optional)',
+    body: '3–5 g a day, any time; no loading phase. The best-supported supplement for strength and muscle gain, and safe in healthy adults. Useful but not necessary: the plan works without it. Buy plain creatine monohydrate, no blends. ≈ ₹400–600 a month, not in the food budget.',
+    refs: ['issnCreatine', 'antonioCreatine'],
+  },
+  {
+    name: 'Whey or soy protein powder (not needed)',
+    body: 'All three plans reach the phase protein targets from food, and ICMR advises against routine protein powders. A 2024 Indian study found many popular protein powders short of their labelled protein. The food equivalent of 1 scoop (~25 g protein) is 100 g paneer, or 300 ml milk + 20 g soya chunks, at a fraction of the cost.',
+    refs: ['morton', 'icmr2024', 'philips2024'],
+  },
+];
 
 // ─── Meal timing on training days ─────────────────────────────────────────────
 
@@ -139,7 +147,7 @@ export const HYDRATION = [
 // ─── Digestive comfort ────────────────────────────────────────────────────────
 
 export const GUT = {
-  intro: 'There is no diagnosed condition, so the plan doesn’t cut out nutritious foods. Instead it changes how they are prepared and how quickly fibre increases.',
+  intro: 'The plan doesn’t cut out nutritious foods. Instead it changes how they are prepared and how quickly fibre increases.',
   steps: [
     { title: 'Ramp up with the phases', body: 'Fibre is capped at 35 g a day in weeks 1–2, 45 g in weeks 3–4 and 50 g from week 5, and soya and sattu are capped at 20 g and 25 g a day in Phase 0. The table below shows how Meals 1 and 3 grow. Gas usually settles as your gut adapts.' },
     { title: 'Soak, discard, pressure-cook', body: 'Soak chana, rajma and whole moong 8–16 h, throw away the soaking water and pressure-cook until very soft. Soaking and cooking reduce the gas-forming sugars (oligosaccharides).' },
@@ -191,9 +199,9 @@ export const FOOD_SAFETY = {
 export const PANTRY_MONTHLY = 300; // spices, salt, tea, sugar, ginger-garlic, coriander, mint, curry leaves etc.
 
 export const BUDGET_NOTES = [
-  'All prices are estimates (Oct–Nov 2026), not quotes. A few were compared with online listings; the rest are local-shop estimates. Edit them in Settings → Prices and every cost in the app is recalculated.',
-  'Costs include every food in the plan plus ~₹300/month for spices, salt, tea, herbs and other basics. Cooking gas is not included. Supplements are costed separately on the Health page.',
+  'All prices are estimates (Oct–Nov 2026), not quotes. A few were compared with online listings; the rest are local-shop estimates.',
+  'Costs include every food in the plan plus ~₹300/month for spices, salt, tea, herbs and other basics. Cooking gas and supplements are not included.',
   'Produce is costed as bought, so peel, seeds, pods and trimmings are paid for (e.g. 38% of a papaya, 36% of a banana, 62% of peas in the pod). The shares are USDA SR28 “refuse” values.',
   'Cost rule: when two foods are equivalent in nutrition and taste, the plan uses the cheaper one unless it has a safety or digestive downside. That is why it uses soya, dals and home-set curd, but sealed branded paneer and ghee rather than loose ones.',
-  `The budget is a ceiling of ₹${BUDGET.max.toLocaleString('en-IN')} a month with no lower target (Round 2), so the plans are built for nutrition first. The cost rises with the phases because you eat more. Fruit and vegetable prices added in Nov 2026 are rough estimates; check them in Settings.`,
+  `The budget is a ceiling of ₹${BUDGET.max.toLocaleString('en-IN')} a month with no lower target (Round 2), so the plans are built for nutrition first. The cost rises with the phases because you eat more. Fruit and vegetable prices added in Nov 2026 are rough estimates.`,
 ];

@@ -4,7 +4,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: { default: 'Health Plan', template: '%s · Health Plan' },
-  description: 'Personal, evidence-based training, nutrition, recovery and progress tracking.',
+  description: 'Personal, evidence-based training, meal plans, nutrition and recovery.',
 };
 
 export const viewport: Viewport = {

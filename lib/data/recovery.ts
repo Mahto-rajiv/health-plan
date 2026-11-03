@@ -35,7 +35,7 @@ export const RECOVERY_SIGNS = {
   actions: [
     'One bad session: ignore it.',
     'A bad week: check sleep and whether you ate all 4 meals. Keep loads, skip the last set of each exercise.',
-    'Two bad weeks or several warning signs: take a deload week (switch it on in Settings).',
+    'Two bad weeks or several warning signs: take an easy (deload) week: half the sets, about 10% lighter (see Training → Program).',
   ],
 };
 

@@ -3,12 +3,14 @@ import assert from 'node:assert/strict';
 import { FLEX_WINDOWS, SESSIONS, SESSION_ORDER } from '../lib/data/training';
 import { EXERCISE_TUTORIALS } from '../lib/data/tutorials';
 import { activeExercises, plannedFor, sessionsFor, sessionTime, TIME_MODEL, warmupMinutes } from '../lib/training';
+import { phaseOn, weekLabel } from '../lib/phase';
+import { startsLabel } from '../lib/dates';
 
 // Week of Monday 2 Nov 2026.
 const MON = '2026-11-02', TUE = '2026-11-03', WED = '2026-11-04', THU = '2026-11-05', FRI = '2026-11-06', SAT = '2026-11-07', SUN = '2026-11-08';
 
 describe('sessions', () => {
-  // Learning weeks (1–2), build weeks (3+, incl. 8 and 12) and a deload week.
+  // Learning weeks (1–2) and build weeks (3+, incl. 8 and 12).
   const WEEKS = [1, 2, 3, 8, 12];
 
   for (const id of SESSION_ORDER) {
@@ -16,22 +18,19 @@ describe('sessions', () => {
     if (s.slot === 'weekday') {
       // Budget 42 min, not the 45-min cap: the time constants (40 s a set, 1 min setup) are estimates,
       // not timed, so the plan keeps a 3-min (~7%) buffer (Round 3).
-      it(`${id}: ≤ 5 exercises and ≤ 42 min (3-min buffer under the 45-min cap) in every week, deload included`, () => {
+      it(`${id}: ≤ 5 exercises and ≤ 42 min (3-min buffer under the 45-min cap) in every week`, () => {
         for (const week of WEEKS) {
-          for (const deload of [false, true]) {
-            const t = sessionTime(id, week, deload);
-            const n = activeExercises(id, week, deload).length;
-            assert.ok(n <= 5, `${id} week ${week}${deload ? ' deload' : ''}: ${n} exercises`);
-            assert.ok(t.total <= 42, `${id} week ${week}${deload ? ' deload' : ''}: ${t.total.toFixed(1)} min > 42 (${JSON.stringify(t)})`);
-          }
+          const t = sessionTime(id, week);
+          const n = activeExercises(id, week).length;
+          assert.ok(n <= 5, `${id} week ${week}: ${n} exercises`);
+          assert.ok(t.total <= 42, `${id} week ${week}: ${t.total.toFixed(1)} min > 42 (${JSON.stringify(t)})`);
         }
       });
     } else {
-      it(`${id}: 60–75 min in every non-deload week; shorter (≤ 75) in a deload week`, () => {
+      it(`${id}: 60–75 min in every week`, () => {
         for (const week of WEEKS) {
           const t = sessionTime(id, week);
           assert.ok(t.total >= 60 && t.total <= 75, `${id} week ${week}: ${t.total.toFixed(1)} min, outside 60–75 (${JSON.stringify(t)})`);
-          assert.ok(sessionTime(id, week, true).total <= 75, `${id} week ${week} deload`);
         }
       });
     }
@@ -133,5 +132,25 @@ describe('alternatives', () => {
         assert.ok(!ex.alternative.toLowerCase().startsWith(ex.name.toLowerCase()), `${ex.id}: alternative is the same exercise`);
       }
     }
+  });
+});
+
+describe('phase follows the date only (fixed start Mon 9 Nov 2026)', () => {
+  it('weeks 1–2 → Phase 0, 3–4 → Phase 1, 5+ → Phase 2; before the start, Phase 0', () => {
+    assert.equal(phaseOn('2026-11-03'), 0);
+    assert.equal(phaseOn('2026-11-09'), 0);
+    assert.equal(phaseOn('2026-11-22'), 0);
+    assert.equal(phaseOn('2026-11-23'), 1);
+    assert.equal(phaseOn('2026-12-06'), 1);
+    assert.equal(phaseOn('2026-12-07'), 2);
+    assert.equal(phaseOn('2027-06-01'), 2);
+  });
+
+  it('shows "Starts Mon 9 Nov" before the start, the week number from the start day', () => {
+    assert.equal(startsLabel('2026-11-09', '2026-11-03'), 'Starts Mon 9 Nov');
+    assert.equal(startsLabel('2026-11-09', '2026-11-09'), null);
+    assert.equal(weekLabel('2026-11-03'), 'Starts Mon 9 Nov');
+    assert.equal(weekLabel('2026-11-09'), 'Program week 1');
+    assert.equal(weekLabel('2026-12-01'), 'Program week 4');
   });
 });

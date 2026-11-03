@@ -5,7 +5,7 @@
 // Nothing nutritional is typed by hand here. Sources per food:
 // scripts/food-data/sources.ts.
 //
-// Prices are in lib/data/prices.ts (editable in Settings).
+// Prices are in lib/data/prices.ts.
 //
 // Energy: the app computes kcal from the macros (lib/config.ts ATWATER), so meal
 // and day totals always reconcile with protein, carbs, fat and fibre. Carbs are

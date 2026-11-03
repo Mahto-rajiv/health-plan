@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ShoppingBasket, CalendarDays, Wallet, Scale, Printer, ShieldCheck } from 'lucide-react';
-import { budgetSwaps, findPlan, ingredientValues, type ComputedPlan } from '@/lib/meal-plans';
+import { findPlan, ingredientValues, type ComputedPlan } from '@/lib/meal-plans';
 import { DAYS, type DayName, type PlanId } from '@/lib/data/meal-plans';
 import { BUDGET_NOTES, PANTRY_MONTHLY, FOOD_SAFETY, ENERGY_NOTE } from '@/lib/data/nutrition-guide';
 import { BUDGET, BUDGET_LABEL, DAILY, PHASES, PHASE_IDS, budgetStatus, type PhaseId } from '@/lib/config';
@@ -34,7 +34,7 @@ const STATUS_TONE = {
 export function MealPlansView() {
   const [settings, setSettings] = useSettings();
   const today = useToday();
-  const activePhase = phaseOn(settings, today);
+  const activePhase = phaseOn(today);
   const [pickedPhase, setPickedPhase] = useState<PhaseId | null>(null);
   const phase: PhaseId = pickedPhase ?? 0;
   const plans = usePlans(phase);
@@ -254,11 +254,7 @@ function DayTotals({
 }
 
 function GroceryView({ plan, plans }: { plan: ComputedPlan; plans: ComputedPlan[] }) {
-  const prices = usePrices();
   const status = budgetStatus(plan.monthlyCost);
-  const swaps = budgetSwaps(plan, prices);
-  const gap = plan.monthlyCost - BUDGET.max;
-  const allSwapsCost = plan.monthlyCost - swaps.reduce((s, x) => s + x.monthlySaving, 0);
   const cheapest = Math.min(...plans.map((p) => p.costPer10gProtein));
   return (
     <section aria-label="Groceries and cost" className="space-y-4">
@@ -266,7 +262,7 @@ function GroceryView({ plan, plans }: { plan: ComputedPlan; plans: ComputedPlan[
         <CardHeader
           title="Budget"
           icon={<Wallet size={18} />}
-          description={`${formatINR(BUDGET.max)} a month is the ceiling, not a target. The plans are built in this order: safety and the hard rules first, then vitamins and minerals, then less dairy, and only then the lowest cost. No average need (EAR) is given up to save money; a ★ hair nutrient’s RDA only if closing each 1% of the gap would cost over ₹300 a month. They are held to ${formatINR(BUDGET.planningMax)} at the default prices, leaving 10% for prices that are higher than estimated. Food only — supplements are costed on the Health page. Prices are estimates (${PRICES_AS_OF}); edit them in Settings.`}
+          description={`${formatINR(BUDGET.max)} a month is the ceiling, not a target. The plans are built in this order: safety and the hard rules first, then vitamins and minerals, then less dairy, and only then the lowest cost. No average need (EAR) is given up to save money; a ★ nutrient’s RDA only if closing each 1% of the gap would cost over ₹300 a month. They are held to ${formatINR(BUDGET.planningMax)} at the default prices, leaving 10% for prices that are higher than estimated. Food only, no supplements. Prices are estimates (${PRICES_AS_OF}).`}
         />
         <div className="tabular grid grid-cols-2 gap-4 sm:grid-cols-3">
           <div>
@@ -320,37 +316,11 @@ function GroceryView({ plan, plans }: { plan: ComputedPlan; plans: ComputedPlan[
           </p>
         </div>
 
-        {status === 'over' ? (
-          <Callout tone="caution" className="mt-4" title={`About ${formatINR(roundTo(gap, 50))} a month over ${formatINR(BUDGET.max)}`}>
-            With your prices this plan costs more than the ceiling.
-            {swaps.length > 0 && <> All the swaps below together bring it to ≈ {formatINR(roundTo(allSwapsCost, 50))}.</>}
-          </Callout>
-        ) : (
-          <Callout tone="good" className="mt-4" title={`Within the ${formatINR(BUDGET.max)} budget`}>
-            Prices vary by city and season; edit them in Settings and the totals update. Milk and curd average{' '}
-            {Math.round(plan.dairyPerDay)} g a day in this plan, the least the nutrient targets and fibre caps allow (the solver lowers dairy
-            right after nutrition). Dairy is the low-fibre protein that fits under the fibre caps, and the main source of B12 and calcium for
-            vegetarians.
-          </Callout>
-        )}
-        {status === 'over' && swaps.length > 0 && (
-          <div className="mt-4">
-            <h3 className="mb-1.5 text-sm font-semibold text-ink">Ways to spend less on this plan</h3>
-            <ul className="space-y-1.5 text-sm">
-              {swaps.map((s) => (
-                <li key={s.id} className="rounded-lg bg-slate-50 px-3 py-2">
-                  <div className="flex flex-col justify-between gap-0.5 sm:flex-row sm:items-baseline">
-                    <span className="font-medium text-ink">{s.label}</span>
-                    <span className="tabular shrink-0 text-xs font-medium text-emerald-700">saves ≈ {formatINR(roundTo(s.monthlySaving, 10))}/month</span>
-                  </div>
-                  <p className="tabular mt-0.5 text-xs text-muted">
-                    {s.note} Change per day: {signed(s.proteinDeltaPerDay)} g protein, {signed(s.kcalDeltaPerDay)} kcal.
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <Callout tone="good" className="mt-4" title={`Within the ${formatINR(BUDGET.max)} budget`}>
+          Prices vary by city and season. Milk and curd average {Math.round(plan.dairyPerDay)} g a day in this plan, the least the nutrient
+          targets and fibre caps allow (the solver lowers dairy right after nutrition). Dairy is the low-fibre protein that fits under the
+          fibre caps, and the main source of B12 and calcium for vegetarians.
+        </Callout>
         <ul className="mt-4 list-disc space-y-1 pl-5 text-xs text-muted">
           {BUDGET_NOTES.map((n) => (
             <li key={n}>{n}</li>
@@ -391,11 +361,6 @@ function GroceryView({ plan, plans }: { plan: ComputedPlan; plans: ComputedPlan[
     </section>
   );
 }
-
-const signed = (v: number) => {
-  const r = Math.round(v);
-  return r === 0 ? '±0' : `${r > 0 ? '+' : '−'}${Math.abs(r)}`;
-};
 
 function IngredientValueCard() {
   const prices = usePrices();
