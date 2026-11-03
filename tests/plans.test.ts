@@ -255,9 +255,14 @@ describe('fruit and vegetables', () => {
   });
 
   it('a swap states what it loses or adds', () => {
-    assert.equal(swapNote('papaya', 150, 'apple', altGrams('papaya', 'apple', 150)), 'less vitamin C, folate and vitamin A');
+    assert.equal(swapNote('papaya', 150, 'apple', altGrams('papaya', 'apple', 150)), 'almost no vitamin C, folate and vitamin A');
     assert.equal(swapNote('banana', 200, 'apple', altGrams('banana', 'apple', 200)), 'less folate, +5 g fibre');
     assert.equal(swapNote('okra', 40, 'cauliflower', 40), undefined);
+  });
+
+  it('the carrot swap always says it loses the vitamin A (carrot is in the salad for it), at any amount', () => {
+    const carrot = SLOTS.salad.foods.find((f) => f.food === 'carrot')!;
+    for (const g of [5, 8, 40]) assert.match(swapNote('carrot', g, carrot.alt!, g, carrot.for) ?? '', /almost no vitamin A/, `${g} g`);
   });
 });
 

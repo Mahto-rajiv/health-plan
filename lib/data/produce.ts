@@ -31,6 +31,8 @@ export interface SlotFood {
   food: FoodId;
   share: number;
   alt?: FoodId;
+  /** The nutrient this food is on the menu for: the swap note always says if the swap loses it. */
+  for?: NutrientKey;
 }
 
 export interface SlotFill {
@@ -58,7 +60,7 @@ export const SLOTS: Record<SlotId, SlotFill> = {
     name: 'cucumber, carrot, onion and tomato',
     foods: [
       { food: 'cucumber', share: 0.3, alt: 'radish' },
-      { food: 'carrot', share: 0.2, alt: 'beetroot' },
+      { food: 'carrot', share: 0.2, alt: 'beetroot', for: 'vitA' },
       { food: 'onion', share: 0.25 },
       { food: 'tomato', share: 0.25 },
     ],
@@ -87,13 +89,20 @@ const rda = (k: NutrientKey) => NUTRIENTS.find((n) => n.key === k)?.rda ?? Infin
 const amount = (f: FoodId, k: NutrientKey, g: number) => ((FOODS[f].per100[k] ?? 0) * g) / 100;
 
 /**
- * What a swap changes, in a few words, or undefined if nothing much: a vitamin is
- * "less" when the swap gives under half of it and the main food gave at least 5% of
- * the RDA; fibre is shown when the swap adds 1 g or more.
+ * What a swap changes, in a few words, or undefined if nothing much. A vitamin is
+ * counted when the main food gave at least 5% of the RDA: "almost no" when the swap
+ * gives under 10% of it, "less" when under half. Fibre is shown when the swap adds 1 g
+ * or more. Round 5: no salad vegetable in the table replaces carrot's vitamin A
+ * (beetroot gives ~0.2%), so that swap says "almost no vitamin A", at any amount
+ * (`for: 'vitA'`).
  */
-export function swapNote(food: FoodId, g: number, alt: FoodId, altG: number): string | undefined {
-  const less = WATCH.filter(({ key }) => amount(food, key, g) >= 0.05 * rda(key) && amount(alt, key, altG) < 0.5 * amount(food, key, g)).map((w) => w.label);
+export function swapNote(food: FoodId, g: number, alt: FoodId, altG: number, forKey?: NutrientKey): string | undefined {
+  const counts = (key: NutrientKey) => key === forKey || amount(food, key, g) >= 0.05 * rda(key);
+  const lost = (share: number) => WATCH.filter(({ key }) => counts(key) && amount(alt, key, altG) < share * amount(food, key, g));
+  const almost = lost(0.1).map((w) => w.label);
+  const less = lost(0.5).map((w) => w.label).filter((l) => !almost.includes(l));
+  const list = (xs: string[]) => xs.join(' and ').replace(/ and (?=.* and )/, ', ');
   const fibre = amount(alt, 'fiber', altG) - amount(food, 'fiber', g);
-  const parts = [less.length ? `less ${less.join(' and ').replace(/ and (?=.* and )/, ', ')}` : '', fibre >= 1 ? `+${Math.round(fibre)} g fibre` : ''].filter(Boolean);
+  const parts = [almost.length ? `almost no ${list(almost)}` : '', less.length ? `less ${list(less)}` : '', fibre >= 1 ? `+${Math.round(fibre)} g fibre` : ''].filter(Boolean);
   return parts.length ? parts.join(', ') : undefined;
 }

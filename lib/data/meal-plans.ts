@@ -981,10 +981,10 @@ export function resolveMeal(m: Meal, phase: PhaseId): ResolvedMeal {
     if (g <= 0) continue;
     const note = it.note === undefined ? undefined : f(typeof it.note === 'string' ? it.note : it.note[phase]);
     if (it.slot) {
-      for (const { food, share, alt } of SLOTS[it.slot].foods) {
+      for (const { food, share, alt, for: forKey } of SLOTS[it.slot].foods) {
         const fg = Math.round(g * share * 10) / 10;
         const ag = alt ? altGrams(food, alt, fg) : 0;
-        const an = alt ? swapNote(food, fg, alt, ag) : undefined;
+        const an = alt ? swapNote(food, fg, alt, ag, forKey) : undefined;
         items.push({ food, g: fg, slot: it.slot, ...(note ? { note } : {}), ...(alt ? { alt: { food: alt, g: ag, ...(an ? { note: an } : {}) } } : {}) });
       }
     } else items.push({ food: it.food!, g, ...(note ? { note } : {}) });
