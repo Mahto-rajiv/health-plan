@@ -1,5 +1,265 @@
 # Progress
 
+## Round 4 (3 Nov 2026): branch `round4-fixes`, not pushed
+
+The second brief pasted (6 items) is followed. From the first version, "Reset everything" was checked (item 5 there) and "when to add weight" was checked but not changed (see Notes).
+
+### Status
+- [x] 1. **Privacy:** blood results and body weights are out of the code. They are typed into the app and stored only in this browser (`3c4f9ea`, `a7907b3`).
+- [x] 2. **"Starts Mon 9 Nov"** replaces the week number before the program start on Training, Dashboard and Settings (`4f6bf2e`).
+- [x] 3. **Food swaps:** better choices, plus a note on what each swap loses (`27409af`).
+- [x] 4. **Carrot** is now in the daily salad (`bb06f5b`).
+- [x] 5. **Fat 35% and Phase 1 fibre 45 g:** both applied, because both help. `planningMax` stays ₹5,400 (`bb06f5b`).
+- [x] 6. **Regenerated:** plan report, cost sweep and link check; browser check at 3 widths; removed tests listed below.
+- Blocked: none. Nothing pushed.
+
+### 1. Privacy
+**What changed**
+- `lib/data/health.ts`:
+  - `BLOOD_RESULTS` (your values, statuses and the test date) is replaced by `BLOOD_TESTS`: each test's name, unit, typical range, status bands and a general explanation.
+  - Any text that stated your results is reworded, in the B12 and vitamin D supplement notes, the hair notes and the diet table.
+- **Health page:** a "Blood results" form for each test. Status badges and the Summary card are worked out from what you type.
+  - Saved under `hp:v2:blood` in localStorage.
+  - Included in Download backup, and deleted by Reset everything.
+- **Weights:** `PROFILE.weightKg` and `PROFILE.preLossWeightKg` are removed. `Settings.startWeightKg` and `preLossWeightKg` are optional and blank by default; you type them in Settings.
+- **Without weights entered:**
+  - the Dashboard, Progress and the Health to-do ask for them;
+  - the weight decisions use your first weekly average as the baseline;
+  - the checkpoint message is skipped.
+- **Text that stated the weights is reworded:** the nutrition guide, the Phase 2 goal, the BMR line (now a 1,600–1,700 kcal range) and the Progress placeholder.
+- **Made-up values replace your real ones in:** the test fixtures (70/74 kg) and the sample chart data (70 kg start, 80 cm waist).
+- **Reset everything** now warns that it deletes your weights and blood results, that they can't be recovered, and that you should download a backup first.
+
+**If you already saved settings in this browser:** the weights you already saved stay there; they live in localStorage, not in the code. A browser that never saved settings will show blank weights. Type them once in Settings.
+
+**Still in the code (not asked to remove; say if you want them out):**
+- age 24, height 180 cm, the 75 kg target;
+- the hair history: 6 months of shedding, the dermatologist to-do;
+- that weight was lost while eating under ~2,000 kcal;
+- the phase calorie bands.
+
+  A careful reader can roughly work out your weight from the BMR range and the calorie bands.
+
+**Still in git history.** The repo has 31 commits; every one from `4dfc74f` (7 Oct) to `a7907b3` holds personal data:
+- the blood values, from `4dfc74f` onward;
+- the two weights in `lib/config.ts`, from `5c40469` (30 Oct) onward;
+- `origin/main` still serves them in `lib/data/health.ts` and `lib/config.ts`;
+- `docs/brief.md` and the Round 1–3 notes in this file also hold the weights. I did not edit your briefs.
+
+  Merging this branch removes them from the current files only.
+
+**To remove them from history** (each step needs your go-ahead; none was done):
+1. Make the GitHub repo private (Settings → General → Danger zone). Vercel still deploys from private repos.
+2. Rewrite history with `git filter-repo` (replace the values or drop the files), then force-push every branch (`main`, `audit-fixes`, `round2-seasonal`). Anyone who cloned or forked keeps the old copy.
+3. Ask GitHub Support to purge cached views of the old commits.
+
+**Protecting the deployed site:** after this branch is merged, the site holds no blood values or weights; they exist only in your browser. If you also want to hide the rest (hair notes, age, height):
+- turn on Vercel Deployment Protection (Vercel Authentication) for the project, so only your Vercel login can open it;
+- or put the site behind a password.
+
+I did not check which of these your Vercel plan includes.
+
+### 2. "Starts Mon 9 Nov"
+- New `startsLabel(start, today)` in `lib/dates.ts` returns "Starts Mon 9 Nov" before the start date, otherwise null.
+- **Used on:**
+  - the Training Today card;
+  - the Dashboard badge;
+  - Settings: the phase line ("Starts Mon 9 Nov → Phase 0 · Stop the loss") and the deload line.
+- **Checked in the built app on 3 Nov:** all three screens show "Starts Mon 9 Nov", and no page shows "Program week".
+
+### 3. Food swaps
+| Main | Was | Now | What it still loses or adds (shown in the app) |
+|---|---|---|---|
+| Papaya 100–120 g | apple 40–50 g | **orange / kinnow** 70–90 g (same calories) | less folate and vitamin A. Keeps ~70% of the vitamin C (apple kept ~3%). |
+| Banana 100–160 g | apple 160–260 g | **dates** 30–50 g (same calories) | less vitamin C and folate, +1 g fibre or less (apple was +2–4 g) |
+| Cucumber (salad) | carrot | **radish** (same weight) | — |
+| Carrot (salad, new) | — | **beetroot** (same weight) | less vitamin A |
+| Spinach 190–300 g | amaranth | amaranth (unchanged) | less folate, +4–6 g fibre |
+| Okra, lauki, kaddu | cauliflower, brinjal, carrot | unchanged | — |
+
+- **Why dates:** in the food table, dates have the least fibre per calorie after banana itself, and they keep at home when the market runs out.
+- **How the note works:** `swapNote()` in `lib/data/produce.ts` lists a vitamin (C, folate or A) when the swap gives under half of it and the main food gave at least 5% of the RDA. It also shows the fibre when the swap adds 1 g or more.
+- **Where it shows:** meal cards and cooking cards, e.g. "Not in the market? Orange / kinnow, 70 g (less folate and vitamin A)".
+- **No compensating food is added.** A swap is for a few days, so the note only says what changes.
+
+### 4–5. Carrot, fat 35% and fibre 45 g: before and after
+- **How the trials were run:** `TL=120 GAP=0.01`, planning ceiling ₹5,400, with the overrides applied in memory and nothing written. "base" is the Round 3 menu.
+- **What the numbers are:** weekly averages, min–max over the 3 plans. The brackets give the EAR · RDA.
+
+**Phase 0** (min–max over the 3 plans; dairy = phase average)
+
+| | Round 3 | carrot | carrot,fat35 | carrot,fat35,fib45 |
+|---|---|---|---|---|
+| Iron mg (EAR 11 · RDA 19) | 11.7–12.7 | 11.6–12.6 | 12.2–13.3 | 12.2–13.3 |
+| Zinc mg (14 · 17) | 14.2–14.7 | 14.3–14.7 | 15.0–15.5 | 15.0–15.5 |
+| B1 mg (1.5 · 1.8) | 1.30–1.35 | 1.29–1.34 | 1.38–1.41 | 1.38–1.41 |
+| B2 mg (2.1 · 2.5) | 2.01–2.10 | 2.01–2.10 | 2.10–2.13 | 2.10–2.13 |
+| B6 mg (2.1 · 2.4) | 2.09–2.17 | 2.10–2.18 | 2.10–2.19 | 2.10–2.19 |
+| E mg (12 · 15) | 10.4–12.0 | 10.5–12.0 | 14.2–15.1 | 14.2–15.1 |
+| A µg (460 · 1000) | 593–690 | 625–773 | 636–798 | 636–798 |
+| ₹/month | 4,615–4,843 | 4,615–4,842 | 4,841–5,114 | 4,841–5,114 |
+| Milk + curd g/day | 969 | 971 | 1020 | 1020 |
+
+**Phase 1** (min–max over the 3 plans; dairy = phase average)
+
+| | Round 3 | carrot | carrot,fat35 | carrot,fib45 | carrot,fat35,fib45 |
+|---|---|---|---|---|---|
+| Iron mg (EAR 11 · RDA 19) | 14.6–15.6 | 14.5–15.6 | 15.4–16.9 | 16.1–16.4 | 17.5–18.1 |
+| Zinc mg (14 · 17) | 16.1–16.3 | 16.2–16.4 | 16.9–17.2 | 16.5–16.8 | 17.1–17.5 |
+| B1 mg (1.5 · 1.8) | 1.47–1.60 | 1.47–1.60 | 1.50–1.61 | 1.53–1.74 | 1.56–1.73 |
+| B2 mg (2.1 · 2.5) | 2.09–2.24 | 2.09–2.25 | 2.15–2.25 | 2.10–2.23 | 2.16–2.27 |
+| B6 mg (2.1 · 2.4) | 2.10–2.23 | 2.10–2.22 | 2.10–2.23 | 2.19–2.40 | 2.12–2.20 |
+| E mg (12 · 15) | 12.0–12.9 | 11.9–12.8 | 14.9–15.0 | 13.1–14.7 | 14.8–15.0 |
+| A µg (460 · 1000) | 639–806 | 686–895 | 736–975 | 717–966 | 754–996 |
+| ₹/month | 4,871–5,193 | 4,873–5,197 | 5,108–5,395 | 4,989–5,396 | 5,143–5,399 |
+| Milk + curd g/day | 942 | 947 | 977 | 909 | 967 |
+
+**Phase 2** (min–max over the 3 plans; dairy = phase average)
+
+| | Round 3 | carrot | carrot,fat35 | carrot,fat35,fib45 |
+|---|---|---|---|---|
+| Iron mg (EAR 11 · RDA 19) | 18.4–18.9 | 18.3–18.6 | 19.0–19.2 | 19.0–19.2 |
+| Zinc mg (14 · 17) | 17.5–17.8 | 17.2–17.7 | 17.8–18.1 | 17.8–18.1 |
+| B1 mg (1.5 · 1.8) | 1.68–1.89 | 1.66–1.88 | 1.67–1.83 | 1.67–1.83 |
+| B2 mg (2.1 · 2.5) | 2.15–2.24 | 2.12–2.22 | 2.29–2.34 | 2.29–2.34 |
+| B6 mg (2.1 · 2.4) | 2.29–2.39 | 2.23–2.39 | 2.24–2.26 | 2.24–2.26 |
+| E mg (12 · 15) | 14.9–15.0 | 15.0–15.0 | 14.9–15.0 | 14.9–15.0 |
+| A µg (460 · 1000) | 646–849 | 715–972 | 764–998 | 764–998 |
+| ₹/month | 5,088–5,399 | 5,087–5,399 | 5,270–5,399 | 5,270–5,399 |
+| Milk + curd g/day | 901 | 880 | 995 | 995 |
+
+**What was applied, and why**
+- **Carrot in the salad (shares: cucumber 0.3, carrot 0.2, onion 0.25, tomato 0.25):**
+  - vitamin A +30 to +120 µg a day, at the same cost (±₹30);
+  - other nutrients within ±0.1;
+  - the solver's shortfall score falls in every phase (P0 1,230 → 1,187; P1 700 → 648; P2 291 → 210).
+- **Fat up to 35% of energy (`DAILY.fatEnergy` [0.25, 0.35]):**
+  - **What it helps:** vitamin E in Phases 0–1 goes from below the EAR to 14–15 mg. Iron, zinc, B1 and B2 also rise. The shortfall score falls 37–50% (P0 1,187 → 750; P1 648 → 322; P2 210 → 124).
+  - **What it costs:** ₹150–280 a month more on average per phase (up to ₹400 for one plan), and milk + curd +50 g/day (P0) to +115 g/day (P2). Phase 2 B6 drops from 2.23–2.39 to 2.24–2.26 mg (still above the EAR).
+  - **Where the extra fat comes from:** the solver used it for more oil, curd and paneer, and less rice. It did not go to nuts.
+  - **It breaks a guideline:** 35% is above the WHO and ICMR-NIN advice of ≤ 30% of energy, and inside the US/Canadian range of 20–35%. The Nutrition page now says so.
+  - **Easy to reverse:** go back to 30% (one number in `lib/config.ts`, then `npm run solve`) if you prefer to follow WHO/ICMR.
+- **Phase 1 fibre cap 45 g (was 40):**
+  - **Alone:** iron +1.5, zinc +0.5, B1 +0.1, B6 +0.1–0.2, vitamin E +1–2, and milk + curd −38 g/day, for ₹30–270 a month more.
+  - **Combined with 35% fat:** Phase 1 has no gap below the EAR.
+  - **Gut:** Phase 1 starts after two weeks at 35 g.
+- **Result after the final solve:**
+  - Weekly averages below the EAR: **16 → 4**. All 4 are in Phase 0: thiamine (1.38–1.41 of 1.5 mg) in all three plans, and the egg plan's B6, right at the EAR.
+  - Hair nutrients below the RDA/AI: 33 → 34. Eight riboflavin and vitamin E entries moved up from "below the EAR" to "below the RDA", which adds them to this list. Seven entries left it: Phase 1 zinc in all three plans, Phase 2 iron (egg and non-veg), and the non-veg vitamin E (Phases 1 and 2) now meet the RDA.
+  - **Dairy:** the vegetarian plan now uses 1,086–1,099 g/day of milk + curd, just under the 1,100 g backstop. This goes against "dairy should not carry the diet".
+
+### 6. Reports, links, browser
+- `docs/plan-report.md` was regenerated (output below).
+- `docs/cost-sweep.md` was regenerated (`TL=120 GAP=0.01 npm run solve:sweep`, output below).
+- **Links:** `npm run links`: 199 links, 190 ok, 0 redirected, 9 blocked automated access (EFSA ×3, NIH ODS ×5, npmjs.com), 0 failed.
+- **Browser check:** headless Chrome over CDP against the production build (`next start`), with a script in the scratchpad (not committed).
+  - Every route (/, /training, /meal-plans, /meal-plans/cards, /nutrition, /health, /progress, /recovery, /settings) at 375, 768 and 1280 px.
+  - Run twice: with empty storage, and with sample weights and blood values in localStorage.
+  - **54 page loads: 0 px horizontal overflow, 0 console errors or exceptions.**
+  - Text checked:
+    - "Starts Mon 9 Nov" on /, /training and /settings;
+    - no "Program week";
+    - with empty storage, the weight prompts appear;
+    - with the sample data, "70 kg start / 74 kg checkpoint" and "Vitamin D (25-OH): 25 ng/mL (borderline)" appear;
+    - swap notes appear on both meal pages.
+  - I looked at one screenshot (/health at 375 px, sample data) by eye. The rest were checked by these numbers and text only.
+
+### Tests removed since `efc6611~1`
+Compared the `it(...)`/`describe(...)` names at `efc6611~1` with now (`git show efc6611~1:tests/*.ts` against the working tree). 15 names are gone and 31 are new (including this round's). The count went from 466 (at `efc6611~1`) to 165 at the end of Round 3 and is 173 now. The drop happened mostly because the per-plan tests ran once per season (36 variants), and now run once per plan × phase (9).
+
+| Removed test | Commit | Why |
+|---|---|---|
+| `describe(… · phase … · ${season})` and `it(phase …, ${s}: the same day …)` | `9f089ff` | Seasons removed. Same tests now run per plan × phase: `describe(… · phase …)`, `it(phase …: the same day …)`. |
+| `describe('seasons')`: "cover every month exactly once…", "only seasonal slots change between seasons…", "peas appear only in winter", "pick the season from the date…", "the Meal 1 fruit changes through the year…" | `9f089ff` | Seasons removed. Replaced by `describe('fruit and vegetables')` (shares add to 1, every food has a swap, swap amounts). |
+| `costs at most ₹${BUDGET.max} a month` | `9f089ff` | Tightened, not dropped: now `costs at most ₹${BUDGET.planningMax}` (₹5,400, the 10% price margin). |
+| "Phase 2 meets the EAR for iron, zinc, … in every plan **and season**" | `9f089ff` | Same test without the season dimension. |
+| "weekly averages below the EAR match the documented list — no new gaps" | `9f089ff` | Stricter replacement: "nutrient gaps match tests/known-gaps.json: no new gaps, **none silently closed**", now also covering hair nutrients below the RDA/AI. |
+| `${id}: ≤ 5 exercises and ≤ 45 min` | `f054440` | Tightened to ≤ 42 min (3-min buffer under the 45-min cap). |
+| "a weekday session is offered only before 9:00 PM" | `d7459bf` | Tested `todayTraining()`, which read the time and the workout log. Removed with logging (your request). The 9 PM rule is now text only ("tomorrow line names … the 9 PM cut-off" checks the wording). |
+| "never two sessions in one day" | `d7459bf` | Needed the workout log to know a session was done. No log now, so the app can't enforce it; the Week tab states the rule. |
+| "Lower B only Mon–Wed, Upper B only Tue–Fri; a missed one is skipped, not made up" | `d7459bf` | The "missed one" half needed the log. The day rule is kept: "…Tue and Wed offer both". |
+
+Not covered by any test any more: the 9 PM cut-off and "one session a day" (both are now advice, not app logic).
+
+### Checks run (3 Nov 2026)
+Final solve (`TL=120 GAP=0.01 npm run solve`):
+```
+> health-plan@0.1.0 solve
+> tsx scripts/solve-plans.ts
+
+Cost ceiling ₹5400/month at default prices.
+Phase 0: Optimal in 104 s; shortfall score 750.2, milk + curd 1020 g/day, average ₹4943/month
+Phase 1: Time limit reached in 120 s; shortfall score 211.3, milk + curd 967 g/day, average ₹5262/month
+Phase 2: Optimal in 1 s; shortfall score 124.3, milk + curd 995 g/day, average ₹5355/month
+  P0 vegetarian ₹4841  below EAR: Thiamine (B1) · below RDA/AI: Iron, Zinc, Vitamin A, Riboflavin (B2), Vitamin B6, Vitamin E, Vitamin K, Omega-3 (ALA)
+  P0 egg        ₹4873  below EAR: Thiamine (B1), Vitamin B6 · below RDA/AI: Iron, Zinc, Vitamin A, Riboflavin (B2), Vitamin E, Vitamin K, Omega-3 (ALA)
+  P0 nonveg     ₹5114  below EAR: Thiamine (B1) · below RDA/AI: Iron, Zinc, Vitamin A, Riboflavin (B2), Vitamin B6, Omega-3 (ALA)
+  P1 vegetarian ₹5243  below EAR: — · below RDA/AI: Iron, Vitamin A, Thiamine (B1), Riboflavin (B2), Vitamin B6, Vitamin E, Omega-3 (ALA)
+  P1 egg        ₹5143  below EAR: — · below RDA/AI: Iron, Vitamin A, Thiamine (B1), Riboflavin (B2), Vitamin B6, Vitamin E, Vitamin K, Omega-3 (ALA)
+  P1 nonveg     ₹5399  below EAR: — · below RDA/AI: Iron, Vitamin A, Thiamine (B1), Riboflavin (B2), Vitamin B6
+  P2 vegetarian ₹5396  below EAR: — · below RDA/AI: Iron, Vitamin A, Riboflavin (B2), Vitamin B6, Vitamin E, Omega-3 (ALA)
+  P2 egg        ₹5270  below EAR: — · below RDA/AI: Vitamin A, Thiamine (B1), Riboflavin (B2), Vitamin B6, Vitamin E, Vitamin K, Omega-3 (ALA)
+  P2 nonveg     ₹5399  below EAR: — · below RDA/AI: Vitamin A, Thiamine (B1), Riboflavin (B2), Vitamin B6
+Wrote lib/data/plan-quantities.generated.ts (24 meals).
+```
+
+Cost sweep (`TL=120 GAP=0.01 npm run solve:sweep`; table from `docs/cost-sweep.md`):
+
+| Ceiling ₹ | Phase | Cost ₹/month (min–max) | Below EAR (variants: nutrients) | Hair nutrients below RDA/AI | Other nutrients below RDA/AI |
+|---|---|---|---|---|---|
+| 4,500 | — | **no plan possible** at this ceiling (Phase 2, cap ₹4500: Infeasible) | | | |
+| 5,000 | 0 | 4,810–5,000 | Thiamine (B1) 3, Vitamin B6 1 | Iron 3, Zinc 3, Vitamin A 3, Riboflavin (B2) 3, Vitamin E 3 | Thiamine (B1) 3, Vitamin B6 3, Vitamin K 3, Omega-3 (ALA) 3 |
+| 5,000 | 1 | 4,843–5,000 | Vitamin B6 1, Riboflavin (B2) 1 | Iron 3, Vitamin A 3, Riboflavin (B2) 3, Vitamin E 2, Zinc 2 | Thiamine (B1) 3, Vitamin B6 3, Omega-3 (ALA) 3, Vitamin K 1 |
+| 5,000 | 2 | 4,951–5,000 | — | Iron 2, Vitamin A 3, Riboflavin (B2) 3, Vitamin E 3 | Vitamin B6 3, Omega-3 (ALA) 3, Thiamine (B1) 2, Vitamin K 1 |
+| 5,500 | 0 | 4,861–5,099 | Thiamine (B1) 3, Vitamin B6 1 | Iron 3, Zinc 3, Vitamin A 3, Riboflavin (B2) 3, Vitamin E 2 | Thiamine (B1) 3, Vitamin B6 3, Vitamin K 3, Omega-3 (ALA) 3 |
+| 5,500 | 1 | 5,238–5,488 | — | Iron 3, Vitamin A 3, Riboflavin (B2) 3, Vitamin E 2 | Thiamine (B1) 3, Vitamin B6 3, Omega-3 (ALA) 3, Vitamin K 1 |
+| 5,500 | 2 | 5,390–5,493 | — | Iron 2, Vitamin A 2, Riboflavin (B2) 3 | Vitamin B6 3, Omega-3 (ALA) 2, Thiamine (B1) 2, Vitamin K 1 |
+| 6,000 | 0 | 4,849–5,096 | Thiamine (B1) 3, Vitamin B6 1 | Iron 3, Zinc 3, Vitamin A 3, Riboflavin (B2) 3, Vitamin E 2 | Thiamine (B1) 3, Vitamin B6 3, Vitamin K 3, Omega-3 (ALA) 3 |
+| 6,000 | 1 | 5,282–5,562 | — | Iron 3, Vitamin A 2, Riboflavin (B2) 3, Vitamin E 3 | Thiamine (B1) 3, Vitamin B6 2, Omega-3 (ALA) 2, Vitamin K 1 |
+| 6,000 | 2 | 5,805–6,000 | — | Iron 2, Vitamin A 2, Riboflavin (B2) 3, Vitamin E 2 | Vitamin B6 3, Omega-3 (ALA) 3, Thiamine (B1) 2, Vitamin K 1 |
+
+Reading the sweep: going from ₹5,400 to ₹6,000 changes almost nothing. Phase 0 thiamine stays below the EAR at every ceiling, because it is limited by the 35 g fibre cap, not by money. Phase 2 gains a little vitamin A and E. The ₹5,400 planning ceiling stays.
+
+`npm test`, `npx tsc --noEmit`, `npm run lint`, `npm run build`:
+```
+ℹ tests 173
+ℹ suites 25
+ℹ pass 173
+ℹ fail 0
+TSC exit:
+0
+LINT:
+> health-plan@0.1.0 lint
+> eslint
+
+BUILD:
+✓ Compiled successfully in 348ms
+✓ Generating static pages using 11 workers (12/12) in 387ms
+┌ ○ /
+├ ○ /_not-found
+├ ○ /health
+├ ○ /meal-plans
+├ ○ /meal-plans/cards
+├ ○ /nutrition
+├ ○ /progress
+├ ○ /recovery
+├ ○ /settings
+└ ○ /training
+```
+
+### Notes
+- **"When to add weight" (first brief, item 2):** already shown for every exercise under "How to do it": "Adding weight: when every set reaches {top of the rep range} reps, next time {increment}". Not changed.
+- **Stale text found, not changed (outside this round):** the Settings deload note still says "lowers effort in the workout logger … see Training → Progression". Both were removed in Round 3.
+- **At ₹4,500 the cost sweep reports no plan possible.** That is because Phase 2 is infeasible at that ceiling; Phases 0–1 alone do fit under ₹4,500. The script reports the whole ceiling as infeasible.
+
+### Not verified
+- **Vercel deploy:** not checked. This branch is not pushed.
+- **Vercel protection options and plans:** not checked against Vercel's current documentation.
+- **Swap amounts** (orange 70–90 g, dates 30–50 g) come from the food table. They were not checked against real portions, and the swap foods are not in the nutrient audit.
+- **Fat at 35%:** saturated fat is not tracked, so the extra curd, paneer and oil were not checked against a saturated-fat limit.
+- **Solver optimality:** Phase 1 stopped at the 120 s time limit (close to the optimum, not proven). Phases 0 and 2 solved to optimal.
+- **Git history** still contains the personal data (see 1).
+
 ## Round 3 (2–3 Nov 2026): branch `round3-trust`, merged to main and pushed
 
 Spec: `docs/brief-round3.md`. Commits: `efc6611`, `f054440`, `d7459bf`, `9f089ff` (main and origin/main are at `9f089ff`; `round3-trust` was deleted after the merge).

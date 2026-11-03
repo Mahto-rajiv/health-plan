@@ -15,7 +15,7 @@ import type { NutrientKey } from './nutrient-keys';
 // (papaya 150 g → apple 60 g: vitamin C 65 → 2 mg) and added fibre on days at
 // the Phase 0 cap (banana → apple +2.6 g). So:
 //   • the swaps are chosen to keep what the main food is there for: orange for
-//     papaya (keeps ~¾ of the vitamin C), dates for banana (the fruit with the
+//     papaya (keeps ~70% of the vitamin C), dates for banana (the fruit with the
 //     least fibre per calorie after banana; a dry staple kept at home);
 //   • each swap shows what it still loses (`swapNote`), e.g. "less folate".
 //     A swap is for a few days; nothing needs replacing for that.

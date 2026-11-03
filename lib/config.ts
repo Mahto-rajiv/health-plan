@@ -126,7 +126,7 @@ export const DAILY = {
   /** Share of energy from fat. Round 4: the top is 35% (was 30%), the US/Canadian AMDR
    *  limit; WHO and ICMR-NIN advise ≤ 30% for the general population. Trial solves
    *  (PROGRESS.md, Round 4) showed 35% closes the Phase 0–1 vitamin E gap and cuts
-   *  the shortfall score by 37–50% in every phase, for ₹150–280 a month more. */
+   *  the shortfall score by 37–50% in every phase, for ₹150–280 a month more on average. */
   fatEnergy: [0.25, 0.35] as [number, number],
   fluidsL: [2.5, 3.5] as [number, number],
   saltG: 5,
