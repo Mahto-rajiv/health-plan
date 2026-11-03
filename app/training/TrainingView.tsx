@@ -6,7 +6,7 @@ import { DAYS } from '@/lib/data/meal-plans';
 import { SESSIONS, WEEK_PLAN, WEEKDAY_GYM_CUTOFF, type SessionId } from '@/lib/data/training';
 import { useSettings } from '@/lib/storage';
 import { useToday } from '@/lib/hooks';
-import { dayName, longDate, programWeek, weekStart } from '@/lib/dates';
+import { dayName, longDate, programWeek, startsLabel, weekStart } from '@/lib/dates';
 import { estimateMinutes, sessionsFor } from '@/lib/training';
 import { cn } from '@/lib/utils';
 import { Segmented } from '@/components/ui/Segmented';
@@ -76,7 +76,7 @@ function TodayTab() {
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
           <span>{longDate(today)}</span>
           <span aria-hidden>·</span>
-          <span>Program week {week}</span>
+          <span>{startsLabel(settings.programStart, today) ?? `Program week ${week}`}</span>
           {deload && <Badge tone="info">Deload (easy) week</Badge>}
         </div>
         <div className="mt-2 flex items-start gap-3">

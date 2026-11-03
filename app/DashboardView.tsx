@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Check, ChevronRight, Clock, Dumbbell, MoonStar, Scale, TrendingUp, Utensils, ListTodo } from 'lucide-react';
 import { useBodyLog, useCheckIns, useMealLog, useSettings } from '@/lib/storage';
 import { useToday } from '@/lib/hooks';
-import { addDays, dayName, longDate, programWeek, shortDate, weekStart } from '@/lib/dates';
+import { addDays, dayName, longDate, programWeek, shortDate, startsLabel, weekStart } from '@/lib/dates';
 import { SESSIONS, WEEK_PLAN, WEEKDAY_GYM_CUTOFF } from '@/lib/data/training';
 import { DAYS, MEAL_SLOTS } from '@/lib/data/meal-plans';
 import { PHASES } from '@/lib/config';
@@ -61,7 +61,7 @@ function Dashboard({ today }: { today: string }) {
           </h1>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Badge tone="outline">Program week {week}</Badge>
+          <Badge tone="outline">{startsLabel(settings.programStart, today) ?? `Program week ${week}`}</Badge>
           {deload && <Badge tone="info">Deload week</Badge>}
           <Badge tone="outline">{PHASES[phase].name.split(' · ')[0]}</Badge>
           <Badge tone="outline">{plan.def.shortName} plan</Badge>

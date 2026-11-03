@@ -58,3 +58,8 @@ export function longDate(iso: string): string {
 export function programWeek(startISO: string, iso: string): number {
   return Math.max(1, Math.floor(daysBetween(weekStart(startISO), iso) / 7) + 1);
 }
+
+/** "Starts Mon 9 Nov" before the program start date, otherwise null (show the week number). */
+export function startsLabel(startISO: string, iso: string): string | null {
+  return iso < startISO ? `Starts ${dayName(startISO).slice(0, 3)} ${shortDate(startISO)}` : null;
+}

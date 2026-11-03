@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { Download, Upload, RotateCcw, User, CalendarRange, Database, IndianRupee } from 'lucide-react';
 import { useSettings, useHydrated, usePriceOverrides, exportAll, importAll, clearAll, type Settings } from '@/lib/storage';
 import { useToday } from '@/lib/hooks';
-import { programWeek, shortDate, weekStart, addDays } from '@/lib/dates';
+import { programWeek, shortDate, startsLabel, weekStart, addDays } from '@/lib/dates';
 import { MEAL_PLAN_DEFINITIONS, type PlanId } from '@/lib/data/meal-plans';
 import { FOODS, type FoodId } from '@/lib/data/foods';
 import { DEFAULT_PRICES, PRICES_AS_OF } from '@/lib/data/prices';
@@ -214,7 +214,7 @@ export function SettingsView() {
               ]}
             />
             <p className="mt-1.5 text-xs text-muted">
-              Auto follows the program week ({today ? `now week ${programWeek(settings.programStart, today)} → ${PHASES[phaseForWeek(programWeek(settings.programStart, today))].name}` : '…'}).
+              Auto follows the program week ({today ? `${startsLabel(settings.programStart, today) ?? `now week ${programWeek(settings.programStart, today)}`} → ${PHASES[phaseForWeek(programWeek(settings.programStart, today))].name}` : '…'}).
               Pick a phase to move up early (e.g. when the Progress page suggests +200 kcal) or to stay longer.
             </p>
           </div>
@@ -223,7 +223,7 @@ export function SettingsView() {
               <div className="min-w-0">
                 <div className="text-sm font-medium text-ink">Deload this week</div>
                 <div className="text-xs text-muted">
-                  {thisWeek ? `Week of ${shortDate(thisWeek)}–${shortDate(addDays(thisWeek, 6))} · program week ${programWeek(settings.programStart, today!)}` : ''}
+                  {thisWeek ? `Week of ${shortDate(thisWeek)}–${shortDate(addDays(thisWeek, 6))} · ${startsLabel(settings.programStart, today!) ?? `program week ${programWeek(settings.programStart, today!)}`}` : ''}
                 </div>
               </div>
               <Button variant={deloadOn ? 'primary' : 'secondary'} size="sm" aria-pressed={deloadOn} onClick={() => update({ deloadWeek: deloadOn ? null : thisWeek })}>

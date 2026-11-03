@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { assessGain, waistLimits, weeklyAverages } from '../lib/progress';
-import { addDays } from '../lib/dates';
+import { addDays, startsLabel } from '../lib/dates';
 import type { BodyEntry } from '../lib/storage';
 
 const START = '2026-11-02';
@@ -35,5 +35,13 @@ describe('weight decisions', () => {
   it('waist cut-offs come from height', () => {
     assert.deepEqual(waistLimits(180), { review: 85, stop: 90 });
     assert.deepEqual(waistLimits(170), { review: 80, stop: 85 });
+  });
+});
+
+describe('program start label', () => {
+  it('shows "Starts Mon 9 Nov" before the start, the week number from the start day', () => {
+    assert.equal(startsLabel('2026-11-09', '2026-11-03'), 'Starts Mon 9 Nov');
+    assert.equal(startsLabel('2026-11-09', '2026-11-09'), null);
+    assert.equal(startsLabel('2026-11-09', '2026-12-01'), null);
   });
 });
