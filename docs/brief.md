@@ -1,5 +1,7 @@
 # TASK: Audit-driven fix of my fitness & nutrition website
 
+_Personal details (body measurements, health history, referral wording) were removed from this file in Round 6._
+
 Site: Next.js app deployed at health-plan-eta.vercel.app (private repo). A review found real defects. Fix them in the existing project: preserve working features, reuse the stack, add dependencies only if justified, no framework migration, no new backend. Save this prompt as docs/brief.md and treat it as the spec.
 
 ## 0. Rules of engagement
@@ -9,9 +11,9 @@ Site: Next.js app deployed at health-plan-eta.vercel.app (private repo). A revie
 - FIRST inspect everything before changing anything, especially the parts a reviewer could not see: all Training tabs, Progress, Recovery, Settings, the data for all meal plans, grocery and cost logic. Write findings to PROGRESS.md.
 
 ## 1. Facts about me (current; override anything on the site)
-- Male, 24, 180 cm, 64 kg now (BMI ~19.8). Was ~68 kg six months ago. The old "stable at 66 kg" assumption is WRONG everywhere; fix defaults, maintenance text and the Progress baseline.
+- [Profile removed.] The old "stable weight" assumption is WRONG everywhere; fix defaults, maintenance text and the Progress baseline.
 - Complete beginner; full-equipment gym near home, open until 10 PM.
-- Intake now: under ~2,000 kcal, under ~60 g protein (my own estimate). Estimated maintenance ~2,000-2,100 kcal (label it an estimate).
+- [Current intake and maintenance removed.] Label any maintenance figure as an estimate.
 - Weekdays: leave home ~8:30-9 AM, home 8-9 PM (9 h work, ends 6-7:30 PM). Bedtime target 12:30 AM; I wake ~7-8:30 AM.
 - Office has a fridge only. No kettle, no vacuum jar, no microwave, no reheating. I carry an insulated lunch bag plus a frozen water bottle or ice pack.
 - My mom cooks at home. Recipes must be simple household food (max 2 pots), raw-gram quantities plus household measures, no special cooking. Add a printable "cooking card" per dinner.
@@ -37,8 +39,8 @@ Each meal: ingredient quantities, kcal and macros, preparation, active and total
 - Phase 1, weeks 3-4: ~2,400 kcal, ~105 g protein, fibre <=40 g.
 - Phase 2, week 5+: 2,550-2,700 kcal, 110-125 g protein, fibre <=50 g.
 - Fat ~25-30% of energy, fluids 2.5-3.5 L, salt ~5 g/day, iodised salt.
-- Weight-gain target 0.5-1.0 kg/month once gaining. First checkpoint 68 kg (my pre-loss weight); reassess the 75 kg goal there.
-- Progress page: allow entering historical weights (68 six months ago, 64 now). Weekly averages decide phase and adjustments. If the trend is still falling after 2 weeks in Phase 0/1, suggest +200 kcal and show "discuss unexplained weight loss with a doctor". Optional "current intake" self-estimate in Settings.
+- Weight-gain target 0.5-1.0 kg/month once gaining. First checkpoint: the pre-loss weight; reassess the long-term goal there.
+- Progress page: allow entering historical weights. Weekly averages decide phase and adjustments. If the trend is still falling after 2 weeks in Phase 0/1, suggest +200 kcal. Optional "current intake" self-estimate in Settings.
 - Keep waist, strength and photo tracking. Waist cut-offs derived from my height.
 - Make macros reconcile with kcal (4/4/9 plus a stated fibre treatment) within ~3%; state whether carbs are total or available. Fix any claim that doesn't match the data (e.g. "25-40 g protein per meal").
 
@@ -48,9 +50,9 @@ Each meal: ingredient quantities, kcal and macros, preparation, active and total
 - Include exercises, sets, reps, intensity (RIR/RPE), rest, progression, deload, cardio, core, mobility, flexibility, recovery and sleep guidance, injury prevention, and a simple missed-session rule with no catch-up volume.
 
 ## 5. Health page fixes
-- Replace the line claiming the plan "removes protein/energy as possible causes" of hair loss. New text: weight loss and low intake over the past 6 months are a recognised trigger for diffuse shedding (telogen effluvium) and fit this timeline; a dermatologist must confirm; nutrition cannot be shown to cure it.
-- Top-of-page to-do: book a dermatologist; tell the doctor about the ~4 kg weight loss; ask about ferritin, zinc, folate, active B12 (holotranscobalamin).
-- Shorten B12: course, active-B12 test first, retest, doctor decides. Drop the lung-cancer cohort detail. Keep vitamin D3 1,000 IU/day as already written. No new supplements; biotin and "hair blends" stay "avoid"; creatine stays optional.
+- Replace the line claiming the plan "removes protein/energy as possible causes" of a symptom; nutrition cannot be shown to cure it. [Details removed.]
+- Add a top-of-page to-do list. [Items removed.]
+- Shorten the B12 entry and drop the lung-cancer cohort detail. No new supplements; creatine stays optional.
 - Keep the digestive-health section; fix the ramp so it covers Meals 1 and 3 by quantity per phase.
 
 ## 6. Evidence and links

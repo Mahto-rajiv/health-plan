@@ -1,10 +1,12 @@
 # ROUND 3
 
+_Personal details (body measurements, health history, referral wording) were removed from this file in Round 6._
+
 Read docs/brief.md, docs/brief-round2.md and PROGRESS.md first. Earlier briefs still apply unless this overrides them. Same working rules: new branch, small commits, never push/pull/merge without asking me, keep PROGRESS.md current, paste real command output (not summaries), and don't claim anything is verified unless you checked it.
 
 ## What I need (my requirements)
 1. Nutrient numbers I can trust. Every value in the app must be physically plausible, and the audit must reflect the real food.
-2. The nutrients linked to hair loss (iron, zinc, riboflavin, folate, B12, vitamins A and E, selenium, biotin) planned to the RDA/AI where achievable, not just the EAR. I have unexplained shedding and untested ferritin and zinc.
+2. A set of key nutrients (iron, zinc, riboflavin, folate, B12, vitamins A and E, selenium, biotin) planned to the RDA/AI where achievable, not just the EAR.
 3. Spend as little as possible without losing anything. Order of priority:
    (a) hard limits: food safety, upper limits, the 4-meal structure, the cold-lunch rule, fibre caps, calorie and protein bands;
    (b) nutrient adequacy;
