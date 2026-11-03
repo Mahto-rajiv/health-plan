@@ -1,6 +1,6 @@
 # Progress
 
-## Round 7 (3 Nov 2026): branch `meal1-simplify`, not pushed
+## Round 7 (3 Nov 2026): branch `meal1-simplify`, merged to main and pushed
 
 Meal 1 only, plus the re-solve it needs.
 
