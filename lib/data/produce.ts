@@ -53,10 +53,12 @@ export const SLOTS: Record<SlotId, SlotFill> = {
       { food: 'pumpkin', share: 0.15, alt: 'carrot' },
     ],
   },
+  // Round 4: carrot is in the salad every day (vitamin A was below the RDA in every plan).
   salad: {
-    name: 'cucumber, onion and tomato',
+    name: 'cucumber, carrot, onion and tomato',
     foods: [
-      { food: 'cucumber', share: 0.5, alt: 'carrot' },
+      { food: 'cucumber', share: 0.3, alt: 'radish' },
+      { food: 'carrot', share: 0.2, alt: 'beetroot' },
       { food: 'onion', share: 0.25 },
       { food: 'tomato', share: 0.25 },
     ],

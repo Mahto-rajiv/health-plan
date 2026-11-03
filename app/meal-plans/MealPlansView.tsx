@@ -224,7 +224,7 @@ function DayTotals({
     { label: 'Calories', value: `${roundKcal(totals.kcal)}`, target: `${P.kcal[0].toLocaleString('en-IN')}–${P.kcal[1].toLocaleString('en-IN')}`, ok: totals.kcal >= P.kcal[0] && totals.kcal <= P.kcal[1] },
     { label: 'Protein', value: `${Math.round(totals.protein)} g`, target: `${Math.round(P.protein[0])}–${Math.round(P.protein[1])} g`, ok: totals.protein >= P.protein[0] && totals.protein <= P.protein[1] },
     { label: 'Fibre', value: `${Math.round(totals.fiber)} g`, target: `≤ ${P.fibreMax} g`, ok: totals.fiber <= P.fibreMax },
-    { label: 'Fat', value: `${Math.round(totals.fat)} g (${Math.round(fatPct)}%)`, target: `${DAILY.fatEnergy[0] * 100}–${DAILY.fatEnergy[1] * 100}% of energy`, ok: fatPct >= 24 && fatPct <= 31 },
+    { label: 'Fat', value: `${Math.round(totals.fat)} g (${Math.round(fatPct)}%)`, target: `${DAILY.fatEnergy[0] * 100}–${DAILY.fatEnergy[1] * 100}% of energy`, ok: fatPct >= DAILY.fatEnergy[0] * 100 - 1 && fatPct <= DAILY.fatEnergy[1] * 100 + 1 },
     { label: 'Carbs (available)', value: `${Math.round(totals.carbs)} g`, target: 'the rest', ok: true },
   ];
   return (

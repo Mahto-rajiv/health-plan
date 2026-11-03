@@ -419,7 +419,7 @@ describe('food data provenance', () => {
   it('phase targets match the brief', () => {
     const avg = (r: [number, number]) => (r[0] + r[1]) / 2;
     assert.ok(Math.abs(avg(PHASES[0].kcal) - 2200) < 1 && Math.abs(avg(PHASES[0].protein) - 90) < 0.01 && PHASES[0].fibreMax === 35);
-    assert.ok(Math.abs(avg(PHASES[1].kcal) - 2400) < 1 && Math.abs(avg(PHASES[1].protein) - 105) < 0.01 && PHASES[1].fibreMax === 40);
+    assert.ok(Math.abs(avg(PHASES[1].kcal) - 2400) < 1 && Math.abs(avg(PHASES[1].protein) - 105) < 0.01 && PHASES[1].fibreMax === 45);
     assert.deepEqual([PHASES[2].kcal, PHASES[2].protein, PHASES[2].fibreMax], [[2550, 2700], [110, 125], 50]);
     const phases: PhaseId[] = [0, 1, 2];
     assert.equal(phases.length, PHASE_IDS.length);

@@ -37,9 +37,9 @@ export const TARGETS: Target[] = [
   {
     key: 'fat',
     label: 'Fat',
-    value: '25–30% of energy',
-    basis: 'Inside the ICMR-NIN and WHO advice of ≤ 30% of energy from fat. Most of it comes from milk, curd, paneer and peanuts; visible oil is ~4–12 g per cooked meal.',
-    refs: ['icmr2024', 'whoFats'],
+    value: '25–35% of energy',
+    basis: 'Within the US/Canadian range of 20–35% of energy. WHO and ICMR-NIN advise ≤ 30% for the general population, mainly to limit weight gain; this plan is for regaining weight, and the extra room is what lets it reach the vitamin E need (the solver uses it for more cooking oil, curd and paneer, and less rice). Most of the fat comes from milk, curd, paneer, oil, peanuts and seeds.',
+    refs: ['driMacros', 'icmr2024', 'whoFats'],
   },
   {
     key: 'fiber',
@@ -141,7 +141,7 @@ export const HYDRATION = [
 export const GUT = {
   intro: 'There is no diagnosed condition, so the plan doesn’t cut out nutritious foods. Instead it changes how they are prepared and how quickly fibre increases.',
   steps: [
-    { title: 'Ramp up with the phases', body: 'Fibre is capped at 35 g a day in weeks 1–2, 40 g in weeks 3–4 and 50 g from week 5, and soya and sattu are capped at 20 g and 25 g a day in Phase 0. The table below shows how Meals 1 and 3 grow. Gas usually settles as your gut adapts.' },
+    { title: 'Ramp up with the phases', body: 'Fibre is capped at 35 g a day in weeks 1–2, 45 g in weeks 3–4 and 50 g from week 5, and soya and sattu are capped at 20 g and 25 g a day in Phase 0. The table below shows how Meals 1 and 3 grow. Gas usually settles as your gut adapts.' },
     { title: 'Soak, discard, pressure-cook', body: 'Soak chana, rajma and whole moong 8–16 h, throw away the soaking water and pressure-cook until very soft. Soaking and cooking reduce the gas-forming sugars (oligosaccharides).' },
     { title: 'Meal size', body: 'Four moderate meals are easier than two large ones. Eat lunch and dinner slowly; finish dinner 2–3 hours before bed.' },
     { title: 'Fluids with fibre', body: 'Fibre needs water. Spread 2.5–3.5 L across the day rather than drinking a lot at once with meals.' },

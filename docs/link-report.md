@@ -1,6 +1,6 @@
 # Link check
 
-Run 2026-11-02 with `npm run links`. 199 links: 190 ok, 0 redirected, 9 blocked automated access, 0 failed.
+Run 2026-11-03 with `npm run links`. 199 links: 190 ok, 0 redirected, 9 blocked automated access, 0 failed.
 
 "Match" compares the title the app shows with the page title (YouTube via oEmbed, PubMed via Europe PMC). "check" means the words differ enough to look at by hand; "n/a" means no title could be read (PDF or blocked).
 

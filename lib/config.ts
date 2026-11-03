@@ -40,7 +40,7 @@ export const BUDGET = {
  *   dairy is as low as the nutrient targets and fibre caps allow. A fixed cap was
  *   tried first: in Phases 0–1 the vegetarian plan is infeasible below ~1,100 g a
  *   day (with less dairy, the calories must come from atta, rice and pulses, which
- *   break the 35/40 g fibre caps). `milkCurdMaxG` is only a backstop.
+ *   break the Phase 0–1 fibre caps). `milkCurdMaxG` is only a backstop.
  * • Variety: no single food gives more than 25% of a week's energy, so the cheapest
  *   plan can't lean on a few foods; every menu item keeps its minimum portion.
  * • Soya chunks ≤ 50 g a day after Phase 0 (Phase 0 cap is in PHASES).
@@ -102,7 +102,9 @@ export const PHASES: Record<PhaseId, Phase> = {
     goal: 'Step up food and protein; weight should be flat or starting to rise.',
     kcal: [2280, 2520],
     protein: [99.75, 110.25],
-    fibreMax: 40,
+    // Round 4: 45 g (was 40). Week 3 onward, after two weeks at 35 g; raises iron,
+    // zinc, B1, B6 and E (trial solves in PROGRESS.md, Round 4).
+    fibreMax: 45,
     caps: {},
   },
   2: {
@@ -121,8 +123,11 @@ export const PHASE_IDS: PhaseId[] = [0, 1, 2];
 
 /** Shared by all phases. */
 export const DAILY = {
-  /** Share of energy from fat. */
-  fatEnergy: [0.25, 0.3] as [number, number],
+  /** Share of energy from fat. Round 4: the top is 35% (was 30%), the US/Canadian AMDR
+   *  limit; WHO and ICMR-NIN advise ≤ 30% for the general population. Trial solves
+   *  (PROGRESS.md, Round 4) showed 35% closes the Phase 0–1 vitamin E gap and cuts
+   *  the shortfall score by 37–50% in every phase, for ₹150–280 a month more. */
+  fatEnergy: [0.25, 0.35] as [number, number],
   fluidsL: [2.5, 3.5] as [number, number],
   saltG: 5,
   /** Weight-gain rate once gaining (kg/month). */
