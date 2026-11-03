@@ -32,7 +32,7 @@ export const BLOOD_TESTS: BloodTest[] = [
     unit: 'ng/mL',
     labRange: 'Varies by guideline (see note)',
     group: 'Vitamins',
-    bands: [{ below: 12, status: 'outside' }, { below: 20, status: 'discuss' }, { below: 30, status: 'low-normal' }, { below: 100, status: 'normal' }],
+    bands: [{ below: 20, status: 'outside' }, { below: 30, status: 'discuss' }, { below: 100, status: 'normal' }],
     top: 'outside',
     about:
       'Guidelines disagree on this number. By the US National Academies (IOM) standard, ≥ 20 ng/mL is adequate for most people and < 12 is deficient. The 2011 Endocrine Society guideline called 21–29 “insufficient”. Its 2024 update no longer defines a target level and advises against routine testing in healthy adults. A 2025 Indian expert consensus calls 20–30 “insufficient”. So 20–30 is borderline, not a deficiency: a modest daily dose plus sunlight is a reasonable, low-risk step.',
