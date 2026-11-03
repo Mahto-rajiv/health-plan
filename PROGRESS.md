@@ -1,5 +1,69 @@
 # Progress
 
+## Round 7 (3 Nov 2026): branch `meal1-simplify`, not pushed
+
+Meal 1 only, plus the re-solve it needs.
+
+### Status
+- [x] **Meal 1 has 5 ingredients in every plan:**
+  - milk, oats, the seed jar and papaya;
+  - plus peanuts (Veg), 1 egg (Veg + Eggs) or 2 eggs (Non-veg).
+  - Removed: flax, almonds, banana, and loose seeds.
+- [x] **Seed jar:** equal weights of sunflower, pumpkin and sesame seeds, mixed on Sunday (35 g of each for the week). Meal 1 uses 15 g (1½ heaped tbsp).
+  - It is a slot (`seeds` in `lib/data/produce.ts`), so nutrients and the shopping list still count the 3 seeds.
+  - The meal card shows it as one row.
+- [x] **The same recipe in every phase.** Peanuts 10 g (≈ 1 tbsp), eggs, the jar and papaya 100 g (about ⅔ cup) are fixed.
+  - Only oats and milk change, and they never go down from one phase to the next. New solver rule: items marked `rising` start from the previous phase's amount.
+  - Every amount is a multiple of 5 g.
+- [x] **Veg + Eggs and Non-veg differ.**
+  - With 2 eggs, Veg + Eggs Phase 0 is infeasible: saturated fat < 10% and fibre ≤ 35 g can't both hold, because its egg lunch and egg dinner already add saturated fat.
+  - Non-veg fits 2 eggs.
+- [x] **Spoon measures** round to the nearest ½ (e.g. "≈ 1 tbsp", not "1.1 tbsp"). This is in `formatQuantity`, so other meals' spoon labels change the same way.
+- Blocked: none.
+
+### Limits found
+- **Seed jar size:** any jar over 15 g makes Phase 0 infeasible. The solver tried 20, 25, 30 and 40 g, and sunflower-heavy mixes. A 30 g jar fails even when only the vegetarian plan uses it.
+- **New gaps below the EAR:**
+  - Veg P0 vitamin E: 11.9 of 12 mg;
+  - Non-veg P0 riboflavin: 2.06 of 2.1 mg;
+  - Veg P0 B6: 1.94 of 2.1 mg (was 2.10);
+  - Veg P1–P2 B6: 2.099 of 2.1 mg.
+  - These are the nutrients the loose sunflower seeds, almonds and banana used to supply.
+- **Omega-3 (ALA)** is about 0.9 g/day in every phase without flax (it was about 2.1 g in P1–P2).
+- **Vitamin A** is lower in Veg + Eggs P1–P2 (−100 µg) because Meal 1 has 1 egg instead of 2.
+- **Overnight oats** (not built): soaking the same oats in the same milk overnight would save ~5 minutes and a pan, with the same nutrients. Meal 1 already fits the 10-minute rule, so it is a swap to add only if mornings get tight.
+
+### Before → after (weekly averages, default prices)
+| Phase · plan | kcal | Protein g | Fibre g | Iron mg | Zinc mg | Folate µg | Vit A µg | Sat fat % (avg) | Sat fat % (max day) | ₹/month |
+|---|---|---|---|---|---|---|---|---|---|---|
+| P0 · Veg | 2226 → 2231 | 87.9 → 87.5 | 34.5 → 34.6 | 11.4 → 12.2 | 14.3 → 14.3 | 376 → 377 | 527 → 513 | 9.7 → 9.7 | 9.7 → 9.7 | 4633 → 4550 |
+| P0 · Veg + Eggs | 2209 → 2217 | 90.4 → 89.6 | 34.5 → 34.6 | 12.6 → 13.1 | 14.5 → 14.3 | 380 → 380 | 593 → 584 | 9.3 → 9.3 | 9.7 → 9.6 | 4611 → 4528 |
+| P0 · Non-veg | 2216 → 2221 | 91.2 → 91.5 | 34.1 → 34.2 | 12.6 → 13.9 | 14.8 → 14.5 | 384 → 403 | 693 → 753 | 9.2 → 9.1 | 9.7 → 9.7 | 4918 → 4793 |
+| P1 · Veg | 2484 → 2487 | 105.3 → 105.2 | 44.6 → 44.6 | 17.9 → 17.0 | 18.0 → 17.0 | 504 → 502 | 643 → 632 | 9.6 → 9.6 | 9.7 → 9.7 | 5337 → 5042 |
+| P1 · Veg + Eggs | 2437 → 2484 | 109.2 → 108.5 | 44.0 → 43.9 | 17.5 → 17.2 | 17.1 → 17.0 | 495 → 477 | 778 → 673 | 9.5 → 9.3 | 9.7 → 9.7 | 5098 → 5055 |
+| P1 · Non-veg | 2456 → 2477 | 107.9 → 108.0 | 42.7 → 40.8 | 17.6 → 17.4 | 17.2 → 17.0 | 516 → 497 | 926 → 902 | 9.3 → 9.3 | 9.7 → 9.7 | 5389 → 5400 |
+| P2 · Veg | 2640 → 2631 | 111.9 → 113.4 | 49.6 → 49.5 | 19.0 → 18.9 | 18.5 → 18.1 | 538 → 550 | 647 → 639 | 9.5 → 9.5 | 9.7 → 9.7 | 5398 → 5175 |
+| P2 · Veg + Eggs | 2619 → 2620 | 117.1 → 116.7 | 48.8 → 48.5 | 19.3 → 19.2 | 18.0 → 18.1 | 536 → 527 | 795 → 691 | 9.3 → 9.1 | 9.7 → 9.6 | 5228 → 5164 |
+| P2 · Non-veg | 2633 → 2616 | 113.8 → 115.0 | 46.6 → 44.2 | 19.0 → 18.9 | 17.9 → 18.0 | 542 → 535 | 928 → 913 | 8.9 → 9.1 | 9.4 → 9.4 | 5400 → 5400 |
+
+### Solve (`TL=120 GAP=0.01 npm run solve`, 3 Nov)
+```
+Cost ceiling ₹5400/month at default prices.
+Phase 0: Optimal in 7 s; shortfall score 1030.5, milk + curd 844 g/day, average ₹4624/month
+Phase 1: Optimal in 31 s; shortfall score 410.3, milk + curd 947 g/day, average ₹5165/month
+Phase 2: Optimal in 1 s; shortfall score 284.8, milk + curd 940 g/day, average ₹5247/month
+  P0 vegetarian ₹4550  below EAR: Thiamine (B1), Vitamin B6, Vitamin E · below RDA/AI: Iron, Zinc, Vitamin A, Riboflavin (B2), Vitamin K, Omega-3 (ALA)
+  P0 egg        ₹4528  below EAR: Thiamine (B1), Vitamin B6 · below RDA/AI: Iron, Zinc, Vitamin A, Riboflavin (B2), Vitamin C, Vitamin E, Vitamin K, Omega-3 (ALA)
+  P0 nonveg     ₹4793  below EAR: Thiamine (B1), Riboflavin (B2) · below RDA/AI: Iron, Zinc, Vitamin A, Vitamin B6, Vitamin E, Vitamin K, Omega-3 (ALA)
+  P1 vegetarian ₹5042  below EAR: Vitamin B6 · below RDA/AI: Iron, Zinc, Vitamin A, Thiamine (B1), Vitamin E, Omega-3 (ALA)
+  P1 egg        ₹5055  below EAR: — · below RDA/AI: Iron, Vitamin A, Thiamine (B1), Riboflavin (B2), Vitamin B6, Vitamin E, Vitamin K, Omega-3 (ALA)
+  P1 nonveg     ₹5400  below EAR: — · below RDA/AI: Iron, Vitamin A, Thiamine (B1), Riboflavin (B2), Vitamin B6, Omega-3 (ALA)
+  P2 vegetarian ₹5175  below EAR: Vitamin B6 · below RDA/AI: Iron, Vitamin A, Vitamin E, Omega-3 (ALA)
+  P2 egg        ₹5164  below EAR: — · below RDA/AI: Vitamin A, Vitamin B6, Vitamin K, Omega-3 (ALA)
+  P2 nonveg     ₹5400  below EAR: — · below RDA/AI: Iron, Vitamin A, Thiamine (B1), Vitamin B6, Omega-3 (ALA)
+Wrote lib/data/plan-quantities.generated.ts (25 meals).
+```
+
 ## Round 6 (3 Nov 2026): branch `round6-cleanup`, merged to main and pushed
 
 Small cleanup only.
