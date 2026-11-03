@@ -1,6 +1,6 @@
 # Progress
 
-## Round 6 (3 Nov 2026): branch `round6-cleanup`, not pushed
+## Round 6 (3 Nov 2026): branch `round6-cleanup`, merged to main and pushed
 
 Small cleanup only.
 
@@ -12,7 +12,11 @@ Small cleanup only.
 - [x] **Nutrition → "When to change the food"** is simpler and needs only the weekly weigh-in.
   - Removed: the waist rule, the pre-loss checkpoint, and the target-weight callout with its 2 references.
   - Kept: the Phase 0 rule, the Phase 2 "+150 kcal after 4 weeks" rule, the "slow down" rule and the "maintain when life is busy" rule.
-- Blocked: none. Nothing pushed.
+- [x] **Personal numbers missed in Round 5**, removed at your request:
+  - the BMR, past-intake and maintenance rows (`lib/data/nutrition-guide.ts`) and the paragraph under them on Nutrition, with the now-unused Mifflin and Frankenfield references;
+  - "toward your pre-loss weight" in the Phase 2 goal (`lib/config.ts`);
+  - the "Hair" header in `docs/cost-sweep.md`, changed to "★".
+- Blocked: none.
 
 ### Still in git history
 - Personal data appears from `4fe085b` onward:
