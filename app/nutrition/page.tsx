@@ -161,9 +161,6 @@ export default function NutritionPage() {
             <div className="space-y-3 text-sm text-ink-2">
               <p>{GAIN_RULES.why}</p>
               <p>{GAIN_RULES.timeline}</p>
-              <Callout tone="caution" title="Is 75 kg the right target?">
-                {GAIN_RULES.target}
-              </Callout>
               <div>
                 <div className="mb-1 font-medium text-ink">How to weigh</div>
                 <p>{GAIN_RULES.weigh}</p>
@@ -181,7 +178,7 @@ export default function NutritionPage() {
               </ul>
             </div>
           </div>
-          <References ids={[...GAIN_RULES.refs, ...GAIN_RULES.targetRefs]} />
+          <References ids={GAIN_RULES.refs} />
         </Card>
 
         <div className="grid gap-5 lg:grid-cols-[1.3fr_1fr]">

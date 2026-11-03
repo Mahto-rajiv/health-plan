@@ -83,17 +83,13 @@ export const GAIN_RULES = {
   rate: 'First stop the loss (Phase 0). Then +0.5–1.0 kg per month (≈ 0.2–0.35% of body weight per week). After ~6 months, as beginner gains slow, +0.3–0.7 kg per month.',
   why: 'A review of off-season nutrition suggests 0.25–0.5% of body weight per week for novices. This plan sits in the lower half of that range because your goals are strength, health and a moderate physique, not maximum size. In trials, bigger surpluses mostly added fat, not more muscle. Beginners gain muscle well even on small surpluses, because training is the main driver.',
   refs: ['helms2023', 'garthe', 'iraki', 'slater', 'benito'] as RefId[],
-  timeline: 'At that rate, each kilo back takes 1–2 months, counted from when the loss has stopped, until you reach your pre-loss weight (the first checkpoint). Much of what you notice early will be strength and shape, not scale weight.',
-  target: 'Your pre-loss weight is the first checkpoint. There, compare waist and lifts, then decide whether to continue toward 75 kg (BMI 23.1, which sits at the Asian action point of BMI 23).',
-  targetRefs: ['whoAsianBmi', 'misra'] as RefId[],
+  timeline: 'At that rate, each kilo takes 1–2 months, counted from when the loss has stopped. Much of what you notice early will be strength and shape, not scale weight.',
   /** How to weigh. Nothing is logged in the app. */
   weigh: 'Weigh yourself once a week: same day, in the morning, after the toilet and before food or water. A single reading can swing by 0.5–1.5 kg, so look at the direction over 2–3 weeks.',
   decisions: [
     { when: 'Phase 0: still losing weight after 2 weeks although you ate the plan', then: 'Add about 200 kcal a day: 55 g raw rice more at dinner (≈ 195 kcal), cooked and drained as usual.' },
-    { when: 'Phase 2: gaining less than 0.5 kg a month for 4+ weeks, and you ate the plan most days', then: 'Add ~150 kcal (e.g. +1 roti) and look again in 4 weeks.' },
-    { when: 'Gaining more than 1.2 kg a month after the first month', then: 'Slow down: remove ~150 kcal (one roti or a third of the dinner rice).' },
-    { when: 'Waist reaches half your height (90 cm at 180 cm, also the Asian-Indian cut-off for men)', then: 'Stop gaining. Maintain.' },
-    { when: 'Weight reaches your pre-loss weight', then: 'Checkpoint: maintain 4–6 weeks and reassess the 75 kg goal.' },
+    { when: 'Phase 2: the scale has not gone up after 4 weeks, and you ate the plan most days', then: 'Add ~150 kcal (e.g. +1 roti), then wait another 4 weeks.' },
+    { when: 'Gaining more than about 1 kg a month after the first month', then: 'Slow down: remove ~150 kcal (one roti or a third of the dinner rice).' },
     { when: 'Poor sleep, illness or a heavy work stretch', then: 'Maintain instead of gaining until life settles.' },
   ],
 };

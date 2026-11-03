@@ -26,8 +26,6 @@ export const REFS = {
   garthe: { label: 'Garthe I et al. (2013). Effect of nutritional intervention on body composition in elite athletes. Eur J Sport Sci.', url: 'https://pubmed.ncbi.nlm.nih.gov/23679146/' },
   benito: { label: 'Benito PJ et al. (2020). Effect of resistance training on whole-body muscle growth in healthy adult males: meta-analysis. IJERPH.', url: 'https://pubmed.ncbi.nlm.nih.gov/32079265/' },
   slater: { label: 'Slater GJ et al. (2019). Is an energy surplus required to maximize skeletal muscle hypertrophy? Front Nutr.', url: 'https://pubmed.ncbi.nlm.nih.gov/31482093/' },
-  whoAsianBmi: { label: 'WHO Expert Consultation (2004). Appropriate BMI for Asian populations. Lancet.', url: 'https://pubmed.ncbi.nlm.nih.gov/14726171/' },
-  misra: { label: 'Misra A et al. (2009). Consensus statement for diagnosis of obesity in Asian Indians. J Assoc Physicians India.', url: 'https://pubmed.ncbi.nlm.nih.gov/19582986/' },
   morton: { label: 'Morton RW et al. (2018). Protein supplementation and resistance-training gains: meta-analysis. Br J Sports Med.', url: 'https://pubmed.ncbi.nlm.nih.gov/28698222/' },
   schoenfeldAragon: { label: 'Schoenfeld BJ, Aragon AA (2018). How much protein can the body use in a single meal? JISSN.', url: 'https://pubmed.ncbi.nlm.nih.gov/29497353/' },
   heviaLarrain: { label: 'Hevia-Larraín V et al. (2021). High-protein plant-based vs omnivorous diet for muscle gains. Sports Med.', url: 'https://pubmed.ncbi.nlm.nih.gov/33599941/' },
