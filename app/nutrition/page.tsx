@@ -80,7 +80,7 @@ export default function NutritionPage() {
               ))}
             </dl>
             <p className="mt-3 text-sm text-ink-2">
-              You lost ~4 kg in about 6 months on under ~2,000 kcal, so your maintenance was probably a little above that: about 2,000–2,100 kcal.
+              You lost weight over about 6 months on under ~2,000 kcal, so your maintenance was probably a little above that: about 2,000–2,100 kcal.
               That is an estimate from your own figures, not a measurement. Phase 0 adds ~100–200 kcal for that, plus ~100–200 kcal for the new
               training. Your weekly weight averages then show where you really are.
             </p>

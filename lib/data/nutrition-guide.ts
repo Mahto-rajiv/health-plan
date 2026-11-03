@@ -2,11 +2,12 @@ import type { RefId } from './references';
 import { BUDGET } from '../config';
 
 // ─── Daily targets ────────────────────────────────────────────────────────────
-// Energy: Mifflin-St Jeor BMR = 10×64 + 6.25×180 − 5×24 + 5 ≈ 1,650 kcal.
-// The equation is a cross-check only. The better evidence is your own history:
-// weight fell ~4 kg (68 → 64) in about 6 months on what you estimate is under
-// ~2,000 kcal and ~60 g protein a day. A loss of ~0.7 kg a month is roughly a
-// 150–200 kcal daily deficit, so maintenance before training was probably about
+// Energy: Mifflin-St Jeor BMR = 10×weight + 6.25×180 − 5×24 + 5 ≈ 1,600–1,700 kcal
+// (the weight is not written here: the repo is public). The equation is a
+// cross-check only. The better evidence is your own history: weight fell over
+// about 6 months on what you estimate is under ~2,000 kcal and ~60 g protein a
+// day. That loss rate is roughly a 150–200 kcal daily deficit, so maintenance
+// before training was probably about
 // 2,000–2,100 kcal (an estimate). Four lifting sessions a week add roughly
 // 100–200 kcal a day on average. Phase targets live in lib/config.ts.
 
@@ -68,8 +69,8 @@ export const ENERGY_NOTE =
   'Calories are calculated from the macros: 4 kcal per g of protein and of available carbohydrate, 9 per g of fat, and 2 per g of fibre (the FAO factor for fibre in mixed diets). Meal and day totals therefore always add up. Food-table values differ by a few percent for some foods; real food varies more than that.';
 
 export const ENERGY_MATH = [
-  { label: 'BMR (Mifflin-St Jeor, 64 kg, 180 cm, 24 y)', value: '≈ 1,650 kcal' },
-  { label: 'What you ate while losing ~0.7 kg a month (your estimate)', value: '< ~2,000 kcal' },
+  { label: 'BMR (Mifflin-St Jeor, at your weight, 180 cm, 24 y)', value: '≈ 1,600–1,700 kcal' },
+  { label: 'What you ate while losing weight (your estimate)', value: '< ~2,000 kcal' },
   { label: 'Estimated maintenance before training (estimate)', value: '≈ 2,000–2,100 kcal' },
   { label: 'Phase 0 · weeks 1–2 (stop the loss)', value: '≈ 2,200 kcal' },
   { label: 'Phase 1 · weeks 3–4', value: '≈ 2,400 kcal' },
@@ -82,8 +83,8 @@ export const GAIN_RULES = {
   rate: 'First stop the loss (Phase 0: weekly average within ±0.5 kg of your start). Then +0.5–1.0 kg per month (≈ 0.2–0.35% of body weight per week). After ~6 months, as beginner gains slow, +0.3–0.7 kg per month.',
   why: 'A review of off-season nutrition suggests 0.25–0.5% of body weight per week for novices. This plan sits in the lower half of that range because your goals are strength, health and a moderate physique, not maximum size. In trials, bigger surpluses mostly added fat, not more muscle. Beginners gain muscle well even on small surpluses, because training is the main driver.',
   refs: ['helms2023', 'garthe', 'iraki', 'slater', 'benito'] as RefId[],
-  timeline: 'At that rate, 64 → 68 kg (your pre-loss weight and the first checkpoint) takes roughly 4–8 months after the loss has stopped. Much of what you notice early will be strength and shape, not scale weight.',
-  target: '68 kg is the first checkpoint: it is the weight you had before the loss. There, compare waist, photos and lifts, then decide whether to continue toward 75 kg (BMI 23.1, which sits at the Asian action point of BMI 23).',
+  timeline: 'At that rate, each kilo back takes 1–2 months, counted from when the loss has stopped, until you reach your pre-loss weight (the first checkpoint). Much of what you notice early will be strength and shape, not scale weight.',
+  target: 'Your pre-loss weight (set in Settings) is the first checkpoint: it is the weight you had before the loss. There, compare waist, photos and lifts, then decide whether to continue toward 75 kg (BMI 23.1, which sits at the Asian action point of BMI 23).',
   targetRefs: ['whoAsianBmi', 'misra'] as RefId[],
   decisions: [
     { when: 'Phase 0 or 1, and the weekly average is still falling after 2 weeks although you ate the plan', then: 'Add ~200 kcal (move to the next phase early, or +350 ml milk) and tell a doctor about the unexplained weight loss.' },
@@ -93,7 +94,7 @@ export const GAIN_RULES = {
     { when: 'Waist rising more than ~1 cm per kg gained', then: 'Slow down — more of the gain is fat than muscle.' },
     { when: 'Waist reaches 47% of your height (85 cm at 180 cm)', then: 'Maintain for 4–8 weeks (drop the surplus) and reassess.' },
     { when: 'Waist reaches half your height (90 cm at 180 cm, also the Asian-Indian cut-off for men)', then: 'Stop gaining. Maintain, or a short gentle cut if needed.' },
-    { when: 'Weight reaches 68 kg', then: 'Checkpoint: maintain 4–6 weeks and reassess the 75 kg goal.' },
+    { when: 'Weight reaches your pre-loss weight', then: 'Checkpoint: maintain 4–6 weeks and reassess the 75 kg goal.' },
     { when: 'Poor sleep, illness or a heavy work stretch', then: 'Maintain instead of gaining until life settles.' },
   ],
   measure: [

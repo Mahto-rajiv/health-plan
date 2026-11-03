@@ -13,9 +13,9 @@ import { DAILY, type PhaseId } from './config';
 //  • Waist limits are derived from height: 50% of height = stop gaining, 47% =
 //    slow down. At 180 cm the stop line (90 cm) is also the Asian-Indian cut-off
 //    for men (Misra 2009).
-//  • Checkpoint at the pre-loss weight (68 kg): reassess the 75 kg goal there.
+//  • Checkpoint at the pre-loss weight (Settings): reassess the 75 kg goal there.
 // Daily weight swings by 0.5–1.5 kg, so only weekly averages are compared.
-// Recalled weights (e.g. "68 kg six months ago") are charted but never used here.
+// Recalled weights (e.g. a weight from six months ago) are charted but never used here.
 
 export interface WeeklyPoint {
   weekStart: string;
@@ -52,11 +52,13 @@ export interface WeightLoss {
 }
 
 /** How much weight was lost, from your own log (nothing hard-coded). */
-export function weightLoss(entries: BodyEntry[], settings: { startWeightKg: number; preLossWeightKg: number }): WeightLoss {
+/** Null until both weights are known (from the log or Settings). */
+export function weightLoss(entries: BodyEntry[], settings: { startWeightKg?: number; preLossWeightKg?: number }): WeightLoss | null {
   const weeks = weeklyAverages(entries).filter((w) => w.weight !== undefined);
   const recalled = recalledWeights(entries);
   const now = weeks.length ? weeks[weeks.length - 1].weight! : settings.startWeightKg;
   const before = recalled.length ? recalled[0].weightKg! : settings.preLossWeightKg;
+  if (now === undefined || before === undefined) return null;
   return { before, now, loss: before - now, confirmed: weeks.length > 0 };
 }
 
@@ -110,8 +112,10 @@ export interface GainAssessment {
 
 export interface AssessOptions {
   heightCm: number;
-  startWeightKg: number;
-  preLossWeightKg: number;
+  /** From Settings. Without it, the first weekly average is the baseline. */
+  startWeightKg?: number;
+  /** From Settings. Without it, there is no checkpoint message. */
+  preLossWeightKg?: number;
   phase: PhaseId;
   /** Whole weeks since the program started (0 in week 1). */
   weeksIn: number;
@@ -127,7 +131,8 @@ export function assessGain(entries: BodyEntry[], opts: AssessOptions): GainAsses
   const waistWeeks = all.filter((w) => w.waist !== undefined);
   const latestWaist = waistWeeks[waistWeeks.length - 1]?.waist;
   const limits = waistLimits(opts.heightCm);
-  const sinceStart = latest?.weight !== undefined ? latest.weight - opts.startWeightKg : undefined;
+  const baseline = opts.startWeightKg ?? weeks[0]?.weight;
+  const sinceStart = latest?.weight !== undefined && baseline !== undefined ? latest.weight - baseline : undefined;
 
   const base: Pick<GainAssessment, 'targetRange' | 'latestWeight' | 'latestWaist' | 'sinceStart'> = {
     targetRange,
@@ -183,7 +188,7 @@ export function assessGain(entries: BodyEntry[], opts: AssessOptions): GainAsses
     };
   }
 
-  if (latest?.weight !== undefined && latest.weight >= opts.preLossWeightKg && latest.weight < opts.preLossWeightKg + 1) {
+  if (latest?.weight !== undefined && opts.preLossWeightKg !== undefined && latest.weight >= opts.preLossWeightKg && latest.weight < opts.preLossWeightKg + 1) {
     return {
       ...base,
       status: 'checkpoint',

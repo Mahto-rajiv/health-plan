@@ -142,10 +142,12 @@ function WeightCard() {
   const series = useMemo(() => rollingAverage(body), [body]);
   const latest = series[series.length - 1];
   const status = useMemo(() => assessToday(body, settings, today), [body, settings, today]);
-  const current = latest?.avg ?? settings.startWeightKg;
-  const gained = current - settings.startWeightKg;
+  const start = settings.startWeightKg;
+  const checkpoint = settings.preLossWeightKg;
+  const current = latest?.avg ?? start;
+  const gained = current !== undefined && start !== undefined ? current - start : undefined;
   // The progress bar runs to the first checkpoint (pre-loss weight), not the long-term goal.
-  const span = settings.preLossWeightKg - settings.startWeightKg;
+  const span = start !== undefined && checkpoint !== undefined ? checkpoint - start : undefined;
 
   const save = (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,22 +166,34 @@ function WeightCard() {
       <div className="flex items-end justify-between gap-3">
         <div>
           <div className="tabular text-3xl font-semibold tracking-tight text-ink">
-            {current.toFixed(1)}
+            {current !== undefined ? current.toFixed(1) : '—'}
             <span className="ml-1 text-base font-normal text-muted">kg</span>
           </div>
-          <div className="text-xs text-muted">{latest ? '7-day average' : 'Starting weight. Log a weigh-in.'}</div>
+          <div className="text-xs text-muted">{latest ? '7-day average' : current !== undefined ? 'Starting weight. Log a weigh-in.' : 'Log a weigh-in below.'}</div>
         </div>
         <Sparkline values={series.slice(-21).map((p) => p.avg)} className="h-10 w-28" />
       </div>
-      <div className="tabular mt-3 flex justify-between text-xs text-muted">
-        <span>{settings.startWeightKg} kg start</span>
-        <span>
-          {gained >= 0 ? '+' : ''}
-          {gained.toFixed(1)} kg
-        </span>
-        <span>{settings.preLossWeightKg} kg checkpoint</span>
-      </div>
-      <ProgressBar value={Math.max(0, gained)} max={span > 0 ? span : 1} className="mt-1.5" label="Progress toward the first checkpoint" />
+      {start !== undefined && checkpoint !== undefined && gained !== undefined && span !== undefined ? (
+        <>
+          <div className="tabular mt-3 flex justify-between text-xs text-muted">
+            <span>{start} kg start</span>
+            <span>
+              {gained >= 0 ? '+' : ''}
+              {gained.toFixed(1)} kg
+            </span>
+            <span>{checkpoint} kg checkpoint</span>
+          </div>
+          <ProgressBar value={Math.max(0, gained)} max={span > 0 ? span : 1} className="mt-1.5" label="Progress toward the first checkpoint" />
+        </>
+      ) : (
+        <p className="mt-3 text-xs text-muted">
+          Add your start and pre-loss weights in{' '}
+          <Link href="/settings" className="text-accent underline">
+            Settings
+          </Link>{' '}
+          to track progress toward the checkpoint. They stay in this browser.
+        </p>
+      )}
       <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs">
         <span className="font-medium text-ink">{status.headline}.</span> <span className="text-ink-2">{status.action}</span>
         {status.doctor && <p className="mt-1 font-medium text-amber-800">{DOCTOR_WEIGHT_LOSS}</p>}

@@ -148,7 +148,7 @@ export function SettingsView() {
   return (
     <div className="grid gap-5 lg:grid-cols-2">
       <Card>
-        <CardHeader title="Profile & goal" icon={<User size={18} />} description={`Defaults: ${PROFILE.sex}, ${PROFILE.age}, ${PROFILE.heightCm} cm, ${PROFILE.weightKg} kg now, ${PROFILE.preLossWeightKg} kg six months ago. Used for the waist limits, the checkpoint and the weight decisions.`} />
+        <CardHeader title="Profile & goal" icon={<User size={18} />} description={`Defaults: ${PROFILE.sex}, ${PROFILE.age}, ${PROFILE.heightCm} cm. Your weights are not in the app’s code: enter them here and they stay in this browser only. Used for the waist limits, the checkpoint and the weight decisions.`} />
         <div className="space-y-3">
           <label className="block">
             <span className="text-xs font-medium text-muted">Your first name (optional — shown in the greeting)</span>
@@ -162,8 +162,8 @@ export function SettingsView() {
           </label>
           <div className="grid grid-cols-2 gap-3">
             <NumField label="Height" value={settings.heightCm} onChange={(v) => update({ heightCm: v })} suffix="cm" step="1" />
-            <NumField label="Start weight (now)" value={settings.startWeightKg} onChange={(v) => update({ startWeightKg: v })} suffix="kg" />
-            <NumField label="Pre-loss weight (checkpoint)" value={settings.preLossWeightKg} onChange={(v) => update({ preLossWeightKg: v })} suffix="kg" />
+            <OptField label="Start weight (now)" value={settings.startWeightKg} onChange={(v) => update({ startWeightKg: v })} suffix="kg" step="0.1" />
+            <OptField label="Pre-loss weight (checkpoint)" value={settings.preLossWeightKg} onChange={(v) => update({ preLossWeightKg: v })} suffix="kg" step="0.1" />
             <NumField label="Long-term target" value={settings.targetWeightKg} onChange={(v) => update({ targetWeightKg: v })} suffix="kg" />
             <label className="block">
               <span className="text-xs font-medium text-muted">Program start</span>
@@ -250,7 +250,7 @@ export function SettingsView() {
           <Button
             variant="danger"
             onClick={() => {
-              if (window.confirm('Delete all logged workouts, weights, meals, check-ins and settings? This cannot be undone.')) {
+              if (window.confirm('Delete everything stored in this browser: your start and pre-loss weights, blood results, weigh-ins, meals, check-ins, prices and settings? These are not in the app’s code, so they cannot be recovered. Download a backup first if you want to keep them.')) {
                 clearAll();
                 setMessage({ tone: 'good', text: 'All local data cleared.' });
               }

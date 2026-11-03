@@ -2,19 +2,19 @@
 // Every "within / over budget" label, every phase target and every default
 // profile value in the app is read from here. Change a number once, here.
 
-/** Facts from the owner (Oct 2026). Defaults for Settings; Settings can override them. */
+/**
+ * Facts from the owner (Oct 2026). Defaults for Settings; Settings can override them.
+ * Body weights are not here: the repo and site are public, so the start and
+ * pre-loss weights are entered in Settings and stay in this browser only.
+ */
 export const PROFILE = {
   sex: 'male',
   age: 24,
   heightCm: 180,
-  /** Weight now (start of the program). */
-  weightKg: 64,
-  /** Weight about six months before the program: the pre-loss weight and first checkpoint. */
-  preLossWeightKg: 68,
   longTermTargetKg: 75,
   /** Self-estimate of current intake, not measured. */
   intakeNow: { kcal: 2000, protein: 60 },
-  /** Estimate: weight fell ~4 kg in 6 months on < ~2,000 kcal, so maintenance is a little above that. */
+  /** Estimate: weight fell over 6 months on < ~2,000 kcal, so maintenance is a little above that. */
   maintenanceEstimate: [2000, 2100] as [number, number],
 } as const;
 
@@ -109,7 +109,7 @@ export const PHASES: Record<PhaseId, Phase> = {
     id: 2,
     name: 'Phase 2 · Gain',
     weeks: [5, null],
-    goal: 'Slow gain of 0.5–1.0 kg a month toward the 68 kg checkpoint.',
+    goal: 'Slow gain of 0.5–1.0 kg a month toward your pre-loss weight (the first checkpoint).',
     kcal: [2550, 2700],
     protein: [110, 125],
     fibreMax: 50,

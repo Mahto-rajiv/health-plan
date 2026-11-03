@@ -10,6 +10,19 @@ export function WeightTodo() {
   const [body] = useBodyLog();
   const w = weightLoss(body, settings);
   const kg = (v: number) => (Math.round(v * 10) / 10).toLocaleString('en-IN');
+  if (!w)
+    return (
+      <>
+        Tell the doctor how much weight you lost in about 6 months, and how much you were eating.{' '}
+        <span className="text-muted">
+          Add your start and pre-loss weights in{' '}
+          <Link href="/settings" className="text-accent underline">
+            Settings
+          </Link>{' '}
+          (they stay in this browser) to see the numbers here.
+        </span>
+      </>
+    );
   return (
     <>
       {w.loss > 0.2

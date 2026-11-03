@@ -14,9 +14,10 @@ export interface Settings {
   programStart: string;
   /** 'auto' follows the program week; a number pins that phase. */
   phase: 'auto' | PhaseId;
-  startWeightKg: number;
-  /** Weight before the recent loss; the first checkpoint. */
-  preLossWeightKg: number;
+  /** Weight at the start of the program. Entered in Settings; never in the code (the repo is public). */
+  startWeightKg?: number;
+  /** Weight before the recent loss; the first checkpoint. Entered in Settings, like the start weight. */
+  preLossWeightKg?: number;
   targetWeightKg: number;
   heightCm: number;
   /** Optional self-estimate of what you eat now (before starting the plan). */
@@ -50,6 +51,14 @@ export interface CheckIn {
 }
 export type CheckInLog = Record<string, CheckIn>;
 
+/** Your blood results, typed on the Health page. Kept only in this browser (the code is public). */
+export interface BloodLog {
+  /** Date of the blood test (YYYY-MM-DD). */
+  date?: string;
+  /** By test id (lib/data/health.ts): the number as typed, or 'in' / 'out' for tests without a number. */
+  values: Record<string, string>;
+}
+
 /** The owner starts the program on Monday 9 Nov 2026 (nothing was done before). */
 const PROGRAM_START = '2026-11-09';
 
@@ -57,8 +66,6 @@ export const DEFAULT_SETTINGS: Settings = {
   planId: 'vegetarian',
   programStart: PROGRAM_START,
   phase: 'auto',
-  startWeightKg: PROFILE.weightKg,
-  preLossWeightKg: PROFILE.preLossWeightKg,
   targetWeightKg: PROFILE.longTermTargetKg,
   heightCm: PROFILE.heightCm,
   deloadWeek: null,
@@ -71,7 +78,7 @@ const VALID_PLANS: PlanId[] = ['vegetarian', 'egg', 'nonveg'];
 
 /**
  * Settings saved by older versions: the "Preferred" plan no longer exists, and
- * 66 kg was the old default start weight (the real figure is 64 kg). The training
+ * 66 kg was an old default start weight, never an entry: it is dropped. The training
  * time and season settings no longer exist. Older versions defaulted the start to
  * 6 Oct 2026, which made the app show week 5 before anything had started: a saved
  * start before 9 Nov moves to 9 Nov, and a phase pinned under it goes back to Auto.
@@ -85,7 +92,7 @@ function migrateSettings(s: Settings & { trainingTime?: unknown; season?: unknow
     ...rest,
     ...(early ? { programStart: PROGRAM_START } : {}),
     planId: VALID_PLANS.includes(rest.planId) ? rest.planId : 'vegetarian',
-    startWeightKg: rest.startWeightKg === 66 ? PROFILE.weightKg : rest.startWeightKg,
+    startWeightKg: rest.startWeightKg === 66 ? undefined : rest.startWeightKg,
     phase: early ? 'auto' : rest.phase === 'auto' || rest.phase === 0 || rest.phase === 1 || rest.phase === 2 ? rest.phase : 'auto',
   };
 }
@@ -100,6 +107,7 @@ export const KEYS = {
   meals: `${PREFIX}meals`,
   checkins: `${PREFIX}checkins`,
   prices: `${PREFIX}prices`,
+  blood: `${PREFIX}blood`,
 } as const;
 export type StoreKey = (typeof KEYS)[keyof typeof KEYS];
 
@@ -226,6 +234,8 @@ export const useBodyLog = () => useStore<BodyEntry[]>(KEYS.body, EMPTY_ARRAY);
 export const useMealLog = () => useStore<MealLog>(KEYS.meals, EMPTY_OBJECT as MealLog);
 export const useCheckIns = () => useStore<CheckInLog>(KEYS.checkins, EMPTY_OBJECT as CheckInLog);
 export const usePriceOverrides = () => useStore<PriceOverrides>(KEYS.prices, EMPTY_OBJECT as PriceOverrides);
+const EMPTY_BLOOD: BloodLog = { values: {} };
+export const useBloodLog = () => useStore<BloodLog>(KEYS.blood, EMPTY_BLOOD);
 
 
 export function exportAll(): string {

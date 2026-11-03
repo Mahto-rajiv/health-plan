@@ -105,7 +105,7 @@ export function ProgressView() {
           title="Body weight"
           icon={<Scale size={18} />}
           sample={bodySample}
-          description={`Weigh-ins (grey dots), 7-day average (line) and recalled weights (orange). First checkpoint: ${settings.preLossWeightKg} kg.`}
+          description={`Weigh-ins (grey dots), 7-day average (line) and recalled weights (orange). ${settings.preLossWeightKg !== undefined ? `First checkpoint: ${settings.preLossWeightKg} kg.` : 'Add your pre-loss weight in Settings to show the checkpoint.'}`}
         >
           <TrendChart
             data={weightSeries}
@@ -116,7 +116,7 @@ export function ProgressView() {
               { key: 'avg', name: '7-day average', color: '#0f766e', width: 2.5 },
               { key: 'recalled', name: 'Recalled (not a weigh-in)', color: '#c2410c', dots: true, width: 0 },
             ]}
-            refLines={[{ y: settings.preLossWeightKg, label: `${settings.preLossWeightKg} checkpoint`, color: '#0e7490' }]}
+            refLines={settings.preLossWeightKg !== undefined ? [{ y: settings.preLossWeightKg, label: `${settings.preLossWeightKg} checkpoint`, color: '#0e7490' }] : []}
           />
         </ChartCard>
         <ChartCard
@@ -231,7 +231,7 @@ function LogCard({ today, body, setBody }: { today: string | null; body: BodyEnt
         </label>
         <label className="block">
           <span className="text-xs font-medium text-muted">Weight (kg)</span>
-          <input type="number" inputMode="decimal" step="0.1" placeholder="64.0" value={weight} onChange={(e) => setWeight(e.target.value)} className="tabular mt-1 h-10 w-full rounded-lg border border-line-strong bg-surface px-3 text-[15px]" />
+          <input type="number" inputMode="decimal" step="0.1" placeholder="kg" value={weight} onChange={(e) => setWeight(e.target.value)} className="tabular mt-1 h-10 w-full rounded-lg border border-line-strong bg-surface px-3 text-[15px]" />
         </label>
         <label className="block">
           <span className="text-xs font-medium text-muted">Waist (cm)</span>
@@ -243,7 +243,7 @@ function LogCard({ today, body, setBody }: { today: string | null; body: BodyEnt
         <div className="col-span-2 flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink-2 sm:col-span-4">
           <label className="inline-flex min-h-10 items-center gap-2">
             <input type="checkbox" checked={recalled} onChange={(e) => setRecalled(e.target.checked)} className="size-4 accent-[var(--color-accent)]" />
-            Past weight from memory or an old record (e.g. 68 kg six months ago)
+            Past weight from memory or an old record (e.g. your weight six months ago)
           </label>
           <label className="inline-flex min-h-10 items-center gap-2">
             <input type="checkbox" checked={photo} onChange={(e) => setPhoto(e.target.checked)} className="size-4 accent-[var(--color-accent)]" />

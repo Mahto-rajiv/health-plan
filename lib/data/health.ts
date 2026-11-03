@@ -1,164 +1,189 @@
 import type { RefId } from './references';
 
-// ─── Blood work, 3 October 2026 ───────────────────────────────────────────────
-// Context, not diagnosis. "Lab range" is the typical reference range; your
-// laboratory's printed range is what counts.
+// ─── Blood tests ──────────────────────────────────────────────────────────────
+// What each test means and how to read it. Your own results are NOT in the code
+// (the repo and site are public): you type them on the Health page and they stay
+// in this browser (lib/storage.ts, `blood`). Context, not diagnosis: "Range" is a
+// typical reference range; your laboratory's printed range is what counts.
 
-export type ResultStatus = 'normal' | 'low-normal' | 'discuss';
+export type ResultStatus = 'normal' | 'low-normal' | 'discuss' | 'outside';
 
-export interface BloodResult {
+/** Status bands for a numeric result, checked in order: the first `below` that the value is under wins. */
+type Band = { below: number; status: ResultStatus };
+
+export interface BloodTest {
+  id: string;
   name: string;
-  value: string;
   unit: string;
   labRange: string;
-  status: ResultStatus;
   group: 'Vitamins' | 'Iron & blood' | 'Thyroid & metabolism' | 'Kidney, liver & inflammation';
-  meaning: string;
+  /** Numeric tests have bands; the rest are entered as "in range" / "outside range". */
+  bands?: Band[];
+  /** Status at or above the last band. */
+  top?: ResultStatus;
+  about: string;
   refs?: RefId[];
 }
 
-export const BLOOD_DATE = '3 October 2026';
-
-export const BLOOD_RESULTS: BloodResult[] = [
+export const BLOOD_TESTS: BloodTest[] = [
   {
+    id: 'vitD',
     name: 'Vitamin D (25-OH)',
-    value: '22.3',
     unit: 'ng/mL',
     labRange: 'Varies by guideline (see note)',
-    status: 'discuss',
     group: 'Vitamins',
-    meaning:
-      'Guidelines disagree on this number. By the US National Academies (IOM) standard, ≥ 20 ng/mL is adequate for most people. The 2011 Endocrine Society guideline called 21–29 “insufficient”. Its 2024 update no longer defines a target level and advises against routine testing in healthy adults. A 2025 Indian expert consensus calls 20–30 “insufficient”. So this is borderline, not a deficiency. A modest daily dose plus sunlight is a reasonable, low-risk step.',
+    bands: [{ below: 12, status: 'outside' }, { below: 20, status: 'discuss' }, { below: 30, status: 'low-normal' }, { below: 100, status: 'normal' }],
+    top: 'outside',
+    about:
+      'Guidelines disagree on this number. By the US National Academies (IOM) standard, ≥ 20 ng/mL is adequate for most people and < 12 is deficient. The 2011 Endocrine Society guideline called 21–29 “insufficient”. Its 2024 update no longer defines a target level and advises against routine testing in healthy adults. A 2025 Indian expert consensus calls 20–30 “insufficient”. So 20–30 is borderline, not a deficiency: a modest daily dose plus sunlight is a reasonable, low-risk step.',
     refs: ['odsVitD', 'holick2011', 'demay2024', 'kalra2025'],
   },
   {
+    id: 'b12',
     name: 'Vitamin B12',
-    value: '299',
     unit: 'pg/mL',
     labRange: '≈ 200–900 pg/mL',
-    status: 'low-normal',
     group: 'Vitamins',
-    meaning:
-      'Within the lab range but near the lower edge. NICE (2024) calls 180–350 “indeterminate”: deficiency is possible, and an active B12 (holotranscobalamin), MMA or homocysteine test can clarify it. Indian vegetarians are at high risk of slowly falling B12. Your normal haemoglobin and MCV are reassuring.',
+    bands: [{ below: 180, status: 'outside' }, { below: 350, status: 'low-normal' }],
+    top: 'normal',
+    about:
+      'NICE (2024) calls 180–350 pg/mL “indeterminate”: deficiency is possible, and an active B12 (holotranscobalamin), MMA or homocysteine test can clarify it. Indian vegetarians are at high risk of slowly falling B12. A normal haemoglobin and MCV are reassuring but don’t rule it out.',
     refs: ['niceB12', 'bshB12', 'pawlak', 'yajnik2006'],
   },
   {
+    id: 'iron',
     name: 'Serum iron',
-    value: '119',
     unit: 'µg/dL',
     labRange: '≈ 60–170 µg/dL',
-    status: 'normal',
     group: 'Iron & blood',
-    meaning: 'Normal. Serum iron changes from day to day and with meals, so it doesn’t show iron stores — that is what ferritin measures (not tested).',
+    bands: [{ below: 60, status: 'outside' }, { below: 170.01, status: 'normal' }],
+    top: 'outside',
+    about: 'Serum iron changes from day to day and with meals, so it doesn’t show iron stores — that is what ferritin measures.',
   },
   {
+    id: 'tsat',
     name: 'Transferrin saturation',
-    value: '27',
     unit: '%',
     labRange: '≈ 20–50%',
-    status: 'normal',
     group: 'Iron & blood',
-    meaning: 'Normal. Together with haemoglobin and MCV, it gives no sign of iron deficiency affecting your blood.',
+    bands: [{ below: 20, status: 'outside' }, { below: 50.01, status: 'normal' }],
+    top: 'outside',
+    about: 'The share of the iron carrier that holds iron. Low values point to iron deficiency; together with haemoglobin and MCV it shows whether iron is short for making blood.',
   },
   {
+    id: 'hb',
     name: 'Haemoglobin',
-    value: '14.8',
     unit: 'g/dL',
     labRange: '≈ 13–17 g/dL (men)',
-    status: 'normal',
     group: 'Iron & blood',
-    meaning: 'Normal — no anaemia.',
+    bands: [{ below: 13, status: 'outside' }, { below: 17.01, status: 'normal' }],
+    top: 'outside',
+    about: 'Below the range means anaemia, which needs a doctor to find the cause.',
   },
   {
+    id: 'mcv',
     name: 'MCV',
-    value: '87.9',
     unit: 'fL',
     labRange: '≈ 80–100 fL',
-    status: 'normal',
     group: 'Iron & blood',
-    meaning: 'Normal red-cell size. Very small cells can point to iron deficiency, and large cells to B12 or folate deficiency; yours are neither.',
+    bands: [{ below: 80, status: 'outside' }, { below: 100.01, status: 'normal' }],
+    top: 'outside',
+    about: 'Red-cell size. Very small cells can point to iron deficiency, and large cells to B12 or folate deficiency.',
   },
   {
+    id: 'tsh',
     name: 'TSH',
-    value: '1.263',
     unit: 'µIU/mL',
     labRange: '≈ 0.4–4.0 µIU/mL',
-    status: 'normal',
     group: 'Thyroid & metabolism',
-    meaning: 'Normal thyroid signal. Thyroid problems are a common, testable cause of diffuse hair shedding, and this result makes one unlikely.',
+    bands: [{ below: 0.4, status: 'outside' }, { below: 4.01, status: 'normal' }],
+    top: 'outside',
+    about: 'The thyroid signal. Thyroid problems are a common, testable cause of diffuse hair shedding; a normal TSH makes one unlikely.',
   },
   {
+    id: 'hba1c',
     name: 'HbA1c',
-    value: '5.3',
     unit: '%',
     labRange: '< 5.7%',
-    status: 'normal',
     group: 'Thyroid & metabolism',
-    meaning: 'Normal 3-month average blood sugar.',
+    bands: [{ below: 5.7, status: 'normal' }, { below: 6.5, status: 'discuss' }],
+    top: 'outside',
+    about: '3-month average blood sugar. 5.7–6.4% is the prediabetes range; 6.5% or more needs a doctor.',
   },
   {
+    id: 'glucose',
     name: 'Fasting glucose',
-    value: '87.8',
     unit: 'mg/dL',
     labRange: '70–99 mg/dL',
-    status: 'normal',
     group: 'Thyroid & metabolism',
-    meaning: 'Normal.',
+    bands: [{ below: 70, status: 'outside' }, { below: 100, status: 'normal' }, { below: 126, status: 'discuss' }],
+    top: 'outside',
+    about: '100–125 mg/dL is the prediabetes range; 126 or more needs a doctor.',
   },
   {
+    id: 'creatinine',
     name: 'Creatinine',
-    value: '0.9',
     unit: 'mg/dL',
     labRange: '≈ 0.7–1.3 mg/dL',
-    status: 'normal',
     group: 'Kidney, liver & inflammation',
-    meaning: 'Normal. Note: creatine supplements and more muscle can raise creatinine slightly without any kidney problem — tell your doctor if you take creatine before a blood test.',
+    bands: [{ below: 0.7, status: 'outside' }, { below: 1.31, status: 'normal' }],
+    top: 'outside',
+    about: 'Creatine supplements and more muscle can raise creatinine slightly without any kidney problem — tell your doctor if you take creatine before a blood test.',
     refs: ['antonioCreatine'],
   },
   {
+    id: 'egfr',
     name: 'eGFR',
-    value: '123',
     unit: 'mL/min/1.73 m²',
     labRange: '≥ 90 normal',
-    status: 'normal',
     group: 'Kidney, liver & inflammation',
-    meaning: 'Normal kidney filtration. A protein intake of 1.6–2.0 g/kg has not been shown to affect kidney function in healthy adults.',
+    bands: [{ below: 60, status: 'outside' }, { below: 90, status: 'discuss' }],
+    top: 'normal',
+    about: 'Kidney filtration. A protein intake of 1.6–2.0 g/kg has not been shown to affect kidney function in healthy adults.',
     refs: ['devries'],
   },
   {
+    id: 'liver',
     name: 'Liver markers',
-    value: 'In range',
     unit: '',
     labRange: 'Lab ranges',
-    status: 'normal',
     group: 'Kidney, liver & inflammation',
-    meaning: 'Within the laboratory’s ranges.',
+    about: 'Compare each value with the laboratory’s printed range.',
   },
   {
+    id: 'lipids',
     name: 'Lipid profile',
-    value: 'In range',
     unit: '',
     labRange: 'Lab ranges',
-    status: 'normal',
     group: 'Kidney, liver & inflammation',
-    meaning: 'Within the laboratory’s ranges.',
+    about: 'Compare each value with the laboratory’s printed range.',
   },
   {
+    id: 'crp',
     name: 'hs-CRP',
-    value: '0.58',
     unit: 'mg/L',
     labRange: '< 1 mg/L low',
-    status: 'normal',
     group: 'Kidney, liver & inflammation',
-    meaning: 'Low — no sign of systemic inflammation. Low CRP also means a ferritin test, if done, would be easy to interpret.',
+    bands: [{ below: 1, status: 'normal' }, { below: 3.01, status: 'discuss' }],
+    top: 'outside',
+    about: 'Inflammation. Below 1 mg/L is low; a low CRP also makes a ferritin result easy to interpret (inflammation raises ferritin).',
   },
 ];
+
+/** A result as typed: a number for tests with bands, 'in' / 'out' for the others. */
+export function bloodStatus(test: BloodTest, value: string | undefined): ResultStatus | null {
+  if (value === undefined || value.trim() === '') return null;
+  if (!test.bands) return value === 'in' ? 'normal' : value === 'out' ? 'outside' : null;
+  const v = Number(value);
+  if (!Number.isFinite(v)) return null;
+  return test.bands.find((b) => v < b.below)?.status ?? test.top ?? 'normal';
+}
 
 // ─── Hair ─────────────────────────────────────────────────────────────────────
 
 export const HAIR = {
   summary:
-    'Six months of noticeable shedding and thinning deserves a proper diagnosis. In men in their twenties, the two most common causes are androgenetic (pattern) hair loss and telogen effluvium (diffuse shedding a few months after a trigger such as illness, stress, rapid weight change or crash dieting). These need different approaches, and only an examination can tell them apart. Your blood work rules out several common contributors (thyroid, anaemia, blood sugar) but cannot identify the cause.',
+    'Six months of noticeable shedding and thinning deserves a proper diagnosis. In men in their twenties, the two most common causes are androgenetic (pattern) hair loss and telogen effluvium (diffuse shedding a few months after a trigger such as illness, stress, rapid weight change or crash dieting). These need different approaches, and only an examination can tell them apart. Blood work can rule out several common contributors (thyroid, anaemia, blood sugar) but cannot identify the cause.',
   seeDermatologist: [
     'Book a dermatologist appointment now. Thinning lasting 6 months is the threshold where an assessment is worth it, and if the cause is pattern hair loss, treatment works better when started early.',
     'Seek care sooner for patchy bald spots, scalp pain, redness, scaling or itching, or for sudden heavy shedding.',
@@ -172,7 +197,7 @@ export const HAIR = {
   ],
   nutrition: [
     { title: 'Weight loss and low intake', body: 'Losing weight and eating too little — especially too little protein — over the past 6 months is a recognised trigger for diffuse shedding (telogen effluvium), which typically starts 2–4 months after the trigger. That fits your timeline. It is plausible, not certain: the AAD gives “lost 20 pounds (~9 kg) or more” as a typical trigger, and your loss is smaller (see the to-do above). A dermatologist must confirm the cause. Eating enough is right for your health anyway, but nutrition cannot be shown to cure hair loss.', level: 'Reasonable' },
-    { title: 'Iron stores', body: 'Your blood iron markers are normal. Ferritin hasn’t been measured. Evidence linking low-normal ferritin to hair loss is mixed, but it’s cheap to check. The plans include iron foods (dals, soya, atta, greens, pumpkin seeds) with vitamin C from the fruit and vegetables. The diet table below shows how much.', level: 'Mixed' },
+    { title: 'Iron stores', body: 'Serum iron, haemoglobin and MCV don’t show iron stores; ferritin does. Evidence linking low-normal ferritin to hair loss is mixed, but it’s cheap to check. The plans include iron foods (dals, soya, atta, greens, pumpkin seeds) with vitamin C from the fruit and vegetables. The diet table below shows how much.', level: 'Mixed' },
     { title: 'Zinc', body: 'Vegetarians absorb less zinc because of phytates in grains and legumes. Soaking and sprouting help. The diet table below shows how much each plan gives, before absorption losses. Don’t supplement unless a test shows it’s low — too much zinc can cause problems too.', level: 'Mixed' },
     { title: 'Vitamin D', body: 'Low vitamin D is common in some hair conditions, but the link is clearest for alopecia areata, not male pattern hair loss. Correcting a low level is sensible for general health; it is not a proven hair treatment.', level: 'Weak' },
     { title: 'Biotin and “hair” supplements', body: 'No benefit without a proven deficiency, which is rare. High-dose biotin can falsify blood tests, including thyroid and heart tests. Some multi-ingredient hair products contain amounts of vitamin A or selenium that can themselves cause shedding.', level: 'Avoid' },
@@ -210,8 +235,8 @@ export const SUPPLEMENTS: Supplement[] = [
     name: 'Vitamin D3',
     verdict: 'Recommended',
     dose: '1,000 IU (25 µg) once a day with a meal, plus 15–30 minutes of midday sun on arms and face when you can, never to the point of redness',
-    why: 'Food gives you almost none. Guidelines read 22.3 ng/mL differently: adequate by the US standard (≥ 20), “insufficient” by the 2025 Indian expert consensus (20–30). The Endocrine Society (2024) advises only the normal daily intake (600 IU) for healthy adults under 50. 1,000 IU a day sits between them: above the ICMR need of 600 IU and a quarter of the 4,000 IU upper limit.',
-    cautions: 'The Indian consensus suggests 60,000 IU weekly for 8 weeks at this level. Take that only if a doctor prescribes it, and then not on top of the daily tablet. Avoid single doses of 100,000 IU or more: very large yearly doses increased falls and fractures in older women. Expect modest benefits: a 2025 meta-analysis of 40 trials found only a small drop in respiratory infections. A retest is optional; if you do one, wait at least 3 months.',
+    why: 'Food gives you almost none. Guidelines read a level of 20–30 ng/mL differently: adequate by the US standard (≥ 20), “insufficient” by the 2025 Indian expert consensus. The Endocrine Society (2024) advises only the normal daily intake (600 IU) for healthy adults under 50. 1,000 IU a day sits between them: above the ICMR need of 600 IU and a quarter of the 4,000 IU upper limit.',
+    cautions: 'The Indian consensus suggests 60,000 IU weekly for 8 weeks at 20–30 ng/mL. Take that only if a doctor prescribes it, and then not on top of the daily tablet. Avoid single doses of 100,000 IU or more: very large yearly doses increased falls and fractures in older women. Expect modest benefits: a 2025 meta-analysis of 40 trials found only a small drop in respiratory infections. A retest is optional; if you do one, wait at least 3 months.',
     buy: 'A pharmacy cholecalciferol 1,000 IU tablet or capsule (often sold as “D3 1K”), e.g. Uprise-D3 1000 IU (Alkem). We found no vitamin D product sold in India with independent testing, so this is an example, not an endorsement.',
     cost: '≈ ₹160/month',
     refs: ['odsVitD', 'demay2024', 'kalra2025', 'icmr2020', 'efsaVitD2023', 'sanders2010', 'jolliffe2025'],
@@ -220,7 +245,7 @@ export const SUPPLEMENTS: Supplement[] = [
     name: 'Vitamin B12',
     verdict: 'Recommended',
     dose: 'If your doctor agrees: a 3-month course of 500 µg a day, after the test below.',
-    why: 'Your level (299 pg/mL) is in NICE’s “indeterminate” range (180–350), and Indian vegetarians are a high-risk group for low B12. The plans’ B12 comes from milk, curd and eggs (the “What your diet covers” table shows how much; the RDA is 2.2 µg), but boiling losses and variable absorption make food alone uncertain at a borderline level.',
+    why: 'If your level is in NICE’s “indeterminate” range (180–350 pg/mL; see Blood results). Indian vegetarians are a high-risk group for low B12. The plans’ B12 comes from milk, curd and eggs (the “What your diet covers” table shows how much; the RDA is 2.2 µg), but boiling losses and variable absorption make food alone uncertain at a borderline level.',
     cautions: 'Order: (1) test active B12 (holotranscobalamin) before the first tablet — once you start, it stops being informative; (2) take the 3-month course; (3) retest at the end; (4) your doctor decides whether you need more, and how much. Take B12 alone, not with B6.',
     buy: 'B12 alone, not a “neuro” combination with B6, folic acid or alpha-lipoic acid, so you know each dose. Methylcobalamin (common in India, e.g. Mecobal 500) is not better or worse than cyanocobalamin. We found no independently tested B12 product in India.',
     cost: '≈ ₹315/month for the 3-month course',
@@ -260,7 +285,7 @@ export const SUPPLEMENTS: Supplement[] = [
   {
     name: 'Iron, zinc, biotin, “hair growth” blends',
     verdict: 'Not recommended',
-    why: 'Your iron markers are normal, zinc hasn’t been tested, and the diet table above shows what the plans give of both. Extra zinc can cause copper deficiency (anaemia, nerve problems). Biotin helps only if you are deficient, which is rare, and at hair-supplement doses (5–10 mg) it distorts many blood tests, including thyroid, vitamin D and ferritin. If a test shows a deficiency, treat that one nutrient.',
+    why: 'Take these only for a deficiency a test has shown (ferritin and zinc are on the to-do list), and the diet table above shows what the plans give of both. Extra zinc can cause copper deficiency (anaemia, nerve problems). Biotin helps only if you are deficient, which is rare, and at hair-supplement doses (5–10 mg) it distorts many blood tests, including thyroid, vitamin D and ferritin. If a test shows a deficiency, treat that one nutrient.',
     refs: ['guoKatta', 'trost', 'duncan2015', 'li2017', 'fdaBiotin', 'biotinThyroid', 'odsZinc'],
   },
 ];
