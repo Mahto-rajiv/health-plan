@@ -1,5 +1,117 @@
 # Progress
 
+## Round 3 (2–3 Nov 2026): branch `round3-trust`, merged to main and pushed
+
+Spec: `docs/brief-round3.md`. Commits: `efc6611`, `f054440`, `d7459bf`, `9f089ff` (main and origin/main are at `9f089ff`; `round3-trust` was deleted after the merge).
+
+### Status
+- [x] **Food data you can trust:** found the root cause of the bad values and added plausibility tests (`efc6611`).
+- [x] **Hair-linked nutrients** planned to the RDA/AI where the hard rules allow it.
+- [x] **Cost ranked last:** the solver is weighted, with a ₹5,400 planning ceiling and a cost sweep.
+- [x] **Dairy:** the solver minimises it right after nutrient adequacy.
+- [x] **Menu foods added** so the solver can reach B1, B6 and E.
+- [x] **AI-only nutrients** get their own "below the adequate intake" label.
+- [x] **Weekday sessions** estimated at 41.2–41.7 min (was 44.2–44.7).
+- [x] **Seasons:** first rewritten for Ahmedabad, then **removed** at your request. There is now one menu all year, and every fruit and vegetable has a named alternative.
+- [x] **Training simplified** (your request): today's warm-up and workout only, with an alternative for each exercise. No logging.
+- [x] **Program starts Mon 9 Nov 2026.** Meal plans opens on Phase 0.
+- [x] Tests, typecheck, lint, build (output below).
+- [ ] `docs/plan-report.md` and `docs/cost-sweep.md` were not regenerated. They still describe the seasonal plans (see "Out of date").
+- Blocked: none.
+
+### Review notes: what I found
+| Note | Verdict | What I did |
+|---|---|---|
+| Non-veg B6 19–33 mg, biotin 146–222 µg | **Right: a data error** | The fish rows (IFCT groups P–S) in the `ifct2017` npm package stored B6 in mg but it was read as g, 1,000× too high (rohu 240 mg/100 g instead of 0.24). Folate had been moved into the biotin column. Paneer fat/carbs and lemon carbs were also wrong. All were fixed against the IFCT PDF in `scripts/food-data/build.ts` and `sources.ts`. The package also stores "not analysed" as 0; an IFCT 0 is now filled from the closest USDA food and labelled. Where IFCT and USDA differ by more than 4×, the lower value is used. |
+| Dairy 880–1,214 g/day; Phase 2 at the ₹5,700 cap | Right | Dairy is now minimised after nutrients and before cost: 901–969 g/day on average per phase. A fixed cap below ~1,100 g is **infeasible** for the vegetarian plan in Phases 0–1. With less dairy, the calories must come from atta, rice and pulses, which break the 35/40 g fibre caps. `PLAN_RULES.milkCurdMaxG` = 1,100 is only a backstop. |
+| Solver only changes grams of menu foods | Right | Added sesame, almonds and banana to Meal 1, and sesame to the sattu paratha (B1, B6, E, minerals). |
+| "Plan to the EAR" may be backwards | **Partly.** ICMR really says to use the EAR for planning | ICMR-NIN 2020 brief note: *"the present committee recommended EAR for population requirement/ adequacy estimations and menu or diet planning for individuals"*. IOM 2003 says to plan an individual to the RDA/AI. Decision: the hair-linked nutrients are planned to the RDA/AI, the rest to at least the EAR, and every UL is a hard limit. The reasoning is in `lib/data/nutrients.ts`. |
+| 466 tests pass but 70 gaps are whitelisted | Right | `tests/known-gaps.json` now lists 16 below the EAR and 33 hair nutrients below target. The audit shows them in the app. |
+| AI-only nutrients labelled "above the average need" | Right | New status `below-ai`: "below the adequate intake (no average need is set)". |
+| Weekday sessions 44.2–44.7 of 45 min | Right | Face pull is now paired with incline press, and hanging knee raise with calf raise. No sets were removed. The estimate is 41.2–41.7 min, leaving a 3-min buffer. A real session was **not** timed: the workout logger was later removed. |
+| Seasons for Ahmedabad | Done, then removed | You asked for no seasons. `lib/data/produce.ts` now has one menu (papaya, banana, bhindi/lauki/kaddu sabzi, cucumber salad, palak). Each food has one alternative (apple; cauliflower, brinjal, carrot; amaranth). Fruit swaps keep the same calories and vegetable swaps keep the same weight. Onion and tomato have no swap. Nutrients and cost are for the main food only. |
+
+### Decisions and why
+- **Solver order** (`scripts/solve-plans.ts`, HiGHS, one weighted run per phase):
+  1. Hard limits (fibre caps, kcal/protein bands, ULs, variety rules).
+  2. Nutrient shortfall.
+  3. Less milk + curd.
+  4. Cost.
+
+  Shortfalls are priced far above rupees, so the solver never trades nutrients for money.
+- **Budget:** ₹6,000 is the ceiling. `BUDGET.planningMax` = ₹5,400 at default prices. This 10% margin covers a rise across all prices (a year of food inflation, or a dearer shop). Errors in single item prices (±15%) partly cancel out.
+- **Variety rules** (`PLAN_RULES`):
+  - no food above 25% of a week's energy;
+  - every item keeps its minimum portion;
+  - soya ≤ 50 g/day after Phase 0;
+  - eggs ≤ 21/week.
+- **Biotin is not planned:** 7 foods have no biotin data.
+- **Cost sweep** (`npm run solve:sweep`, run while seasons still existed): no plan is possible at ₹4,500. Phase 2 gaps close between ₹5,000 and ₹5,500; above that, extra money mostly buys nothing in Phases 0–1. That is why the planning ceiling is ₹5,400.
+- **Training** (`d7459bf`, your request):
+  - The Today tab shows the session (on Tue/Wed you choose Lower B or Upper B), the numbered warm-up, then each exercise with its sets, reps, effort, rest, a "Machine or bench taken?" alternative and "How to do it".
+  - Removed: the workout logger, rest timer, Progression tab, strength and consistency charts, and the dashboard StrengthCard.
+- **Program start:** `PROGRAM_START = '2026-11-09'` in `lib/storage.ts`. A saved start earlier than that (the old default was 2026-10-06, which showed "week 5") is moved to 9 Nov, and a pinned phase goes back to Auto. A start date before 9 Nov can no longer be set.
+
+### Plans after the re-solve (`TL=120 GAP=0.01 npm run solve`, 2 Nov)
+```
+Cost ceiling ₹5400/month at default prices.
+Phase 0: Time limit reached in 120 s; shortfall score 1229.7, milk + curd 969 g/day, average ₹4697/month
+Phase 1: Time limit reached in 120 s; shortfall score 699.9, milk + curd 942 g/day, average ₹5000/month
+Phase 2: Time limit reached in 120 s; shortfall score 291.1, milk + curd 901 g/day, average ₹5206/month
+  P0 vegetarian ₹4615  below EAR: Thiamine (B1), Riboflavin (B2), Vitamin B6, Vitamin E · below RDA/AI: Iron, Zinc, Vitamin A, Omega-3 (ALA)
+  P0 egg        ₹4632  below EAR: Thiamine (B1), Riboflavin (B2), Vitamin B6, Vitamin E · below RDA/AI: Iron, Zinc, Vitamin A, Vitamin K, Omega-3 (ALA)
+  P0 nonveg     ₹4843  below EAR: Thiamine (B1), Riboflavin (B2), Vitamin E · below RDA/AI: Iron, Zinc, Vitamin A, Vitamin B6, Vitamin K, Omega-3 (ALA)
+  P1 vegetarian ₹4935  below EAR: Vitamin E · below RDA/AI: Iron, Zinc, Vitamin A, Thiamine (B1), Riboflavin (B2), Vitamin B6, Omega-3 (ALA)
+  P1 egg        ₹4871  below EAR: Thiamine (B1), Riboflavin (B2) · below RDA/AI: Iron, Zinc, Vitamin A, Vitamin B6, Vitamin E, Vitamin K, Omega-3 (ALA)
+  P1 nonveg     ₹5193  below EAR: Thiamine (B1), Riboflavin (B2) · below RDA/AI: Iron, Zinc, Vitamin A, Vitamin B6, Vitamin E, Omega-3 (ALA)
+  P2 vegetarian ₹5132  below EAR: — · below RDA/AI: Iron, Vitamin A, Riboflavin (B2), Vitamin B6, Vitamin E, Omega-3 (ALA)
+  P2 egg        ₹5088  below EAR: — · below RDA/AI: Iron, Vitamin A, Thiamine (B1), Riboflavin (B2), Vitamin B6, Vitamin E, Vitamin K, Omega-3 (ALA)
+  P2 nonveg     ₹5399  below EAR: — · below RDA/AI: Iron, Vitamin A, Thiamine (B1), Riboflavin (B2), Vitamin B6, Vitamin E, Omega-3 (ALA)
+Wrote lib/data/plan-quantities.generated.ts (24 meals).
+```
+"Time limit reached" means the solution is close to optimal but not proven optimal. A 600 s-per-phase run was too slow, so 120 s with a 1% gap was used.
+
+### Checks run (3 Nov 2026)
+
+`npm test`:
+```
+ℹ tests 165
+ℹ suites 22
+ℹ pass 165
+ℹ fail 0
+```
+
+`npx tsc --noEmit`: no output, exit 0.
+
+`npm run lint`: no errors, no warnings.
+
+`npm run build`:
+```
+✓ Generating static pages using 11 workers (12/12) in 358ms
+○ / /health /meal-plans /meal-plans/cards /nutrition /progress /recovery /settings /training (all static)
+```
+
+**Browser:** headless Chrome against the production build. `/training` and `/meal-plans` were checked by screenshot. The other routes were not re-checked this round.
+
+**Links:** `docs/link-report.md` was updated during Round 3, before seasons were removed. It was not re-run after that.
+
+### Open decisions (yours)
+- Raise `planningMax` toward ₹5,800–6,000? The sweep suggests this helps Phase 2 a little and Phases 0–1 hardly at all.
+- Relax the Phase 0–1 fibre cap or fat band? That is what keeps B1, B2, B6 and E below the EAR in Phases 0–1 and keeps dairy near 950 g/day.
+
+### Out of date
+- `docs/plan-report.md` still shows the seasonal plans. Regenerate it with `npm run plans:report`.
+- `docs/cost-sweep.md` was run on the seasonal menu (12 plan × season variants). Re-run it with `npm run solve:sweep`, which takes long.
+- The Round 2 notes below describe seasons and workout logging. Both are gone now and are kept only as history.
+
+### Not verified
+- **Vercel deploy** after the push to main.
+- **Swap amounts** (apple for papaya, and so on) are computed, not checked against real portions. The swap foods' nutrients are not in the audit.
+- **Prices** for the added foods (sesame, almonds) are estimates and were not checked against listings.
+- **Session times** are still estimated constants; no session was timed.
+- **Before 9 Nov** the app shows "Program week 1" (the week number is clamped). Left as is.
+- **Old browser data:** test weights or meal ticks may still be in storage. Settings → "Reset everything" clears them.
+
 ## Round 2 (2 Nov 2026) — branch `round2-seasonal`, nothing pushed
 
 Spec: `docs/brief-round2.md` (overrides `docs/brief.md` where they differ).
