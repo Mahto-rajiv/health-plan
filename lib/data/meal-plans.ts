@@ -2,7 +2,7 @@ import type { MealItem } from '../nutrition';
 import type { PhaseId } from '../config';
 import type { FoodId } from './foods';
 import type { TutorialId } from './tutorials';
-import { SLOTS, altGrams, type SlotId } from './produce';
+import { SLOTS, altGrams, swapNote, type SlotId } from './produce';
 import { QUANTITIES } from './plan-quantities.generated';
 
 // ─── Four-meal structure (applies to every plan) ─────────────────────────────
@@ -938,7 +938,7 @@ export const MEAL_PLAN_DEFINITIONS: MealPlanDefinition[] = [vegetarian, egg, non
 export interface ResolvedItem extends MealItem {
   /** Set when the item comes from a fruit or vegetable slot. */
   slot?: SlotId;
-  /** What to use if the market doesn't have it, and how much. */
+  /** What to use if the market doesn't have it, how much, and (note) what the swap loses or adds. */
   alt?: MealItem;
 }
 
@@ -983,7 +983,9 @@ export function resolveMeal(m: Meal, phase: PhaseId): ResolvedMeal {
     if (it.slot) {
       for (const { food, share, alt } of SLOTS[it.slot].foods) {
         const fg = Math.round(g * share * 10) / 10;
-        items.push({ food, g: fg, slot: it.slot, ...(note ? { note } : {}), ...(alt ? { alt: { food: alt, g: altGrams(food, alt, fg) } } : {}) });
+        const ag = alt ? altGrams(food, alt, fg) : 0;
+        const an = alt ? swapNote(food, fg, alt, ag) : undefined;
+        items.push({ food, g: fg, slot: it.slot, ...(note ? { note } : {}), ...(alt ? { alt: { food: alt, g: ag, ...(an ? { note: an } : {}) } } : {}) });
       }
     } else items.push({ food: it.food!, g, ...(note ? { note } : {}) });
   }

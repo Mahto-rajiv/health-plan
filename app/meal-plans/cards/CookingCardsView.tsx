@@ -63,6 +63,7 @@ export function CookingCardsView() {
                     {it.alt && (
                       <span className="w-full text-xs text-muted">
                         Not in the market? {FOODS[it.alt.food].name}, {formatQuantity(it.alt)}
+                        {it.alt.note ? ` (${it.alt.note})` : ''}
                       </span>
                     )}
                   </li>

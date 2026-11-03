@@ -10,7 +10,7 @@ import { atwaterKcal, itemsNutrients, itemsCost } from '../lib/nutrition';
 import { computePlan, computePlans, allDefaultPlans, storageAdvice } from '../lib/meal-plans';
 import { PANTRY_MONTHLY, FOOD_SAFETY } from '../lib/data/nutrition-guide';
 import { COOKING_TUTORIALS } from '../lib/data/tutorials';
-import { SLOTS, altGrams } from '../lib/data/produce';
+import { SLOTS, altGrams, swapNote } from '../lib/data/produce';
 import { QUANTITIES } from '../lib/data/plan-quantities.generated';
 import { COMPOSITION } from '../lib/data/composition.generated';
 import { SOURCES } from '../scripts/food-data/sources';
@@ -243,6 +243,21 @@ describe('fruit and vegetables', () => {
     const kcal = (f: 'papaya' | 'apple', grams: number) => itemsNutrients([{ food: f, g: grams }]).kcal;
     assert.ok(Math.abs(kcal('apple', g) - kcal('papaya', 150)) <= kcal('apple', 10), `${g} g apple`);
     assert.equal(altGrams('okra', 'cauliflower', 40), 40);
+  });
+
+  it('the fruit swaps keep what the fruit is for: vitamin C for papaya, little fibre for banana', () => {
+    const per = (f: 'papaya' | 'orange' | 'banana' | 'dates' | 'apple', k: 'vitC' | 'fiber', g: number) => ((FOODS[f].per100[k] ?? 0) * g) / 100;
+    assert.equal(SLOTS.fruit1.foods[0].alt, 'orange');
+    assert.ok(per('orange', 'vitC', altGrams('papaya', 'orange', 150)) >= 0.6 * per('papaya', 'vitC', 150), 'orange keeps ≥ 60% of papaya’s vitamin C');
+    assert.equal(SLOTS.fruit3.foods[0].alt, 'dates');
+    const extra = (alt: 'dates' | 'apple') => per(alt, 'fiber', altGrams('banana', alt, 200)) - per('banana', 'fiber', 200);
+    assert.ok(extra('dates') < extra('apple'), `dates +${extra('dates').toFixed(1)} g fibre vs apple +${extra('apple').toFixed(1)} g`);
+  });
+
+  it('a swap states what it loses or adds', () => {
+    assert.equal(swapNote('papaya', 150, 'apple', altGrams('papaya', 'apple', 150)), 'less vitamin C, folate and vitamin A');
+    assert.equal(swapNote('banana', 200, 'apple', altGrams('banana', 'apple', 200)), 'less folate, +5 g fibre');
+    assert.equal(swapNote('okra', 40, 'cauliflower', 40), undefined);
   });
 });
 

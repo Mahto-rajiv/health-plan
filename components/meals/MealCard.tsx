@@ -99,6 +99,7 @@ export function MealCard({ planned, totals, cost }: { planned: PlannedMeal; tota
                   <div className="mt-0.5 inline-flex items-center gap-1 text-xs text-ink-2">
                     <ArrowLeftRight size={11} aria-hidden className="shrink-0 text-muted" />
                     Not in the market? {FOODS[it.alt.food].name}, {formatQuantity(it.alt)}
+                    {it.alt.note && <span className="text-muted"> ({it.alt.note})</span>}
                   </div>
                 )}
               </div>
