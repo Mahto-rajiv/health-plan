@@ -11,8 +11,6 @@ export interface Reference {
 }
 
 export const REFS = {
-  mifflin: { label: 'Mifflin MD et al. (1990). A new predictive equation for resting energy expenditure. Am J Clin Nutr.', url: 'https://pubmed.ncbi.nlm.nih.gov/2305711/' },
-  frankenfield: { label: 'Frankenfield D et al. (2005). Comparison of predictive equations for resting metabolic rate. J Am Diet Assoc.', url: 'https://pubmed.ncbi.nlm.nih.gov/15883556/', note: 'Individual errors above 10% are common; South Asians were under-represented.' },
   faoEnergy: { label: 'FAO/WHO/UNU (2004). Human energy requirements — physical activity levels.', url: 'https://www.fao.org/4/y5686e/y5686e07.htm' },
   icmr2020: { label: 'ICMR-NIN (2020). Nutrient Requirements for Indians — brief note.', url: 'https://www.nin.res.in/rdabook/brief_note.pdf' },
   iomPlanning2003: {

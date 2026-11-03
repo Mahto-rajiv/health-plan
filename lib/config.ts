@@ -98,7 +98,7 @@ export const PHASES: Record<PhaseId, Phase> = {
     id: 2,
     name: 'Phase 2 · Gain',
     weeks: [5, null],
-    goal: 'Slow gain of 0.5–1.0 kg a month toward your pre-loss weight (the first checkpoint).',
+    goal: 'Slow gain of 0.5–1.0 kg a month.',
     kcal: [2550, 2700],
     protein: [110, 125],
     fibreMax: 50,

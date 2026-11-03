@@ -80,12 +80,11 @@ export default function NutritionPage() {
               ))}
             </dl>
             <p className="mt-3 text-sm text-ink-2">
-              You lost weight over about 6 months on under ~2,000 kcal, so your maintenance was probably a little above that: about 2,000–2,100 kcal.
-              That is an estimate, not a measurement. Phase 0 adds ~100–200 kcal for that, plus ~100–200 kcal for the new training. Your weekly
-              weigh-in then shows where you really are.
+              These targets are estimates, not measurements. Phase 0 adds ~100–200 kcal for the new training. Your weekly weigh-in then shows
+              whether the target is right for you.
             </p>
             <p className="mt-2 text-xs text-muted">{ENERGY_NOTE}</p>
-            <References ids={['mifflin', 'frankenfield', 'faoEnergy', 'faoFoodEnergy', 'icmr2020']} />
+            <References ids={['faoEnergy', 'faoFoodEnergy', 'icmr2020']} />
           </Card>
 
           <Card>

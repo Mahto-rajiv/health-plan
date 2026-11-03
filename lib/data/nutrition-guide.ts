@@ -2,14 +2,9 @@ import type { RefId } from './references';
 import { BUDGET } from '../config';
 
 // ─── Daily targets ────────────────────────────────────────────────────────────
-// Energy: Mifflin-St Jeor BMR = 10×weight + 6.25×180 − 5×24 + 5 ≈ 1,600–1,700 kcal
-// (the weight is not written here: the repo is public). The equation is a
-// cross-check only. The better evidence is your own history: weight fell over
-// about 6 months on what you estimate is under ~2,000 kcal and ~60 g protein a
-// day. That loss rate is roughly a 150–200 kcal daily deficit, so maintenance
-// before training was probably about
-// 2,000–2,100 kcal (an estimate). Four lifting sessions a week add roughly
-// 100–200 kcal a day on average. Phase targets live in lib/config.ts.
+// Energy: the phase targets are estimates. Four lifting sessions a week add
+// roughly 100–200 kcal a day on average. The weekly weigh-in shows whether a
+// target is right. Phase targets live in lib/config.ts.
 
 export interface Target {
   key: 'protein' | 'carbs' | 'fat' | 'fiber' | 'water' | 'salt';
@@ -69,9 +64,6 @@ export const ENERGY_NOTE =
   'Calories are calculated from the macros: 4 kcal per g of protein and of available carbohydrate, 9 per g of fat, and 2 per g of fibre (the FAO factor for fibre in mixed diets). Meal and day totals therefore always add up. Food-table values differ by a few percent for some foods; real food varies more than that.';
 
 export const ENERGY_MATH = [
-  { label: 'BMR (Mifflin-St Jeor, at your weight, 180 cm, 24 y)', value: '≈ 1,600–1,700 kcal' },
-  { label: 'What you ate while losing weight (your estimate)', value: '< ~2,000 kcal' },
-  { label: 'Estimated maintenance before training (estimate)', value: '≈ 2,000–2,100 kcal' },
   { label: 'Phase 0 · weeks 1–2 (stop the loss)', value: '≈ 2,200 kcal' },
   { label: 'Phase 1 · weeks 3–4', value: '≈ 2,400 kcal' },
   { label: 'Phase 2 · week 5 on (slow gain)', value: '2,550–2,700 kcal' },
