@@ -139,6 +139,13 @@ for (const def of MEAL_PLAN_DEFINITIONS) {
           }
         });
 
+        it(`saturated fat is under ${DAILY.satFatEnergyMax * 100}% of energy every day, and trans fat (where the tables have it) under 1%`, () => {
+          for (const d of plan.days) {
+            assert.ok((d.totals.sfa * 9) / d.totals.kcal < DAILY.satFatEnergyMax, `${d.day}: saturated fat ${((d.totals.sfa * 900) / d.totals.kcal).toFixed(1)}%`);
+            assert.ok((d.totals.tfa * 9) / d.totals.kcal < 0.01, `${d.day}: trans fat ${((d.totals.tfa * 900) / d.totals.kcal).toFixed(2)}%`);
+          }
+        });
+
         if (ph === 0) {
           it('Phase 0 caps soya chunks at 20 g and sattu at 25 g a day', () => {
             for (const d of week) {

@@ -43,13 +43,13 @@ export interface FoodMeta {
 
 const META = {
   milk: {
-    name: 'Toned milk',
+    name: 'Double-toned milk (1.5% fat)',
     category: 'Dairy',
     buyUnit: { label: '1 L', grams: 1000 },
     measure: { label: 'ml', grams: 1 },
   },
   curd: {
-    name: 'Curd (dahi, set at home from toned milk)',
+    name: 'Curd (dahi, set at home from double-toned milk)',
     category: 'Dairy',
     buyUnit: { label: '1 L milk, set as curd at home,', grams: 1000 },
   },

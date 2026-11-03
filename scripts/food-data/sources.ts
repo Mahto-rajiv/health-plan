@@ -42,7 +42,7 @@ export interface FoodSource {
   /** Edible share when no USDA refuse value fits (marked as an approximation in the app). */
   edibleApprox?: number;
   /** Single nutrients filled from an IFCT food when the main (USDA) source has none. */
-  fillFromIfct?: Partial<Record<'biotin', string>>;
+  fillFromIfct?: Partial<Record<'biotin' | 'tfa', string>>;
   /** Cells corrected from the printed IFCT 2017 PDF where the npm package mistyped them,
    *  in the package's units (g per 100 g; enerc in kJ). Each one is cited in `note`. */
   pdf?: Record<string, number>;
@@ -58,8 +58,8 @@ export interface FoodSource {
 
 export const SOURCES: Record<string, FoodSource> = {
   // Dairy
-  milk: { usda: '01211', fillFromIfct: { biotin: 'L002' }, note: 'USDA whole milk, 3.25% fat, no added vitamins A or D. Toned milk is 3.0% fat (FSSAI), so fat is ~8% high. IFCT has only whole cow and buffalo milk; biotin (missing in USDA) is from IFCT cow milk.' },
-  curd: { usda: '01116', fillFromIfct: { biotin: 'L002' }, note: 'USDA plain whole-milk yogurt. IFCT has no curd; biotin (missing in USDA) is from IFCT cow milk, the milk it is set from.' },
+  milk: { usda: '01174', fillFromIfct: { biotin: 'L002' }, note: 'Round 5: double-toned milk (1.5% fat, FSSAI). Modelled with USDA reduced-fat milk, 2% fat, no added vitamins A or D, so fat and saturated fat are ~⅓ high. IFCT has only whole cow and buffalo milk; biotin (missing in USDA) is from IFCT cow milk.' },
+  curd: { usda: '01174', fillFromIfct: { biotin: 'L002' }, note: 'Round 5: curd set at home from double-toned milk has about the composition of that milk, so it uses the same USDA row (2% fat milk). USDA low-fat yogurts add milk solids (5 g protein per 100 g), which home-set dahi does not have. Biotin is from IFCT cow milk.' },
   paneer: {
     check: '01036',
     ifct: 'L003',
@@ -68,7 +68,7 @@ export const SOURCES: Record<string, FoodSource> = {
     notAnalysed: ['vitA'],
     note: 'IFCT paneer. The npm package has fat 14.78 g, carbs 12.41 g and 1,079 kJ; the printed IFCT 2017 Table 1 has fat 24.78 g, available carbohydrate 2.41 g and 1,278 kJ, and its own energy factors (17/37/17 kJ/g) reproduce 1,278 kJ from those, so the PDF values are used. IFCT did not analyse retinol in any dairy food, so vitamin A is from USDA whole-milk ricotta, as is B12 (a similar fresh acid-set cheese).',
   },
-  ghee: { usda: '01003', note: 'USDA anhydrous butter oil (ghee). IFCT has no ghee.' },
+  ghee: { usda: '01003', fillFromIfct: { tfa: 'T013' }, note: 'USDA anhydrous butter oil (ghee). USDA has no trans-fat value for it; trans fat is from IFCT ghee (T013).' },
   oil: { usda: '04037', note: 'USDA rice-bran oil. Chosen over groundnut oil (USDA 04042) because it has twice the vitamin E (32 vs 16 mg/100 g) and some omega-3.' },
   // Pulses & soya
   sattu: { check: '16056', ifct: 'B001', b12: 0, note: 'IFCT Bengal gram dal. IFCT has no roasted chana flour; roasting mainly removes water, so values per 100 g are close but not exact.' },

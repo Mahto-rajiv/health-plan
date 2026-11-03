@@ -5,6 +5,7 @@ import { FOODS, type FoodId } from './data/foods';
 import { NUTRIENTS, type NutrientInfo } from './data/nutrients';
 import type { NutrientKey } from './data/nutrient-keys';
 import type { ComputedPlan } from './meal-plans';
+import { DAILY } from './config';
 
 export type AuditStatus = 'below-ear' | 'below-rda' | 'below-ai' | 'meets' | 'above-ul' | 'info';
 
@@ -64,6 +65,24 @@ export function auditPlan(plan: ComputedPlan): AuditRow[] {
       .map(([food, v]) => ({ food, name: FOODS[food].name, share: total ? v / total : 0 }));
     return { info, value, lowestDay, status: statusFor(info, value), missing: plan.missing[info.key] ?? [], topSources };
   });
+}
+
+/**
+ * Saturated and trans fat as a share of energy (Round 5): limits, not needs.
+ * Saturated fat must stay under DAILY.satFatEnergyMax (10%) on every day (a hard
+ * limit in the solver); trans fat under 1% (WHO 2023). Trans fat is a lower bound:
+ * some foods have no value in their table (`tfaMissing`).
+ */
+export function fatLimits(plan: ComputedPlan) {
+  const pct = (g: number, kcal: number) => (kcal ? (g * 9 * 100) / kcal : 0);
+  return {
+    satPct: pct(plan.weeklyAverage.sfa, plan.weeklyAverage.kcal),
+    satPctMaxDay: Math.max(...plan.days.map((d) => pct(d.totals.sfa, d.totals.kcal))),
+    satLimitPct: DAILY.satFatEnergyMax * 100,
+    transPct: pct(plan.weeklyAverage.tfa, plan.weeklyAverage.kcal),
+    transLimitPct: 1,
+    tfaMissing: plan.missing.tfa ?? [],
+  };
 }
 
 /** Smallest and largest weekly average across many plans (e.g. all phases). */

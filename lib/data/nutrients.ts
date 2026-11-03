@@ -76,6 +76,9 @@ export const NUTRIENTS: NutrientInfo[] = [
   // Fats
   { key: 'ala', label: 'Omega-3 (ALA)', unit: 'g', group: 'Fats', rda: 2.2, adequateIntake: true, source: ['icmr2020', 'driMacros'], note: 'ICMR 2020 gives 2.2 g of n-3 fat a day; the US adequate intake is 1.6 g.' },
   { key: 'la', label: 'Omega-6 (linoleic acid)', unit: 'g', group: 'Fats', rda: 6.6, adequateIntake: true, source: ['icmr2020'], note: 'ICMR 2020 minimum. Rice-bran oil and peanuts give plenty.' },
+  // Limits, not needs (Round 5). Checked as a share of energy (lib/nutrient-audit.ts `fatLimits`), not against an RDA.
+  { key: 'sfa', label: 'Saturated fat', unit: 'g', group: 'Fats', source: ['whoFats'], infoOnly: true, note: 'Limit: under 10% of energy (WHO 2023).' },
+  { key: 'tfa', label: 'Trans fat', unit: 'g', group: 'Fats', source: ['whoFats'], infoOnly: true, note: 'Limit: under 1% of energy (WHO 2023). Food tables often leave it blank or 0, so this is a lower bound.' },
 ];
 
 export const NUTRIENT_BY_KEY = Object.fromEntries(NUTRIENTS.map((n) => [n.key, n])) as Record<NutrientKey, NutrientInfo | undefined>;

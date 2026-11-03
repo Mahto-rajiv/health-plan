@@ -98,6 +98,8 @@ const IFCT: Record<Exclude<NutrientKey, 'vitA' | 'b12'>, [string, number]> = {
   biotin: ['biot', 1e6],
   ala: ['f18d3n3', 1],
   la: ['f18d2cn6', 1],
+  sfa: ['fasat', 1],
+  tfa: ['fatrn', 1],
 };
 
 // USDA SR28 nutrient numbers, already in the app units. A list means "first one present".
@@ -127,12 +129,16 @@ const SR: Record<Exclude<NutrientKey, 'carbs' | 'biotin'>, string[]> = {
   vitK: ['430'],
   ala: ['851', '619'],
   la: ['675', '618'],
+  sfa: ['606'],
+  tfa: ['605'],
 };
 
 const round = (v: number) => Number(v.toPrecision(4));
 /** IFCT-vs-USDA ratio above which a vitamin or mineral takes the lower value. */
 const DISAGREE = 4;
 const MACROS: NutrientKey[] = ['protein', 'fat', 'carbs', 'fiber'];
+/** Limits, not needs: the 4× "take the lower value" rule would understate them, so it doesn't apply. */
+const LIMITS: NutrientKey[] = ['sfa', 'tfa'];
 
 function main() {
   mkdirSync(CACHE, { recursive: true });
@@ -180,6 +186,12 @@ function main() {
     if (!r) return null;
     const fixed = pdfFix.get(code)?.[col];
     if (fixed !== undefined) return fixed;
+    // Round 5: where the PDF corrects total fat (paneer: 14.78 → 24.78 g), the package's
+    // saturated and trans figures still match the wrong total (8.85 g saturated = 60% of
+    // 14.78, the usual milk-fat share). They are scaled to the corrected fat; not checked
+    // against the PDF's fatty-acid table.
+    const fatFix = pdfFix.get(code)?.fatce;
+    if (fatFix !== undefined && (col === 'fasat' || col === 'fatrn') && r[col] !== '') return (Number(r[col]) * fatFix) / Number(r.fatce);
     if (FISH_TABLE.test(code)) {
       if (col === 'vitb6c') return Number(r.vitb6c) / 1e3;
       if (col === 'folsum') return Number(r.biot) / 1e2;
@@ -259,7 +271,7 @@ function main() {
       // USDA equivalent take the lower value. Macros stay IFCT.
       const lowered: string[] = [];
       for (const k of NUTRIENT_KEYS) {
-        if (MACROS.includes(k) || filled.includes(k)) continue;
+        if (MACROS.includes(k) || LIMITS.includes(k) || filled.includes(k)) continue;
         const v = values[k];
         const u = eq?.[k];
         if (v == null || u == null || v <= 0 || u <= 0 || (v / u <= DISAGREE && u / v <= DISAGREE)) continue;

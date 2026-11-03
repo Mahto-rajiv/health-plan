@@ -19,76 +19,80 @@ export interface Composition {
 
 export const COMPOSITION = {
   "milk": {
-    "source": "USDA SR28 01211 (Milk, whole, 3.25% milkfat, without added vitamin A and vitamin D); biotin from IFCT 2017 L002",
-    "tabulatedKcal": 61,
+    "source": "USDA SR28 01174 (Milk, reduced fat, fluid, 2% milkfat, without added vitamin A and vitamin D); biotin from IFCT 2017 L002",
+    "tabulatedKcal": 50,
     "edible": 1,
     "edibleSource": "Sold as eaten (no peel or seeds).",
-    "waterAsh": 88.8,
+    "waterAsh": 89.92,
     "check": null,
     "values": {
-      "protein": 3.15,
-      "fat": 3.27,
+      "protein": 3.3,
+      "fat": 1.98,
       "fiber": 0,
-      "calcium": 113,
-      "iron": 0.03,
-      "magnesium": 10,
-      "phosphorus": 84,
-      "potassium": 132,
-      "sodium": 43,
-      "zinc": 0.37,
-      "copper": 0.025,
-      "manganese": 0.004,
-      "selenium": 3.7,
-      "vitA": 46,
-      "vitE": 0.07,
-      "vitC": 0,
-      "thiamin": 0.046,
-      "riboflavin": 0.169,
-      "niacin": 0.7557,
-      "b6": 0.036,
+      "calcium": 120,
+      "iron": 0.02,
+      "magnesium": 11,
+      "phosphorus": 92,
+      "potassium": 140,
+      "sodium": 47,
+      "zinc": 0.48,
+      "copper": 0.006,
+      "manganese": 0.014,
+      "selenium": 2.5,
+      "vitA": 28,
+      "vitE": 0.03,
+      "vitC": 0.2,
+      "thiamin": 0.039,
+      "riboflavin": 0.185,
+      "niacin": 0.792,
+      "b6": 0.038,
       "folate": 5,
-      "b12": 0.45,
-      "vitK": 0.3,
-      "ala": 0.075,
-      "la": 0.12,
-      "carbs": 4.78,
+      "b12": 0.53,
+      "vitK": 0.2,
+      "ala": 0.008,
+      "la": 0.055,
+      "sfa": 1.257,
+      "tfa": 0.085,
+      "carbs": 4.8,
       "biotin": 1.98
     }
   },
   "curd": {
-    "source": "USDA SR28 01116 (Yogurt, plain, whole milk, 8 grams protein per 8 ounce); biotin from IFCT 2017 L002",
-    "tabulatedKcal": 61,
+    "source": "USDA SR28 01174 (Milk, reduced fat, fluid, 2% milkfat, without added vitamin A and vitamin D); biotin from IFCT 2017 L002",
+    "tabulatedKcal": 50,
     "edible": 1,
     "edibleSource": "Sold as eaten (no peel or seeds).",
-    "waterAsh": 88.62,
+    "waterAsh": 89.92,
     "check": null,
     "values": {
-      "protein": 3.47,
-      "fat": 3.25,
+      "protein": 3.3,
+      "fat": 1.98,
       "fiber": 0,
-      "calcium": 121,
-      "iron": 0.05,
-      "magnesium": 12,
-      "phosphorus": 95,
-      "potassium": 155,
-      "sodium": 46,
-      "zinc": 0.59,
-      "copper": 0.009,
-      "manganese": 0.004,
-      "selenium": 2.2,
-      "vitA": 27,
-      "vitE": 0.06,
-      "vitC": 0.5,
-      "thiamin": 0.029,
-      "riboflavin": 0.142,
-      "niacin": 0.4083,
-      "b6": 0.032,
-      "folate": 7,
-      "b12": 0.37,
+      "calcium": 120,
+      "iron": 0.02,
+      "magnesium": 11,
+      "phosphorus": 92,
+      "potassium": 140,
+      "sodium": 47,
+      "zinc": 0.48,
+      "copper": 0.006,
+      "manganese": 0.014,
+      "selenium": 2.5,
+      "vitA": 28,
+      "vitE": 0.03,
+      "vitC": 0.2,
+      "thiamin": 0.039,
+      "riboflavin": 0.185,
+      "niacin": 0.792,
+      "b6": 0.038,
+      "folate": 5,
+      "b12": 0.53,
       "vitK": 0.2,
-      "ala": 0.027,
-      "la": 0.065,
-      "carbs": 4.66,
+      "ala": 0.008,
+      "la": 0.055,
+      "sfa": 1.257,
+      "tfa": 0.085,
+      "carbs": 4.8,
       "biotin": 1.98
     }
   },
@@ -127,6 +131,8 @@ export const COMPOSITION = {
         "vitK": 1.1,
         "ala": 0.112,
         "la": 0.273,
+        "sfa": 8.295,
+        "tfa": null,
         "carbs": 3.04
       }
     },
@@ -156,12 +162,14 @@ export const COMPOSITION = {
       "biotin": 21.04,
       "ala": 0.233,
       "la": 0.206,
+      "sfa": 14.84,
+      "tfa": 0,
       "vitA": 120,
       "b12": 0.34
     }
   },
   "ghee": {
-    "source": "USDA SR28 01003 (Butter oil, anhydrous)",
+    "source": "USDA SR28 01003 (Butter oil, anhydrous); tfa from IFCT 2017 T013",
     "tabulatedKcal": 876,
     "edible": 1,
     "edibleSource": "Sold as eaten (no peel or seeds).",
@@ -193,6 +201,8 @@ export const COMPOSITION = {
       "vitK": 8.6,
       "ala": 1.447,
       "la": 2.247,
+      "sfa": 61.92,
+      "tfa": 0.44,
       "carbs": 0,
       "biotin": null
     }
@@ -230,6 +240,8 @@ export const COMPOSITION = {
       "vitK": 24.7,
       "ala": 1.6,
       "la": 33.4,
+      "sfa": 19.7,
+      "tfa": null,
       "carbs": 0,
       "biotin": null
     }
@@ -269,6 +281,8 @@ export const COMPOSITION = {
         "vitK": 9,
         "ala": 0.102,
         "la": 2.629,
+        "sfa": 0.603,
+        "tfa": 0,
         "carbs": 50.75
       }
     },
@@ -298,6 +312,8 @@ export const COMPOSITION = {
       "biotin": 0.81,
       "ala": 0.116,
       "la": 2.36,
+      "sfa": 0.469,
+      "tfa": 0,
       "vitA": 3,
       "b12": 0
     }
@@ -337,6 +353,8 @@ export const COMPOSITION = {
         "vitK": 9,
         "ala": 0.102,
         "la": 2.629,
+        "sfa": 0.603,
+        "tfa": 0,
         "carbs": 50.75
       }
     },
@@ -366,6 +384,8 @@ export const COMPOSITION = {
       "biotin": 0.81,
       "ala": 0.116,
       "la": 2.36,
+      "sfa": 0.469,
+      "tfa": 0,
       "vitA": 3,
       "b12": 0
     }
@@ -405,6 +425,8 @@ export const COMPOSITION = {
         "vitK": 9,
         "ala": 0.027,
         "la": 0.357,
+        "sfa": 0.348,
+        "tfa": 0,
         "carbs": 46.32
       }
     },
@@ -434,6 +456,8 @@ export const COMPOSITION = {
       "biotin": 1.35,
       "ala": 0.027,
       "la": 0.43,
+      "sfa": 0.274,
+      "tfa": 0,
       "vitA": 11.42,
       "b12": 0
     }
@@ -473,6 +497,8 @@ export const COMPOSITION = {
         "vitK": 9,
         "ala": 0.027,
         "la": 0.357,
+        "sfa": 0.348,
+        "tfa": 0,
         "carbs": 46.32
       }
     },
@@ -502,6 +528,8 @@ export const COMPOSITION = {
       "biotin": 0.65,
       "ala": 0.027,
       "la": 0.377,
+      "sfa": 0.247,
+      "tfa": 0,
       "vitA": 10.17,
       "b12": 0
     }
@@ -541,6 +569,8 @@ export const COMPOSITION = {
         "vitK": null,
         "ala": 0.035,
         "la": 0.778,
+        "sfa": 0.33,
+        "tfa": 0,
         "carbs": 47.78
       }
     },
@@ -570,6 +600,8 @@ export const COMPOSITION = {
       "biotin": 0.31,
       "ala": 0.05144,
       "la": 0.6,
+      "sfa": 0.257,
+      "tfa": 0,
       "vitA": 1,
       "b12": 0
     }
@@ -609,6 +641,8 @@ export const COMPOSITION = {
         "vitK": 9,
         "ala": 0.102,
         "la": 2.629,
+        "sfa": 0.603,
+        "tfa": 0,
         "carbs": 50.75
       }
     },
@@ -638,6 +672,8 @@ export const COMPOSITION = {
       "biotin": 0.93,
       "ala": 0.117,
       "la": 2.22,
+      "sfa": 0.453,
+      "tfa": 0,
       "vitA": 3,
       "b12": 0
     }
@@ -675,6 +711,8 @@ export const COMPOSITION = {
       "vitK": 9,
       "ala": 0.102,
       "la": 2.629,
+      "sfa": 0.603,
+      "tfa": 0,
       "carbs": 50.75,
       "biotin": null
     }
@@ -714,6 +752,8 @@ export const COMPOSITION = {
         "vitK": 5.6,
         "ala": 0.358,
         "la": 0.228,
+        "sfa": 0.154,
+        "tfa": 0,
         "carbs": 46.09
       }
     },
@@ -743,6 +783,8 @@ export const COMPOSITION = {
       "biotin": 0.77,
       "ala": 0.557,
       "la": 0.374,
+      "sfa": 0.256,
+      "tfa": 0,
       "vitA": 0.1333,
       "b12": 0
     }
@@ -780,6 +822,8 @@ export const COMPOSITION = {
       "vitK": 4.1,
       "ala": 0.063,
       "la": 0.47,
+      "sfa": 0.136,
+      "tfa": 0,
       "carbs": 16.42,
       "biotin": null
     }
@@ -819,6 +863,8 @@ export const COMPOSITION = {
         "vitK": 9,
         "ala": 0.102,
         "la": 2.629,
+        "sfa": 0.603,
+        "tfa": 0,
         "carbs": 50.75
       }
     },
@@ -848,6 +894,8 @@ export const COMPOSITION = {
       "biotin": 0.81,
       "ala": 0.116,
       "la": 2.36,
+      "sfa": 0.469,
+      "tfa": 0,
       "vitA": 3,
       "b12": 0
     }
@@ -885,6 +933,8 @@ export const COMPOSITION = {
       "vitK": 2,
       "ala": 0.1,
       "la": 2.2,
+      "sfa": 1.11,
+      "tfa": null,
       "carbs": 57.6,
       "biotin": null
     }
@@ -924,6 +974,8 @@ export const COMPOSITION = {
         "vitK": 1.9,
         "ala": 0.073,
         "la": 1.093,
+        "sfa": 0.43,
+        "tfa": null,
         "carbs": 61.27
       }
     },
@@ -953,6 +1005,8 @@ export const COMPOSITION = {
       "biotin": 0.76,
       "ala": 0.04493,
       "la": 0.697,
+      "sfa": 0.206,
+      "tfa": 0,
       "vitA": 0.2225,
       "b12": 0
     }
@@ -992,6 +1046,8 @@ export const COMPOSITION = {
         "vitK": 1.9,
         "ala": 0.023,
         "la": 0.518,
+        "sfa": 0.232,
+        "tfa": null,
         "carbs": 63.37
       }
     },
@@ -1021,6 +1077,8 @@ export const COMPOSITION = {
       "biotin": 2.5,
       "ala": 0.04269,
       "la": 0.657,
+      "sfa": 0.196,
+      "tfa": 0,
       "vitA": 0.2125,
       "b12": 0
     }
@@ -1060,6 +1118,8 @@ export const COMPOSITION = {
         "vitK": 0.1,
         "ala": 0.031,
         "la": 0.146,
+        "sfa": 0.18,
+        "tfa": null,
         "carbs": 78.65
       }
     },
@@ -1089,6 +1149,8 @@ export const COMPOSITION = {
       "biotin": 0.6,
       "ala": 0.00951,
       "la": 0.234,
+      "sfa": 0.184,
+      "tfa": 0,
       "vitA": 0,
       "b12": 0
     }
@@ -1128,6 +1190,8 @@ export const COMPOSITION = {
         "vitK": 0.1,
         "ala": 0.031,
         "la": 0.146,
+        "sfa": 0.18,
+        "tfa": null,
         "carbs": 78.65
       }
     },
@@ -1157,6 +1221,8 @@ export const COMPOSITION = {
       "biotin": 0.39,
       "ala": 0.02437,
       "la": 0.553,
+      "sfa": 0.284,
+      "tfa": 0,
       "vitA": 0,
       "b12": 0
     }
@@ -1196,6 +1262,8 @@ export const COMPOSITION = {
         "vitK": 0,
         "ala": 0.003,
         "la": 15.55,
+        "sfa": 6.279,
+        "tfa": 0,
         "carbs": 7.63
       }
     },
@@ -1225,6 +1293,8 @@ export const COMPOSITION = {
       "biotin": 1.61,
       "ala": 0,
       "la": 11.58,
+      "sfa": 8.144,
+      "tfa": 0,
       "vitA": 1.896,
       "b12": 0
     }
@@ -1262,6 +1332,8 @@ export const COMPOSITION = {
       "vitK": 7.3,
       "ala": 0.12,
       "la": 20.67,
+      "sfa": 8.659,
+      "tfa": 0.064,
       "carbs": 4.71,
       "biotin": null
     }
@@ -1301,6 +1373,8 @@ export const COMPOSITION = {
         "vitK": 4.3,
         "ala": 22.81,
         "la": 5.903,
+        "sfa": 3.663,
+        "tfa": null,
         "carbs": 1.58
       }
     },
@@ -1330,6 +1404,8 @@ export const COMPOSITION = {
       "biotin": 21.25,
       "ala": 12.96,
       "la": 3.191,
+      "sfa": 2.968,
+      "tfa": 0,
       "vitA": 0.0875,
       "b12": 0
     }
@@ -1369,6 +1445,8 @@ export const COMPOSITION = {
         "vitK": 0,
         "ala": 0.06,
         "la": 23.05,
+        "sfa": 4.455,
+        "tfa": null,
         "carbs": 11.4
       }
     },
@@ -1398,6 +1476,8 @@ export const COMPOSITION = {
       "biotin": 2.44,
       "ala": 0.0356,
       "la": 25.55,
+      "sfa": 6.159,
+      "tfa": 0,
       "vitA": 0.6792,
       "b12": 0
     }
@@ -1437,6 +1517,8 @@ export const COMPOSITION = {
         "vitK": 0,
         "ala": 0.376,
         "la": 21.38,
+        "sfa": 6.957,
+        "tfa": null,
         "carbs": 11.65
       }
     },
@@ -1466,6 +1548,8 @@ export const COMPOSITION = {
       "biotin": 3.46,
       "ala": 0.12,
       "la": 18.48,
+      "sfa": 6.43,
+      "tfa": 0,
       "vitA": 1.078,
       "b12": 0
     }
@@ -1505,6 +1589,8 @@ export const COMPOSITION = {
         "vitK": 0,
         "ala": 0.003,
         "la": 12.32,
+        "sfa": 3.802,
+        "tfa": 0.015,
         "carbs": 9.05
       }
     },
@@ -1534,6 +1620,8 @@ export const COMPOSITION = {
       "biotin": 2.39,
       "ala": 0.003,
       "la": 13.18,
+      "sfa": 4.358,
+      "tfa": 0,
       "vitA": 0,
       "b12": 0
     }
@@ -1573,6 +1661,8 @@ export const COMPOSITION = {
         "vitK": 2.7,
         "ala": 9.08,
         "la": 38.09,
+        "sfa": 6.126,
+        "tfa": null,
         "carbs": 7.01
       }
     },
@@ -1602,6 +1692,8 @@ export const COMPOSITION = {
       "biotin": 13.05,
       "ala": 8.71,
       "la": 36.2,
+      "sfa": 5.208,
+      "tfa": 0,
       "vitA": 0.7942,
       "b12": 0
     }
@@ -1641,6 +1733,8 @@ export const COMPOSITION = {
         "vitK": 34.1,
         "ala": 0.062,
         "la": 7.782,
+        "sfa": 7.783,
+        "tfa": null,
         "carbs": 26.89
       }
     },
@@ -1670,6 +1764,8 @@ export const COMPOSITION = {
       "biotin": 2.58,
       "ala": 0.05504,
       "la": 7.427,
+      "sfa": 7.816,
+      "tfa": 0,
       "vitA": 0,
       "b12": 0
     }
@@ -1709,6 +1805,8 @@ export const COMPOSITION = {
         "vitK": 3.5,
         "ala": 0.008,
         "la": 0.028,
+        "sfa": 0.058,
+        "tfa": 0,
         "carbs": 75.48
       }
     },
@@ -1738,6 +1836,8 @@ export const COMPOSITION = {
       "biotin": 0.73,
       "ala": 0.01191,
       "la": 0.028,
+      "sfa": 0.06247,
+      "tfa": 0,
       "vitA": 0.3092,
       "b12": 0
     }
@@ -1777,6 +1877,8 @@ export const COMPOSITION = {
         "vitK": 2.7,
         "ala": 0.003,
         "la": 0.016,
+        "sfa": 0.032,
+        "tfa": 0,
         "carbs": 67.03
       }
     },
@@ -1806,6 +1908,8 @@ export const COMPOSITION = {
       "biotin": 0.94,
       "ala": 0.003,
       "la": 0.016,
+      "sfa": 0.114,
+      "tfa": 0,
       "vitA": 225.4,
       "b12": 0
     }
@@ -1845,6 +1949,8 @@ export const COMPOSITION = {
         "vitK": 0.5,
         "ala": 0.027,
         "la": 0.046,
+        "sfa": 0.112,
+        "tfa": 0,
         "carbs": 20.24
       }
     },
@@ -1874,6 +1980,8 @@ export const COMPOSITION = {
       "biotin": 1.69,
       "ala": 0.07344,
       "la": 0.0535,
+      "sfa": 0.114,
+      "tfa": 0,
       "vitA": 4.732,
       "b12": 0
     }
@@ -1913,6 +2021,8 @@ export const COMPOSITION = {
         "vitK": 2.6,
         "ala": 0.047,
         "la": 0.011,
+        "sfa": 0.081,
+        "tfa": 0,
         "carbs": 9.12
       }
     },
@@ -1942,6 +2052,8 @@ export const COMPOSITION = {
       "biotin": 3.05,
       "ala": 0.03791,
       "la": 0.01033,
+      "sfa": 0.05608,
+      "tfa": 0,
       "vitA": 57.83,
       "b12": 0
     }
@@ -1981,6 +2093,8 @@ export const COMPOSITION = {
         "vitK": 2.6,
         "ala": 0.112,
         "la": 0.288,
+        "sfa": 0.272,
+        "tfa": 0,
         "carbs": 8.92
       }
     },
@@ -2010,6 +2124,8 @@ export const COMPOSITION = {
       "biotin": 0.74,
       "ala": 0.01108,
       "la": 0.165,
+      "sfa": 0.0493,
+      "tfa": 0,
       "vitA": 24.83,
       "b12": 0
     }
@@ -2049,6 +2165,8 @@ export const COMPOSITION = {
         "vitK": 0,
         "ala": 0.007,
         "la": 0.018,
+        "sfa": 0.015,
+        "tfa": 0,
         "carbs": 9.35
       }
     },
@@ -2078,6 +2196,8 @@ export const COMPOSITION = {
       "biotin": 2.88,
       "ala": 0.01111,
       "la": 0.03652,
+      "sfa": 0.03711,
+      "tfa": 0,
       "vitA": 2.662,
       "b12": 0
     }
@@ -2117,6 +2237,8 @@ export const COMPOSITION = {
         "vitK": 2.5,
         "ala": 0.046,
         "la": 0.035,
+        "sfa": 0.051,
+        "tfa": 0,
         "carbs": 7.26
       }
     },
@@ -2146,6 +2268,8 @@ export const COMPOSITION = {
       "biotin": 0.75,
       "ala": 0.06133,
       "la": 0.09734,
+      "sfa": 0.09294,
+      "tfa": 0,
       "vitA": 64.25,
       "b12": 0
     }
@@ -2185,6 +2309,8 @@ export const COMPOSITION = {
         "vitK": 4.2,
         "ala": 0.051,
         "la": 0.019,
+        "sfa": 0.092,
+        "tfa": 0,
         "carbs": 13.38
       }
     },
@@ -2214,6 +2340,8 @@ export const COMPOSITION = {
       "biotin": 1.447,
       "ala": 0.08703,
       "la": 0.02207,
+      "sfa": 0.1764,
+      "tfa": 0,
       "vitA": 86.11,
       "b12": 0
     }
@@ -2253,6 +2381,8 @@ export const COMPOSITION = {
         "vitK": 2.2,
         "ala": 0.009,
         "la": 0.043,
+        "sfa": 0.028,
+        "tfa": 0,
         "carbs": 11.41
       }
     },
@@ -2282,6 +2412,8 @@ export const COMPOSITION = {
       "biotin": 0.34,
       "ala": 0.03263,
       "la": 0.043,
+      "sfa": 0.154,
+      "tfa": 0,
       "vitA": 0.2008,
       "b12": 0
     }
@@ -2321,6 +2453,8 @@ export const COMPOSITION = {
         "vitK": 0,
         "ala": 0.009,
         "la": 0.012,
+        "sfa": 0.04,
+        "tfa": 0,
         "carbs": 6.6
       }
     },
@@ -2350,6 +2484,8 @@ export const COMPOSITION = {
       "biotin": 1.92,
       "ala": 0.009,
       "la": 0.012,
+      "sfa": 0.202,
+      "tfa": 0,
       "vitA": 0.2183,
       "b12": 0
     }
@@ -2389,6 +2525,8 @@ export const COMPOSITION = {
         "vitK": 482.9,
         "ala": 0.138,
         "la": 0.026,
+        "sfa": 0.063,
+        "tfa": 0,
         "carbs": 1.43
       }
     },
@@ -2418,6 +2556,8 @@ export const COMPOSITION = {
       "biotin": 4.14,
       "ala": 0.22,
       "la": 0.07506,
+      "sfa": 0.183,
+      "tfa": 0,
       "vitA": 217.1,
       "b12": 0
     }
@@ -2457,6 +2597,8 @@ export const COMPOSITION = {
         "vitK": 1140,
         "ala": 0.002,
         "la": 0.145,
+        "sfa": 0.091,
+        "tfa": 0,
         "carbs": 4.02
       }
     },
@@ -2486,6 +2628,8 @@ export const COMPOSITION = {
       "biotin": 2.46,
       "ala": 0.002,
       "la": 0.111,
+      "sfa": 0.194,
+      "tfa": 0,
       "vitA": 146,
       "b12": 0
     }
@@ -2525,6 +2669,8 @@ export const COMPOSITION = {
         "vitK": 2,
         "ala": 0.01,
         "la": 0.032,
+        "sfa": 0.025,
+        "tfa": 0,
         "carbs": 15.39
       }
     },
@@ -2554,6 +2700,8 @@ export const COMPOSITION = {
       "biotin": 1.35,
       "ala": 0.03184,
       "la": 0.09745,
+      "sfa": 0.04356,
+      "tfa": 0,
       "vitA": 0,
       "b12": 0
     }
@@ -2593,6 +2741,8 @@ export const COMPOSITION = {
         "vitK": 1.8,
         "ala": 0.001,
         "la": 0.013,
+        "sfa": 0.018,
+        "tfa": 0,
         "carbs": 17.12
       }
     },
@@ -2622,6 +2772,8 @@ export const COMPOSITION = {
       "biotin": 5.19,
       "ala": 0.001,
       "la": 0.013,
+      "sfa": 0.0661,
+      "tfa": 0,
       "vitA": 448,
       "b12": 0
     }
@@ -2661,6 +2813,8 @@ export const COMPOSITION = {
         "vitK": 0.2,
         "ala": 0.005,
         "la": 0.055,
+        "sfa": 0.027,
+        "tfa": 0,
         "carbs": 6.76
       }
     },
@@ -2690,6 +2844,8 @@ export const COMPOSITION = {
       "biotin": 2.56,
       "ala": 0.00698,
       "la": 0.05723,
+      "sfa": 0.03117,
+      "tfa": 0,
       "vitA": 0.845,
       "b12": 0
     }
@@ -2729,6 +2885,8 @@ export const COMPOSITION = {
         "vitK": 24.8,
         "ala": 0.035,
         "la": 0.152,
+        "sfa": 0.071,
+        "tfa": 0,
         "carbs": 8.75
       }
     },
@@ -2758,6 +2916,8 @@ export const COMPOSITION = {
       "biotin": 4.04,
       "ala": 0.00949,
       "la": 0.04675,
+      "sfa": 0.01901,
+      "tfa": 0,
       "vitA": 10.08,
       "b12": 0
     }
@@ -2797,6 +2957,8 @@ export const COMPOSITION = {
         "vitK": 15.5,
         "ala": 0.015,
         "la": 0.013,
+        "sfa": 0.13,
+        "tfa": 0,
         "carbs": 2.97
       }
     },
@@ -2826,6 +2988,8 @@ export const COMPOSITION = {
       "biotin": 2.47,
       "ala": 0.015,
       "la": 0.013,
+      "sfa": 0.117,
+      "tfa": 0,
       "vitA": 0.1325,
       "b12": 0
     }
@@ -2865,6 +3029,8 @@ export const COMPOSITION = {
         "vitK": 13.2,
         "ala": 0.002,
         "la": 0.115,
+        "sfa": 0.037,
+        "tfa": 0,
         "carbs": 6.78
       }
     },
@@ -2894,6 +3060,8 @@ export const COMPOSITION = {
       "biotin": 1.5,
       "ala": 0.002,
       "la": 0.241,
+      "sfa": 0.08771,
+      "tfa": 0,
       "vitA": 451.9,
       "b12": 0
     }
@@ -2933,6 +3101,8 @@ export const COMPOSITION = {
         "vitK": 1.3,
         "ala": 0.031,
         "la": 0.017,
+        "sfa": 0.032,
+        "tfa": 0,
         "carbs": 1.8
       }
     },
@@ -2962,6 +3132,8 @@ export const COMPOSITION = {
       "biotin": 2.48,
       "ala": 0.032,
       "la": 0.02164,
+      "sfa": 0.04388,
+      "tfa": 0,
       "vitA": 0,
       "b12": 0
     }
@@ -3001,6 +3173,8 @@ export const COMPOSITION = {
         "vitK": null,
         "ala": null,
         "la": 0.009,
+        "sfa": 0.002,
+        "tfa": 0,
         "carbs": 2.89
       }
     },
@@ -3030,6 +3204,8 @@ export const COMPOSITION = {
       "biotin": 2.55,
       "ala": 0.02463,
       "la": 0.009,
+      "sfa": 0.04144,
+      "tfa": 0,
       "vitA": 3.671,
       "b12": 0
     }
@@ -3069,6 +3245,8 @@ export const COMPOSITION = {
         "vitK": 31.3,
         "ala": 0.001,
         "la": 0.026,
+        "sfa": 0.026,
+        "tfa": 0,
         "carbs": 4.25
       }
     },
@@ -3098,6 +3276,8 @@ export const COMPOSITION = {
       "biotin": 1.58,
       "ala": 0.001,
       "la": 0.07682,
+      "sfa": 0.06937,
+      "tfa": 0,
       "vitA": 5.758,
       "b12": 0
     }
@@ -3137,6 +3317,8 @@ export const COMPOSITION = {
         "vitK": 1.1,
         "ala": 0.003,
         "la": 0.002,
+        "sfa": 0.052,
+        "tfa": 0,
         "carbs": 6
       }
     },
@@ -3166,6 +3348,8 @@ export const COMPOSITION = {
       "biotin": 1.63,
       "ala": 0.003,
       "la": 0.002,
+      "sfa": 0.04458,
+      "tfa": 0,
       "vitA": 12.42,
       "b12": 0
     }
@@ -3205,6 +3389,8 @@ export const COMPOSITION = {
         "vitK": 3.5,
         "ala": 0.013,
         "la": 0.063,
+        "sfa": 0.034,
+        "tfa": 0,
         "carbs": 2.88
       }
     },
@@ -3234,6 +3420,8 @@ export const COMPOSITION = {
       "biotin": 1.76,
       "ala": 0.02265,
       "la": 0.127,
+      "sfa": 0.07115,
+      "tfa": 0,
       "vitA": 1,
       "b12": 0
     }
@@ -3273,6 +3461,8 @@ export const COMPOSITION = {
         "vitK": 43,
         "ala": 0.069,
         "la": 0.044,
+        "sfa": 0.05,
+        "tfa": 0,
         "carbs": 4.27
       }
     },
@@ -3302,6 +3492,8 @@ export const COMPOSITION = {
       "biotin": 4.71,
       "ala": 0.06819,
       "la": 0.05921,
+      "sfa": 0.07107,
+      "tfa": 0,
       "vitA": 34.42,
       "b12": 0
     }
@@ -3341,6 +3533,8 @@ export const COMPOSITION = {
         "vitK": 16.4,
         "ala": 0.005,
         "la": 0.028,
+        "sfa": 0.037,
+        "tfa": 0,
         "carbs": 3.13
       }
     },
@@ -3370,6 +3564,8 @@ export const COMPOSITION = {
       "biotin": 2.82,
       "ala": 0.00863,
       "la": 0.0593,
+      "sfa": 0.06417,
+      "tfa": 0,
       "vitA": 0.4442,
       "b12": 0
     }
@@ -3409,6 +3605,8 @@ export const COMPOSITION = {
         "vitK": 0.4,
         "ala": 0.004,
         "la": 0.013,
+        "sfa": 0.042,
+        "tfa": 0,
         "carbs": 7.64
       }
     },
@@ -3438,6 +3636,8 @@ export const COMPOSITION = {
       "biotin": 2.61,
       "ala": 0.00663,
       "la": 0.013,
+      "sfa": 0.06081,
+      "tfa": 0,
       "vitA": 0.09,
       "b12": 0
     }
@@ -3477,6 +3677,8 @@ export const COMPOSITION = {
         "vitK": 7.9,
         "ala": 0.003,
         "la": 0.08,
+        "sfa": 0.028,
+        "tfa": 0,
         "carbs": 2.69
       }
     },
@@ -3506,6 +3708,8 @@ export const COMPOSITION = {
       "biotin": 1.18,
       "ala": 0.003,
       "la": 0.185,
+      "sfa": 0.07956,
+      "tfa": 0,
       "vitA": 75.42,
       "b12": 0
     }
@@ -3545,6 +3749,8 @@ export const COMPOSITION = {
         "vitK": 7.4,
         "ala": 0.008,
         "la": 0.054,
+        "sfa": 0.058,
+        "tfa": 0,
         "carbs": 2.94
       }
     },
@@ -3574,6 +3780,8 @@ export const COMPOSITION = {
       "biotin": 4.59,
       "ala": 0.008,
       "la": 0.135,
+      "sfa": 0.07703,
+      "tfa": 0,
       "vitA": 27.33,
       "b12": 0
     }
@@ -3613,6 +3821,8 @@ export const COMPOSITION = {
         "vitK": 0.3,
         "ala": 0.036,
         "la": 1.531,
+        "sfa": 3.126,
+        "tfa": 0.038,
         "carbs": 0.72
       }
     },
@@ -3642,6 +3852,8 @@ export const COMPOSITION = {
       "biotin": 18.24,
       "ala": 0.02806,
       "la": 1.022,
+      "sfa": 2.958,
+      "tfa": 0,
       "vitA": 199.1,
       "b12": 0.89
     }
@@ -3681,6 +3893,8 @@ export const COMPOSITION = {
         "vitK": 2.8,
         "ala": 0.025,
         "la": 0.616,
+        "sfa": 1.05,
+        "tfa": 0.015,
         "carbs": 0
       }
     },
@@ -3710,6 +3924,8 @@ export const COMPOSITION = {
       "biotin": 4.58,
       "ala": 0.02597,
       "la": 0.627,
+      "sfa": 1.157,
+      "tfa": 0,
       "vitA": 10.95,
       "b12": 0.36
     }
@@ -3749,6 +3965,8 @@ export const COMPOSITION = {
         "vitK": 0.1,
         "ala": 0.27,
         "la": 0.517,
+        "sfa": 1.083,
+        "tfa": null,
         "carbs": 0
       }
     },
@@ -3778,6 +3996,8 @@ export const COMPOSITION = {
       "biotin": null,
       "ala": 0.27,
       "la": 0.531,
+      "sfa": 2.047,
+      "tfa": 0,
       "vitA": 3.87,
       "b12": 1.53
     }
@@ -3900,6 +4120,16 @@ export const SR28_MAX: Partial<Record<NutrientKey, { value: number; ndb: string;
     "value": 1714.5,
     "ndb": "02003",
     "name": "Spices, basil, dried"
+  },
+  "tfa": {
+    "value": 42.851,
+    "ndb": "04667",
+    "name": "Shortening, industrial, soy (partially hydrogenated ) for baking and confections"
+  },
+  "sfa": {
+    "value": 95.6,
+    "ndb": "04592",
+    "name": "Fish oil, menhaden, fully hydrogenated"
   },
   "la": {
     "value": 74.623,

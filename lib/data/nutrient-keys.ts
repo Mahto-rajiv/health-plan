@@ -28,6 +28,8 @@ export const NUTRIENT_KEYS = [
   'biotin',
   'ala',
   'la',
+  'sfa',
+  'tfa',
 ] as const;
 
 export type NutrientKey = (typeof NUTRIENT_KEYS)[number];

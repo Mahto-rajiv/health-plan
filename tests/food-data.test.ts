@@ -48,7 +48,7 @@ describe('food rows are physically plausible', () => {
     for (const [id, c] of Object.entries(COMPOSITION)) {
       if (!c.check) continue;
       for (const k of NUTRIENT_KEYS) {
-        if (MACROS.includes(k)) continue;
+        if (MACROS.includes(k) || k === 'sfa' || k === 'tfa') continue; // limits: the lower-value rule doesn't apply (scripts/food-data/build.ts)
         const v = c.values[k];
         const u = (c.check.values as Partial<Record<NutrientKey, number | null>>)[k];
         if (v == null || u == null || v <= 0 || u <= 0) continue;

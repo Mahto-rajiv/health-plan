@@ -3,13 +3,13 @@
     "egg|0|b6",
     "egg|0|thiamin",
     "nonveg|0|thiamin",
+    "vegetarian|0|b6",
     "vegetarian|0|thiamin"
   ],
   "hairBelowTarget": [
     "egg|0|iron",
     "egg|0|riboflavin",
     "egg|0|vitA",
-    "egg|0|vitE",
     "egg|0|zinc",
     "egg|1|iron",
     "egg|1|riboflavin",
@@ -17,7 +17,6 @@
     "egg|1|vitE",
     "egg|2|riboflavin",
     "egg|2|vitA",
-    "egg|2|vitE",
     "nonveg|0|iron",
     "nonveg|0|riboflavin",
     "nonveg|0|vitA",
@@ -27,6 +26,7 @@
     "nonveg|1|vitA",
     "nonveg|2|riboflavin",
     "nonveg|2|vitA",
+    "nonveg|2|vitE",
     "vegetarian|0|iron",
     "vegetarian|0|riboflavin",
     "vegetarian|0|vitA",
@@ -37,8 +37,6 @@
     "vegetarian|1|vitA",
     "vegetarian|1|vitE",
     "vegetarian|2|iron",
-    "vegetarian|2|riboflavin",
-    "vegetarian|2|vitA",
-    "vegetarian|2|vitE"
+    "vegetarian|2|vitA"
   ]
 }

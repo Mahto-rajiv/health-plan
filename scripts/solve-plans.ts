@@ -199,11 +199,13 @@ async function solvePhase(highs: Awaited<ReturnType<typeof highsLoader>>, ph: Ph
         if (!OFF.has('protein')) con(day.n.protein, '>=', P.protein[0] * (1 + MARGIN));
         if (!OFF.has('protein')) con(day.n.protein, '<=', P.protein[1] * (1 - MARGIN));
         if (!OFF.has('fibre')) con(day.n.fiber, '<=', P.fibreMax - 0.3);
-        // fat 25–30% of kcal: 9·fat − share·kcal within bounds
+        // fat within DAILY.fatEnergy of kcal: 9·fat − share·kcal within bounds
         const fatLo = sum(scale(day.n.fat, 9), scale(day.kcal, -(DAILY.fatEnergy[0] + 0.003)));
         const fatHi = sum(scale(day.n.fat, 9), scale(day.kcal, -(DAILY.fatEnergy[1] - 0.003)));
         if (!OFF.has('fat')) con(fatLo, '>=', 0);
         if (!OFF.has('fat')) con(fatHi, '<=', 0);
+        // saturated fat < 10% of kcal (Round 5)
+        if (!OFF.has('sfa')) con(sum(scale(day.n.sfa, 9), scale(day.kcal, -(DAILY.satFatEnergyMax - 0.003))), '<=', 0);
         if (!OFF.has('caps')) for (const [food, capG] of Object.entries(P.caps)) if (day.grams.get(food as FoodId)) con(day.grams.get(food as FoodId)!, '<=', capG!);
         if (!OFF.has('caps') && ph > 0 && day.grams.get('soyaChunks')) con(day.grams.get('soyaChunks')!, '<=', PLAN_RULES.soyaMaxG);
         if (!OFF.has('ul')) for (const [key, ul] of Object.entries(UPPER)) con(day.n[key as NutrientKey], '<=', ul!);

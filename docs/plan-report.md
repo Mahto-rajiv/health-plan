@@ -2,16 +2,16 @@
 
 Generated 2026-11-03 by `npm run plans:report` at default prices. Per day: range across the 7 days; nutrients are weekly averages.
 
-| Phase | Plan | kcal | Protein g | Fibre g | Fat % | Milk+curd g/day | Dairy % of protein | Morning min (weekdays) | ₹/month | Below EAR (weekly avg) | ★ below RDA/AI |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | Vegetarian | 2180–2283 | 88–90 | 34–35 | 34–35 | 1091 | 47 | 14 | 4,841 | Thiamine (B1) 1.4/1.5 mg | Iron 12/19 mg; Zinc 15/17 mg; Vitamin A 636/1,000 µg; Riboflavin (B2) 2.1/2.5 mg; Vitamin E 14/15 mg |
-| 0 | Veg + eggs | 2161–2298 | 92–94 | 34–35 | 34–35 | 1005 | 40 | 13 | 4,873 | Thiamine (B1) 1.4/1.5 mg; Vitamin B6 2.1/2.1 mg | Iron 13/19 mg; Zinc 15/17 mg; Vitamin A 693/1,000 µg; Riboflavin (B2) 2.1/2.5 mg; Vitamin E 15/15 mg |
-| 0 | Non-veg | 2240–2300 | 91–94 | 34–35 | 31–35 | 965 | 38 | 13 | 5,114 | Thiamine (B1) 1.4/1.5 mg | Iron 13/19 mg; Zinc 15/17 mg; Vitamin A 798/1,000 µg; Riboflavin (B2) 2.1/2.5 mg |
-| 1 | Vegetarian | 2404–2510 | 103–105 | 44–45 | 34–35 | 1086 | 40 | 14 | 5,243 | — | Iron 17/19 mg; Vitamin A 754/1,000 µg; Riboflavin (B2) 2.3/2.5 mg; Vitamin E 15/15 mg |
-| 1 | Veg + eggs | 2333–2470 | 106–110 | 42–45 | 34–35 | 912 | 31 | 13 | 5,143 | — | Iron 18/19 mg; Vitamin A 855/1,000 µg; Riboflavin (B2) 2.2/2.5 mg; Vitamin E 15/15 mg |
-| 1 | Non-veg | 2444–2510 | 104–110 | 41–45 | 31–35 | 904 | 31 | 13 | 5,399 | — | Iron 18/19 mg; Vitamin A 996/1,000 µg; Riboflavin (B2) 2.2/2.5 mg |
-| 2 | Vegetarian | 2576–2688 | 111–114 | 47–50 | 34–35 | 1099 | 39 | 14 | 5,396 | — | Iron 19/19 mg; Vitamin A 764/1,000 µg; Riboflavin (B2) 2.3/2.5 mg; Vitamin E 15/15 mg |
-| 2 | Veg + eggs | 2565–2654 | 116–119 | 44–49 | 33–35 | 949 | 31 | 13 | 5,270 | — | Vitamin A 877/1,000 µg; Riboflavin (B2) 2.3/2.5 mg; Vitamin E 15/15 mg |
-| 2 | Non-veg | 2571–2688 | 111–120 | 40–49 | 29–34 | 938 | 30 | 13 | 5,399 | — | Vitamin A 998/1,000 µg; Riboflavin (B2) 2.3/2.5 mg |
+| Phase | Plan | kcal | Protein g | Fibre g | Fat % | Sat fat % (avg, max day) | Milk+curd g/day | Dairy % of protein | Morning min (weekdays) | ₹/month | Below EAR (weekly avg) | ★ below RDA/AI |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | Vegetarian | 2129–2299 | 86–90 | 34–35 | 25–33 | 9.7, 9.7 | 1031 | 44 | 14 | 4,633 | Thiamine (B1) 1.4/1.5 mg; Vitamin B6 2.1/2.1 mg | Iron 11/19 mg; Zinc 14/17 mg; Vitamin A 527/1,000 µg; Riboflavin (B2) 2.4/2.5 mg; Vitamin E 13/15 mg |
+| 0 | Veg + eggs | 2112–2282 | 88–93 | 34–35 | 26–34 | 9.3, 9.7 | 868 | 35 | 13 | 4,611 | Thiamine (B1) 1.4/1.5 mg; Vitamin B6 2.1/2.1 mg | Iron 13/19 mg; Zinc 15/17 mg; Vitamin A 593/1,000 µg; Riboflavin (B2) 2.2/2.5 mg |
+| 0 | Non-veg | 2102–2290 | 88–93 | 33–35 | 27–33 | 9.2, 9.7 | 880 | 35 | 13 | 4,918 | Thiamine (B1) 1.4/1.5 mg | Iron 13/19 mg; Zinc 15/17 mg; Vitamin A 693/1,000 µg; Riboflavin (B2) 2.3/2.5 mg |
+| 1 | Vegetarian | 2439–2510 | 104–106 | 45–45 | 28–35 | 9.6, 9.7 | 1024 | 36 | 14 | 5,337 | — | Iron 18/19 mg; Vitamin A 643/1,000 µg; Riboflavin (B2) 2.5/2.5 mg; Vitamin E 15/15 mg |
+| 1 | Veg + eggs | 2397–2467 | 108–110 | 41–45 | 28–34 | 9.5, 9.7 | 889 | 30 | 13 | 5,098 | — | Iron 18/19 mg; Vitamin A 778/1,000 µg; Riboflavin (B2) 2.4/2.5 mg; Vitamin E 15/15 mg |
+| 1 | Non-veg | 2375–2508 | 104–110 | 39–45 | 28–34 | 9.3, 9.7 | 903 | 30 | 13 | 5,389 | — | Iron 18/19 mg; Vitamin A 926/1,000 µg; Riboflavin (B2) 2.5/2.5 mg |
+| 2 | Vegetarian | 2575–2688 | 111–114 | 49–50 | 27–35 | 9.5, 9.7 | 1005 | 34 | 14 | 5,398 | — | Iron 19/19 mg; Vitamin A 647/1,000 µg |
+| 2 | Veg + eggs | 2565–2678 | 116–120 | 45–50 | 26–33 | 9.3, 9.7 | 899 | 28 | 13 | 5,228 | — | Vitamin A 795/1,000 µg; Riboflavin (B2) 2.5/2.5 mg |
+| 2 | Non-veg | 2565–2689 | 111–120 | 44–50 | 25–33 | 8.9, 9.4 | 887 | 28 | 13 | 5,400 | — | Vitamin A 928/1,000 µg; Riboflavin (B2) 2.5/2.5 mg; Vitamin E 15/15 mg |
 
 Phase bands: 0: 2090–2310 kcal, 86–95 g protein, fibre ≤ 35 g · 1: 2280–2520 kcal, 100–110 g protein, fibre ≤ 45 g · 2: 2550–2700 kcal, 110–125 g protein, fibre ≤ 50 g.

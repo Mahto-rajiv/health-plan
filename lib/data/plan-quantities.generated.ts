@@ -4,13 +4,13 @@
 export const QUANTITIES: Record<string, Record<string, number[]>> = {
   "m1-veg": {
     "milk": [
-      335,
-      420,
-      420
+      315,
+      305,
+      300
     ],
     "oats": [
       35,
-      50,
+      45,
       35
     ],
     "peanuts": [
@@ -20,18 +20,18 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
     ],
     "pumpkinSeeds": [
       0,
-      2,
-      4
+      15,
+      15
     ],
     "flax": [
       0,
       0,
-      5
+      9
     ],
     "sunflowerSeeds": [
+      14,
       20,
-      20,
-      20
+      15
     ],
     "almonds": [
       0,
@@ -41,11 +41,11 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
     "sesame": [
       0,
       10,
-      10
+      6
     ],
     "banana": [
-      40,
-      20,
+      30,
+      0,
       10
     ],
     "slot:fruit1": [
@@ -57,8 +57,8 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
   "l-sattu-paratha": {
     "atta": [
       35,
-      35,
-      95
+      40,
+      65
     ],
     "sattu": [
       15,
@@ -66,14 +66,14 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
       15
     ],
     "oil": [
-      10,
+      13,
       9,
       17
     ],
     "curd": [
       315,
       315,
-      275
+      315
     ],
     "slot:salad": [
       40,
@@ -88,24 +88,24 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
     "sesame": [
       0,
       10,
-      0
+      10
     ]
   },
   "m3-curd-fruit": {
     "curd": [
-      205,
-      135,
-      230
+      220,
+      225,
+      240
     ],
     "slot:fruit3": [
       160,
-      100,
-      130
+      110,
+      80
     ],
     "dates": [
       20,
       30,
-      20
+      30
     ],
     "peanuts": [
       6,
@@ -114,23 +114,23 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
     ],
     "sunflowerSeeds": [
       19,
-      18,
-      4
+      17,
+      13
     ]
   },
   "d-moong-dal-rice": {
     "moongDal": [
-      30,
+      25,
       25,
       25
     ],
     "rice": [
-      85,
-      105,
-      90
+      100,
+      90,
+      95
     ],
     "soyaChunks": [
-      15,
+      20,
       35,
       50
     ],
@@ -140,85 +140,85 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
       60
     ],
     "oil": [
-      8,
-      9,
+      15,
+      15,
       15
     ],
     "curd": [
       245,
-      225,
-      175
+      245,
+      245
     ]
   },
   "l-paneer-bhurji-roll": {
     "atta": [
-      75,
-      105,
-      125
+      55,
+      70,
+      110
     ],
     "paneer": [
-      50,
-      85,
-      100
+      40,
+      40,
+      50
     ],
     "onion": [
-      15,
-      15,
-      45
+      25,
+      30,
+      15
     ],
     "tomato": [
       15,
       40,
-      40
+      15
     ],
     "capsicum": [
       10,
-      35,
-      35
+      10,
+      10
     ],
     "oil": [
-      5,
+      3,
       2,
       3
     ],
     "curd": [
       175,
-      175,
-      100
+      165,
+      175
     ]
   },
   "w-khichdi": {
     "rice": [
-      55,
-      55,
-      55
+      125,
+      120,
+      125
     ],
     "moongDal": [
-      40,
-      40,
-      60
+      55,
+      70,
+      95
     ],
     "slot:sabzi": [
-      80,
-      200,
-      200
+      60,
+      180,
+      160
     ],
     "ghee": [
       2,
       2,
-      6
+      4
     ],
     "curd": [
-      350,
+      160,
       280,
-      350
+      210
     ]
   },
   "l-besan-chilla": {
     "besan": [
       40,
-      65,
-      90
+      50,
+      75
     ],
     "paneer": [
       20,
@@ -241,139 +241,139 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
       8
     ],
     "curd": [
-      295,
-      315,
-      315
+      260,
+      210,
+      260
     ]
   },
   "d-saag-paneer-rice": {
     "paneer": [
       20,
       20,
-      20
+      25
     ],
     "moongDal": [
       20,
       20,
-      55
+      40
     ],
     "slot:greens": [
-      190,
+      130,
       300,
       300
     ],
     "rice": [
-      85,
-      90,
-      90
+      165,
+      170,
+      170
     ],
     "oil": [
       2,
-      2,
+      3,
       6
     ],
     "curd": [
-      240,
-      230,
+      170,
+      245,
       135
     ]
   },
   "l-soya-keema-roll": {
     "atta": [
-      45,
-      65,
+      35,
+      75,
       95
     ],
     "soyaChunks": [
       15,
       30,
-      45
+      15
     ],
     "slot:sabzi": [
       40,
-      140,
+      120,
       140
     ],
     "oil": [
-      9,
-      12,
+      17,
+      14,
       17
     ],
     "curd": [
       350,
       350,
-      295
+      350
     ]
   },
   "d-toor-dal-aloo": {
     "toorDal": [
       60,
-      60,
-      50
+      55,
+      115
     ],
     "rice": [
-      65,
+      75,
       65,
       65
     ],
     "potato": [
-      35,
+      135,
       25,
-      140
+      35
     ],
     "oil": [
-      11,
-      10,
+      16,
+      17,
       17
     ],
     "curd": [
       210,
-      195,
-      150
+      210,
+      210
     ]
   },
   "l-aloo-paneer-paratha": {
     "atta": [
-      75,
-      105,
-      150
+      70,
+      100,
+      140
     ],
     "potato": [
-      50,
+      35,
       35,
       35
     ],
     "paneer": [
-      45,
-      45,
-      55
+      40,
+      40,
+      40
     ],
     "oil": [
-      6,
-      5,
-      8
+      4,
+      4,
+      6
     ],
     "curd": [
       315,
       315,
-      300
+      315
     ]
   },
   "d-soya-curry-rice": {
     "soyaChunks": [
       15,
-      30,
-      45
+      25,
+      30
     ],
     "rice": [
-      60,
-      65,
-      55
+      145,
+      125,
+      120
     ],
     "potato": [
-      85,
       40,
-      40
+      40,
+      65
     ],
     "slot:salad": [
       60,
@@ -381,24 +381,24 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
       140
     ],
     "oil": [
-      3,
-      6,
-      11
+      2,
+      2,
+      9
     ],
     "curd": [
-      245,
-      230,
-      150
+      160,
+      180,
+      245
     ]
   },
   "w-paneer-pulao": {
     "rice": [
-      75,
-      95,
-      80
+      110,
+      110,
+      85
     ],
     "paneer": [
-      40,
+      20,
       20,
       20
     ],
@@ -409,30 +409,30 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
     ],
     "slot:sabzi": [
       60,
-      80,
-      160
+      60,
+      60
     ],
     "oil": [
-      7,
+      2,
       13,
       13
     ],
     "curd": [
-      265,
+      290,
       225,
       225
     ]
   },
   "w-poha-chaas": {
     "poha": [
-      40,
+      25,
       25,
       25
     ],
     "peanuts": [
       6,
       6,
-      8
+      21
     ],
     "onion": [
       30,
@@ -441,13 +441,13 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
     ],
     "oil": [
       7,
-      6,
+      7,
       7
     ],
     "curd": [
       350,
-      305,
-      305
+      340,
+      230
     ],
     "lemon": [
       7,
@@ -462,9 +462,9 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
       50
     ],
     "rice": [
-      70,
-      70,
-      95
+      85,
+      80,
+      125
     ],
     "slot:salad": [
       60,
@@ -472,12 +472,12 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
       140
     ],
     "oil": [
+      5,
       4,
-      6,
       6
     ],
     "curd": [
-      150,
+      140,
       150,
       150
     ]
@@ -486,12 +486,12 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
     "rajma": [
       30,
       80,
-      100
+      75
     ],
     "rice": [
+      60,
       40,
-      40,
-      40
+      65
     ],
     "slot:salad": [
       140,
@@ -499,24 +499,24 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
       140
     ],
     "oil": [
-      9,
-      11,
-      10
+      13,
+      14,
+      14
     ],
     "curd": [
-      170,
-      105,
-      105
+      245,
+      175,
+      175
     ]
   },
   "w-banana-shake-chana": {
     "milk": [
       455,
-      455,
-      455
+      365,
+      355
     ],
     "banana": [
-      120,
+      150,
       70,
       70
     ],
@@ -526,53 +526,53 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
       10
     ],
     "roastedChana": [
-      20,
+      15,
       15,
       15
     ]
   },
   "w-paneer-soya-sabzi-rice": {
     "paneer": [
-      35,
       30,
-      60
+      30,
+      40
     ],
     "soyaChunks": [
+      15,
       20,
-      25,
-      15
+      25
     ],
     "slot:sabzi": [
-      80,
+      60,
       60,
       200
     ],
     "rice": [
-      90,
-      95,
-      110
+      140,
+      140,
+      145
     ],
     "oil": [
-      14,
-      14,
-      12
+      5,
+      9,
+      14
     ],
     "curd": [
-      135,
-      120,
-      120
+      70,
+      140,
+      140
     ]
   },
   "m1-egg": {
     "milk": [
-      280,
-      280,
-      280
+      170,
+      205,
+      215
     ],
     "oats": [
-      50,
       45,
-      45
+      45,
+      50
     ],
     "egg": [
       50,
@@ -586,13 +586,13 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
     ],
     "flax": [
       0,
-      8,
-      7
+      10,
+      10
     ],
     "sunflowerSeeds": [
       20,
-      13,
-      14
+      14,
+      9
     ],
     "almonds": [
       0,
@@ -602,29 +602,29 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
     "sesame": [
       0,
       10,
-      8
+      10
     ],
     "banana": [
-      20,
-      10,
+      0,
+      0,
       0
     ],
     "slot:fruit1": [
       100,
-      120,
+      100,
       110
     ]
   },
   "l-egg-bhurji-roll": {
     "atta": [
-      70,
-      100,
-      130
+      55,
+      60,
+      105
     ],
     "egg": [
       100,
-      150,
-      150
+      100,
+      100
     ],
     "onion": [
       15,
@@ -632,14 +632,14 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
       15
     ],
     "tomato": [
-      15,
+      20,
       25,
       25
     ],
     "capsicum": [
-      20,
+      10,
       25,
-      10
+      25
     ],
     "oil": [
       10,
@@ -655,40 +655,40 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
   "d-egg-curry-rice": {
     "egg": [
       100,
-      100,
+      150,
       150
     ],
     "rice": [
-      90,
-      105,
-      120
+      140,
+      155,
+      165
     ],
     "slot:sabzi": [
-      200,
+      220,
       240,
       240
     ],
     "oil": [
-      2,
-      2,
-      5
+      6,
+      6,
+      6
     ],
     "curd": [
-      125,
+      145,
       90,
       90
     ]
   },
   "d-chicken-curry-rice": {
     "chicken": [
-      50,
+      55,
       40,
       40
     ],
     "rice": [
       110,
-      125,
-      170
+      140,
+      180
     ],
     "slot:salad": [
       200,
@@ -696,21 +696,21 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
       200
     ],
     "oil": [
+      8,
       7,
-      7,
-      7
+      8
     ],
     "curd": [
-      185,
-      200,
-      170
+      230,
+      350,
+      295
     ]
   },
   "l-chicken-roll": {
     "atta": [
       60,
-      80,
-      100
+      60,
+      75
     ],
     "chicken": [
       40,
@@ -723,41 +723,41 @@ export const QUANTITIES: Record<string, Record<string, number[]>> = {
       120
     ],
     "oil": [
-      7,
-      6,
-      17
+      5,
+      5,
+      16
     ],
     "curd": [
-      260,
-      320,
-      335
+      280,
+      195,
+      245
     ]
   },
   "d-fish-curry-rice": {
     "fish": [
       50,
-      50,
+      55,
       50
     ],
     "rice": [
-      75,
-      95,
-      120
+      155,
+      150,
+      180
     ],
     "slot:sabzi": [
+      140,
       200,
-      200,
-      60
+      200
     ],
     "oil": [
-      6,
-      9,
-      7
+      3,
+      3,
+      3
     ],
     "curd": [
-      140,
-      165,
-      175
+      125,
+      115,
+      100
     ]
   }
 };

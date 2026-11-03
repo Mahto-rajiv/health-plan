@@ -1,6 +1,6 @@
 import { FOODS } from '@/lib/data/foods';
 import { NOT_COMPUTED, NUTRIENTS } from '@/lib/data/nutrients';
-import { auditPlan, fmtAmount, STATUS_LABEL, type AuditStatus } from '@/lib/nutrient-audit';
+import { auditPlan, fatLimits, fmtAmount, STATUS_LABEL, type AuditStatus } from '@/lib/nutrient-audit';
 import type { ComputedPlan } from '@/lib/meal-plans';
 import { cn } from '@/lib/utils';
 import { References } from '@/components/References';
@@ -20,6 +20,8 @@ export function NutrientAudit({ plan }: { plan: ComputedPlan }) {
   const groups = ['Minerals', 'Vitamins', 'Fats'] as const;
   const below = rows.filter((r) => r.status === 'below-ear');
   const hairShort = rows.filter((r) => r.info.hair && (r.status === 'below-rda' || r.status === 'below-ai') && r.info.key !== 'biotin');
+  const fat = fatLimits(plan);
+  const satOver = fat.satPctMaxDay >= fat.satLimitPct;
   return (
     <div className="space-y-4">
       <p className="text-sm text-ink-2">
@@ -51,6 +53,18 @@ export function NutrientAudit({ plan }: { plan: ComputedPlan }) {
           <p className="mt-1 text-xs">Why, and what to do: see the notes under the table.</p>
         </div>
       )}
+      <div className={`rounded-lg px-3 py-2 text-sm ${satOver ? 'bg-rose-50 text-rose-800' : 'bg-slate-50 text-ink-2'}`}>
+        <p className="font-medium text-ink">Fat limits (share of energy)</p>
+        <ul className="mt-1 list-disc space-y-0.5 pl-5">
+          <li>
+            Saturated fat: {fat.satPct.toFixed(1)}% on average, {fat.satPctMaxDay.toFixed(1)}% on the highest day. Limit: under {fat.satLimitPct}% every day (WHO 2023).
+          </li>
+          <li>
+            Trans fat: at least {fat.transPct.toFixed(2)}%. Limit: under {fat.transLimitPct}%.
+            {fat.tfaMissing.length > 0 && <> The food tables have no trans-fat value for {fat.tfaMissing.map((f) => FOODS[f].name.toLowerCase()).join(', ')}, so the real figure is a little higher.</>}
+          </li>
+        </ul>
+      </div>
       <div className="overflow-x-auto">
         <table className="tabular w-full min-w-[40rem] text-left text-sm">
           <thead>

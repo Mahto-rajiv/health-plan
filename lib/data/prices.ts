@@ -18,8 +18,8 @@ export interface PriceEntry {
 }
 
 export const DEFAULT_PRICES: Record<FoodId, PriceEntry> = {
-  milk: { perKg: 58, note: 'per litre' },
-  curd: { perKg: 58, note: 'home-set from toned milk (≈ milk price)' },
+  milk: { perKg: 58, note: 'per litre; double-toned, priced as toned milk (not re-checked)' },
+  curd: { perKg: 58, note: 'home-set from double-toned milk (≈ milk price)' },
   paneer: { perKg: 450 },
   ghee: { perKg: 620 },
   oil: { perKg: 190, note: 'rice-bran oil, 1 L ≈ 910 g; rough estimate (Nov 2026), not compared with any listing' },
