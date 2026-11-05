@@ -6,9 +6,7 @@
     "nonveg|0|thiamin",
     "vegetarian|0|b6",
     "vegetarian|0|thiamin",
-    "vegetarian|0|vitE",
-    "vegetarian|1|b6",
-    "vegetarian|2|b6"
+    "vegetarian|0|vitE"
   ],
   "rdaBelowTarget": [
     "egg|0|iron",
@@ -20,6 +18,7 @@
     "egg|1|riboflavin",
     "egg|1|vitA",
     "egg|1|vitE",
+    "egg|2|riboflavin",
     "egg|2|vitA",
     "nonveg|0|iron",
     "nonveg|0|vitA",
@@ -29,6 +28,7 @@
     "nonveg|1|riboflavin",
     "nonveg|1|vitA",
     "nonveg|2|iron",
+    "nonveg|2|riboflavin",
     "nonveg|2|vitA",
     "vegetarian|0|iron",
     "vegetarian|0|riboflavin",

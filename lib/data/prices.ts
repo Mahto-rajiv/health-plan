@@ -20,6 +20,7 @@ export const DEFAULT_PRICES: Record<FoodId, PriceEntry> = {
   milk: { perKg: 58, note: 'per litre; double-toned, priced as toned milk (not re-checked)' },
   curd: { perKg: 58, note: 'home-set from double-toned milk (≈ milk price)' },
   paneer: { perKg: 450 },
+  tofu: { perKg: 450, note: 'plain 200 g packs ≈ ₹60–115 on BigBasket (Nov 2026 search snapshot, not re-checked)' },
   ghee: { perKg: 620 },
   oil: { perKg: 190, note: 'rice-bran oil, 1 L ≈ 910 g; rough estimate (Nov 2026), not compared with any listing' },
   sattu: { perKg: 170, note: '1 kg packs ≈ ₹140–170/kg (Oct 2026); 500 g packs cost more per kg' },

@@ -63,7 +63,7 @@ const CATEGORY_ORDER: GroceryCategory[] = [
 // Fresh foods: never suggest that one pack "lasts weeks".
 const DRY_FRUIT = new Set<FoodId>(['dates', 'raisins']);
 const isPerishable = (food: FoodId) =>
-  ['milk', 'curd', 'paneer', 'chicken', 'fish'].includes(food) ||
+  ['milk', 'curd', 'paneer', 'tofu', 'chicken', 'fish'].includes(food) ||
   ((FOODS[food].category === 'Fruit' || FOODS[food].category === 'Vegetables') && !DRY_FRUIT.has(food));
 
 /** How many shop units a week needs, or how long one unit lasts — for low-waste buying. */
@@ -72,6 +72,8 @@ function packHint(food: FoodId, weeklyGrams: number): string {
   const ratio = weeklyGrams / unit.grams;
   if (ratio >= 1) return `≈ ${Math.max(1, Math.round(ratio * 2) / 2)} × ${unit.label} a week`;
   if (food === 'paneer') return `1 × ${unit.label} covers ~${Math.floor(7 / ratio)} days — freeze the extra in portions`;
+  // Oregon State University Extension: opened tofu keeps 3–4 days covered in fresh water in the fridge; it can be frozen for several months.
+  if (food === 'tofu') return `1 × ${unit.label} covers ~${Math.floor(7 / ratio)} days — freeze the extra in portions (opened tofu keeps 3–4 days in fresh water in the fridge)`;
   if (isPerishable(food)) return 'buy fresh, 2–3 times a week';
   const weeks = Math.floor(1 / ratio);
   if (FOODS[food].category === 'Nuts & seeds' && weeks > 8) return `buy the smallest pack you can (1 × ${unit.label} would last ${weeks > 26 ? '6+ months' : `~${weeks} weeks`}) and keep it airtight in the fridge`;

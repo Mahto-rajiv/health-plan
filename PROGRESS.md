@@ -1,5 +1,61 @@
 # Progress
 
+## Curd review (5 Nov 2026): branch `curd-review`, not pushed
+
+### Why curd is chosen so often
+- **Not cost.** Curd costs ₹17.6 per 10 g protein; dals and besan cost ₹5–6.
+- **Not saturated fat.** 22% of curd's energy is saturated fat, against 1% for dals and 9% for tofu.
+- **Fibre.** Curd is the only fibre-free source of protein and riboflavin in the vegetarian menus, and the fibre cap binds in every phase (veg 34.7/35, 44.7/45, 49.7/50 g).
+- **Most curd items were at the top of their range:** sattu lunch 315 of 315 g, soya roll 350/350, moong dinner 245/245. The solver pushes curd up despite its dairy penalty.
+- **Templates decide where curd goes, not how much.** Curd is in 21 meals, including every weekday lunch and dinner and weekday Meal 3.
+
+### Trial solves (`NOWRITE=1`)
+| Trial | Result |
+|---|---|
+| Hard cap on milk + curd of 900, 800 or 700 g on every day | Phase 0 infeasible |
+| Dairy penalty ₹50 per g/day (now ₹10) | milk + curd P1 947 → 751, P2 940 → 701 g/day; egg P1 riboflavin below the EAR |
+| Dairy penalty ₹200 per g/day | 746 / 610 / 612 g/day; riboflavin below the EAR in 8 of 9 plans; zinc below the EAR in P0 egg and non-veg |
+| Curd out of 3 weekday lunches (peanut chutney instead), curd servings capped at the template amount | Phase 0 infeasible; still infeasible with curd allowed back up to +40% |
+| Same, plus up to 150 g tofu in those lunches | P0 feasible, but milk + curd 841 → 824 g/day (the curd moved to Meal 3 and dinners); shortfall score 1,000 → 1,167; riboflavin below the EAR in egg P0 |
+| Curd out of only the paneer roll (no tofu) | Phase 0 infeasible |
+| **Kept:** curd out of the paneer roll and egg roll, tofu in the paneer roll | All phases Optimal; no new EAR gap |
+
+**Conclusion:** the total amount of dairy is set by riboflavin and fibre-free protein under the fibre caps. A big cut needs one of these: a looser fibre cap, accepting riboflavin below the EAR, or another riboflavin source.
+
+### What changed
+- **Paneer roll** (veg, Tue) is now "Paneer-tofu bhurji rolls with peanut chutney": 40 g paneer, tofu 40/100/90 g (P0/P1/P2), no curd.
+- **Egg roll** (egg Tue, non-veg Fri) is now "Egg bhurji rolls with peanut chutney": 2/3/4 eggs (the range goes up to 4), no curd. Eggs ≤ 21/week still holds (non-veg P2: 21).
+- **Peanut chutney:** 10–25 g roasted peanuts ground with mint, coriander, chilli, garlic and lemon. Made the night before; eaten within 2 days.
+- **New food: tofu.**
+  - Nutrients: USDA SR28 16426, firm, set with calcium sulfate.
+  - Indian pack labels show about 15 g protein, so this row is about 15% high on protein. Its calcium depends on the coagulant. USDA has no vitamin A, E or K value for this row.
+  - Price: ₹450/kg, from BigBasket 200 g packs at ₹60–115 (search snapshot, not re-checked).
+  - Grocery list: opened tofu keeps 3–4 days in fresh water in the fridge, and can be frozen (Oregon State University Extension).
+- **New test:** every plan has a weekday with curd in at most 2 meals, and the paneer roll has tofu in every phase.
+
+### Before → after (weekly averages; milk + curd as in the plan report)
+| Phase · plan | Milk+curd g/day | Curd g/day | Dairy % protein | Protein g | Fibre max day | Sat fat % | Iron | Zinc | Vit A | B12 | Calcium | ₹/month |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| P0 · Veg | 974 → 964 | 556 → 543 | 42 → 42 | 87.5 → 87.6 | 34.7 → 34.7 | 9.68 → 9.69 | 12.2 → 12.2 | 14.3 → 14.3 | 513 → 508 | 5.24 → 5.19 | 1570 → 1596 | 4550 → 4617 |
+| P0 · Veg + Eggs | 834 → 869 | 531 → 532 | 34 → 35 | 89.6 → 90.2 | 34.7 → 34.7 | 9.29 → 9.41 | 13.1 → 13.0 | 14.3 → 14.4 | 584 → 593 | 5.17 → 5.36 | 1393 → 1432 | 4528 → 4598 |
+| P0 · Non-veg | 724 → 727 | 552 → 551 | 29 → 29 | 91.5 → 91.6 | 34.7 → 34.6 | 9.13 → 9.15 | 13.9 → 13.9 | 14.5 → 14.5 | 753 → 751 | 5.20 → 5.22 | 1287 → 1288 | 4793 → 4817 |
+| P1 · Veg | 1045 → 1015 | 624 → 596 | 37 → 36 | 105.2 → 105.4 | 44.7 → 44.7 | 9.61 → 9.61 | 17.0 → 17.1 | 17.0 → 16.9 | 632 → 628 | 5.62 → 5.46 | 1766 → 1830 | 5042 → 5202 |
+| P1 · Veg + Eggs | 931 → 929 | 595 → 595 | 31 → 31 | 108.5 → 107.6 | 44.7 → 44.7 | 9.32 → 9.38 | 17.2 → 17.2 | 17.0 → 17.0 | 673 → 679 | 5.75 → 5.74 | 1603 → 1605 | 5055 → 5080 |
+| P1 · Non-veg | 865 → 883 | 624 → 634 | 29 → 29 | 108.0 → 107.9 | 43.7 → 43.1 | 9.29 → 9.36 | 17.4 → 17.2 | 17.0 → 17.0 | 902 → 907 | 6.04 → 6.12 | 1535 → 1556 | 5400 → 5398 |
+| P2 · Veg | 1029 → 1013 | 602 → 583 | 35 → 34 | 113.4 → 113.0 | 49.7 → 49.7 | 9.47 → 9.44 | 18.9 → 19.0 | 18.1 → 18.2 | 639 → 637 | 5.55 → 5.45 | 1805 → 1850 | 5175 → 5305 |
+| P2 · Veg + Eggs | 918 → 907 | 576 → 562 | 29 → 28 | 116.7 → 115.9 | 49.7 → 49.7 | 9.12 → 9.22 | 19.2 → 19.2 | 18.1 → 18.2 | 691 → 709 | 5.75 → 5.75 | 1632 → 1616 | 5164 → 5200 |
+| P2 · Non-veg | 872 → 839 | 625 → 564 | 27 → 27 | 115.0 → 114.5 | 48.6 → 48.1 | 9.07 → 8.99 | 18.9 → 19.0 | 18.0 → 17.9 | 913 → 922 | 6.11 → 6.00 | 1567 → 1532 | 5400 → 5400 |
+
+- **Gaps.** Below the EAR: veg P1 and P2 B6 are closed (2.099 → 2.102 and 2.108 mg). Below the ★ RDA: riboflavin in egg P2 (2.500 → 2.494 mg) and non-veg P2 (2.503 → 2.455 mg).
+- **Shortfall score:** P0 1,030.5 → 1,016.0, P1 410.3 → 407.9, P2 284.8 → 276.5.
+
+### Solve (`npm run solve`, default TL 300 s and gap 0.5%, 5 Nov)
+```
+Phase 0: Optimal in 14 s; shortfall score 1016.0, milk + curd 853 g/day, average ₹4677/month
+Phase 1: Optimal in 275 s; shortfall score 407.9, milk + curd 942 g/day, average ₹5227/month
+Phase 2: Optimal in 3 s; shortfall score 276.5, milk + curd 920 g/day, average ₹5302/month
+```
+
 ## Round 7 (3 Nov 2026): branch `meal1-simplify`, merged to main and pushed
 
 Meal 1 only, plus the re-solve it needs.

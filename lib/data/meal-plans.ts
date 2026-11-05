@@ -156,6 +156,20 @@ const COLD_PACK =
 const OVERNIGHT = 'Cool on a plate for 10–15 minutes, box it and put it in the fridge (within 2 hours of cooking). Eat it the next day, not later.';
 const MORNING_PACK = 'Morning (about 3 minutes): pack the box straight from the fridge with a box of curd and the frozen bottle.';
 
+// Curd review (owner, Nov 2026): curd was in Meals 2, 3 and 4 every weekday. The
+// total (~550–650 g/day) is set by nutrition, not by the menus: curd is the only
+// fibre-free source of protein and riboflavin in the vegetarian menus, and the
+// fibre caps bind in every phase. Trial solves that took curd out of 3 lunches
+// (with or without tofu) moved the same curd to other meals and lost riboflavin
+// (PROGRESS.md, curd review). So curd stays, but the lunches that already carry a
+// dairy or egg protein (paneer roll, egg roll) have a peanut chutney instead, and
+// those days have curd in 2 meals, not 3. Without the curd, Phase 0 of the
+// vegetarian plan has no solution within the fibre cap and the saturated-fat limit
+// unless the paneer roll also has tofu (fibre-free protein with little saturated fat).
+const PEANUT_CHUTNEY = { food: 'peanuts', g: 15, range: [10, 25], note: 'dry-roasted, ground into a green chutney' } as const;
+const CHUTNEY_STEP = 'Chutney: grind the roasted peanuts with a handful of mint and coriander, 1 green chilli, a small piece of garlic, salt, lemon juice and a little water. Keep it in a small closed box in the fridge and eat it within 2 days.';
+const MORNING_PACK_CHUTNEY = 'Morning (about 3 minutes): pack the box and the chutney straight from the fridge with the frozen bottle.';
+
 // Meal 1 ─────────────────────────────────────────────────────────────────────
 
 // Round 7 (owner): at most 5 ingredients, one seed jar, the same recipe in every
@@ -304,33 +318,35 @@ const L_SATTU = meal({
 
 const L_PANEER_ROLL = meal({
   id: 'l-paneer-bhurji-roll',
-  title: 'Paneer bhurji rolls with mint curd',
+  title: 'Paneer-tofu bhurji rolls with peanut chutney',
   items: [
     { food: 'atta', g: [80, 80, 90], note: ['2 rotis', '2 rotis', '2 large rotis'] },
     { food: 'paneer', g: [60, 80, 110] },
+    { food: 'tofu', g: 50, range: [30, 150], note: 'firm, plain; crumbled' },
     { food: 'onion', g: [25, 30, 35] },
     { food: 'tomato', g: [20, 30, 30] },
     { food: 'capsicum', g: [15, 20, 25] },
     { food: 'oil', g: 4 },
-    { food: 'curd', g: 125, note: 'with chopped mint and salt' },
+    PEANUT_CHUTNEY,
   ],
   steps: [
     'Make the rotis.',
     'Heat the oil, add jeera, then onion, tomato and capsicum; cook 4–5 minutes with salt, haldi and garam masala.',
-    'Crumble in the paneer and cook 2 minutes until dry.',
+    'Pat the tofu dry. Crumble in the paneer and tofu and cook 3 minutes until dry.',
     'Cool, then roll the bhurji inside the rotis and wrap in foil.',
+    CHUTNEY_STEP,
     OVERNIGHT,
-    `${MORNING_PACK} Stir chopped mint and salt into the curd as a dip.`,
+    MORNING_PACK_CHUTNEY,
   ],
   activeMin: 20,
   totalMin: 25,
   pots: 2,
   flavour: 'Cook the bhurji dry; a squeeze of lemon and chaat masala just before rolling keep it bright when cold.',
   substitutions: [
-    { swap: 'Paneer', with: 'Tofu, same weight (less fat, similar protein)' },
+    { swap: 'Tofu', with: 'Paneer, same weight (similar protein, about 12× the saturated fat)' },
     { swap: 'Capsicum', with: 'Grated carrot, or peas' },
   ],
-  why: 'Paneer and curd travel safely cold for ~4 h with the frozen bottle, and taste fine unheated.',
+  why: 'Paneer and tofu travel safely cold for ~4 h with the frozen bottle and taste fine unheated. The paneer is this meal’s dairy, so the side is a peanut chutney rather than curd; the tofu replaces the curd’s protein without adding fibre or much saturated fat.',
   keeps: COLD_PACK,
   tutorials: ['paneerBhurji', 'roti'],
   requiresReheat: false,
@@ -438,28 +454,29 @@ const L_ALOO_PANEER = meal({
 
 const L_EGG_ROLL = meal({
   id: 'l-egg-bhurji-roll',
-  title: 'Egg bhurji rolls with curd',
+  title: 'Egg bhurji rolls with peanut chutney',
   items: [
     { food: 'atta', g: [90, 105, 110], note: ['2 rotis', '2 rotis', '2 large rotis'] },
-    { food: 'egg', g: [100, 100, 150], step: 50, range: [100, 150] },
+    { food: 'egg', g: [100, 100, 150], step: 50, range: [100, 200] },
     { food: 'onion', g: [20, 25, 25] },
     { food: 'tomato', g: [15, 20, 20] },
     { food: 'capsicum', g: [15, 15, 20] },
     { food: 'oil', g: [5, 5, 7] },
-    { food: 'curd', g: 125 },
+    PEANUT_CHUTNEY,
   ],
   steps: [
     'Make the rotis.',
     'Sauté onion, tomato and capsicum in the oil 3–4 minutes with salt, haldi and chilli.',
     'Add the beaten eggs and stir until completely set, with no runny parts.',
     'Cool, roll inside the rotis and wrap in foil.',
+    CHUTNEY_STEP,
     OVERNIGHT,
-    MORNING_PACK,
+    MORNING_PACK_CHUTNEY,
   ],
   activeMin: 15,
   totalMin: 20,
   pots: 2,
-  flavour: 'Black pepper, coriander and a pinch of garam masala at the end; green chutney inside the roll.',
+  flavour: 'Black pepper, coriander and a pinch of garam masala at the end; spread some of the peanut chutney inside the roll.',
   substitutions: [{ swap: 'Egg bhurji', with: '2–3 sliced boiled eggs with onion and chaat masala' }],
   keeps: `Cook the eggs until fully set. ${COLD_PACK}`,
   tutorials: ['eggBhurji', 'roti'],

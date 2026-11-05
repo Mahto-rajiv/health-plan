@@ -58,6 +58,11 @@ const META = {
     category: 'Dairy',
     buyUnit: { label: '200 g pack', grams: 200 },
   },
+  tofu: {
+    name: 'Tofu (firm, plain)',
+    category: 'Pulses & soya',
+    buyUnit: { label: '200 g pack', grams: 200 },
+  },
   ghee: {
     name: 'Ghee',
     category: 'Fats & oils',

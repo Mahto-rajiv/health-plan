@@ -351,6 +351,16 @@ describe('meal content', () => {
     assert.equal(eggs('nonveg'), 100);
   });
 
+  it('curd review: every plan has a weekday with curd in at most 2 meals; the paneer roll has tofu in every phase', () => {
+    for (const p of MEAL_PLAN_DEFINITIONS)
+      for (const ph of PHASE_IDS) {
+        const week = buildWeek(p, ph).filter((d) => !d.isWeekend);
+        const curdMeals = week.map((d) => d.meals.filter((pm) => pm.meal.items.some((it) => it.food === 'curd')).length);
+        assert.ok(Math.min(...curdMeals) <= 2, `${p.id} P${ph}: curd meals per weekday ${curdMeals}`);
+      }
+    assert.ok(QUANTITIES['l-paneer-bhurji-roll'].tofu.every((g) => g > 0));
+  });
+
   it('Meal 1 takes ≤ 10 minutes; weekday Meal 3 needs no cooking', () => {
     for (const p of MEAL_PLAN_DEFINITIONS) {
       assert.ok(p.meal1.totalMin <= 10, `${p.meal1.id}: ${p.meal1.totalMin} min`);

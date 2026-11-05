@@ -162,7 +162,7 @@ export const FOOD_SAFETY = {
   coldLunch: 'Cold-lunch rule: freeze a water bottle overnight and use an ice pack too (two cold sources); pack the box between them in the insulated bag; into the office fridge on arrival; eat it the same day.',
   office: [
     'Use two cold sources, as USDA advises: a water bottle frozen overnight and an ice pack, with the lunch box and Meal 3 between them in the insulated bag. Tests of insulated bags show that one cold source often does not keep food cold for 2 hours.',
-    'Cooked fillings (paneer, potato, soya, chicken, egg) are safest made the night before and chilled in the fridge. Morning-made parathas and rolls: cool them fully on a plate (~15 minutes) before boxing; hot food sealed in a box stays warm for hours.',
+    'Cooked fillings (paneer, tofu, potato, soya, chicken, egg) are safest made the night before and chilled in the fridge. Morning-made parathas and rolls: cool them fully on a plate (~15 minutes) before boxing; hot food sealed in a box stays warm for hours.',
     'On arrival (~2 h after leaving home), move both boxes to the office fridge. Perishable food should be out of the fridge for no more than 2 hours in total, or 1 hour above ~32 °C; on hot days the commute uses all of that. Without fridge space, eat the paneer, curd, egg and chicken meals by ~12:30 PM.',
     'No rice, dal or gravy in the office lunch: it is eaten cold with no reheating, and cooked rice is the riskiest leftover (Bacillus cereus spores survive cooking).',
     'Cooked chicken and egg fillings are made the night before or that morning and never kept longer than one day.',

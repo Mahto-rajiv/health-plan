@@ -80,6 +80,7 @@ export const SOURCES: Record<string, FoodSource> = {
   kabuliChana: { usda: '16056', note: 'USDA chickpeas, raw. IFCT has no kabuli chana.' },
   rajma: { check: '16032', ifct: 'B020', b12: 0, note: 'IFCT rajmah, red.' },
   soyaChunks: { usda: '16117', note: 'USDA defatted soy flour, which soya chunks are extruded from. Pack labels (≈ 52 g protein, 13 g fibre) differ by a few grams.' },
+  tofu: { usda: '16426', note: 'Curd review: USDA raw firm tofu set with calcium sulfate (17.3 g protein, 8.7 g fat per 100 g). IFCT has no tofu. Indian pack labels seen online (Nov 2026) give ~15 g protein and ~8 g fat, so protein is ~15% high here. Calcium (683 mg) depends on the coagulant: tofu set with magnesium chloride (nigari) has about a third of it. USDA has no vitamin A, E or K value for this row (all near zero in other firm tofu rows).' },
   besan: { check: '16056', ifct: 'B001', b12: 0, note: 'IFCT Bengal gram dal; besan is ground chana dal.' },
   // Grains & flours
   oats: { usda: '08120', note: 'USDA rolled oats, not fortified. IFCT has no oats.' },
