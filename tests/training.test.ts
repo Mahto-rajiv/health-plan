@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { FLEX_WINDOWS, SESSIONS, SESSION_ORDER } from '../lib/data/training';
 import { EXERCISE_TUTORIALS } from '../lib/data/tutorials';
 import { activeExercises, plannedFor, sessionsFor, sessionTime, TIME_MODEL, warmupMinutes } from '../lib/training';
-import { phaseOn, weekLabel } from '../lib/phase';
+import { parsePhase, phaseOn, weekLabel } from '../lib/phase';
 import { startsLabel } from '../lib/dates';
 
 // Week of Monday 2 Nov 2026.
@@ -136,14 +136,23 @@ describe('alternatives', () => {
 });
 
 describe('phase follows the date only (fixed start Mon 9 Nov 2026)', () => {
-  it('weeks 1–2 → Phase 0, 3–4 → Phase 1, 5+ → Phase 2; before the start, Phase 0', () => {
-    assert.equal(phaseOn('2026-11-03'), 0);
-    assert.equal(phaseOn('2026-11-09'), 0);
-    assert.equal(phaseOn('2026-11-22'), 0);
+  it('weeks 1–4 → Phase 1, week 5 (Mon 7 Dec 2026) on → Phase 2; before the start or without a date, Phase 1', () => {
+    assert.equal(phaseOn(null), 1);
+    assert.equal(phaseOn('2026-11-03'), 1);
+    assert.equal(phaseOn('2026-11-09'), 1);
+    assert.equal(phaseOn('2026-11-22'), 1);
     assert.equal(phaseOn('2026-11-23'), 1);
     assert.equal(phaseOn('2026-12-06'), 1);
     assert.equal(phaseOn('2026-12-07'), 2);
     assert.equal(phaseOn('2027-06-01'), 2);
+  });
+
+  it('a stale phase from a URL or old saved value ("0", junk, empty) is ignored, so the view falls back to the date', () => {
+    assert.equal(parsePhase('1'), 1);
+    assert.equal(parsePhase('2'), 2);
+    for (const raw of ['0', '3', '-1', '1.5', 'abc', '', ' ', null, undefined]) assert.equal(parsePhase(raw), null, String(raw));
+    assert.equal(parsePhase('0') ?? phaseOn('2026-11-12'), 1);
+    assert.equal(parsePhase('0') ?? phaseOn('2026-12-08'), 2);
   });
 
   it('shows "Starts Mon 9 Nov" before the start, the week number from the start day', () => {

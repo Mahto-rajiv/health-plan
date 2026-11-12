@@ -1,5 +1,5 @@
 import type { MealItem } from '../nutrition';
-import type { PhaseId } from '../config';
+import { phaseIndex, type PhaseId } from '../config';
 import type { FoodId } from './foods';
 import type { TutorialId } from './tutorials';
 import { SLOTS, altGrams, swapNote, type SlotId } from './produce';
@@ -15,7 +15,7 @@ import { QUANTITIES } from './plan-quantities.generated';
 //   the pre-workout meal. No cooking. Saturday and Sunday have their own.
 // • Meal 4 is dinner at home, 9:30–10:30 PM on training days (post-workout).
 // • "Identical" means the same foods within a phase. Quantities step up from
-//   Phase 0 to Phase 2 (lib/config.ts), so each item has three gram values.
+//   Phase 1 to Phase 2 (lib/config.ts), so each item has two gram values.
 // The structure is enforced in code by buildWeek() and tested in
 // tests/plans.test.ts.
 
@@ -27,14 +27,14 @@ export const WEEKDAYS: WeekdayName[] = ['Monday', 'Tuesday', 'Wednesday', 'Thurs
 
 export type MealSlot = 1 | 2 | 3 | 4;
 
-/** Grams for Phase 0, 1 and 2, or one value for all phases. */
-export type Grams = number | readonly [number, number, number];
+/** Grams for Phase 1 and 2, or one value for both phases. */
+export type Grams = number | readonly [number, number];
 
 interface PlanItemBase {
   /** Starting amount per phase (edible grams). The solver (npm run solve) picks the final amount within `range`. */
   g: Grams;
   /** Household description, e.g. "2 parathas" or "soaked overnight". One per phase if it changes. May use {slot} tokens. */
-  note?: string | readonly [string, string, string];
+  note?: string | readonly [string, string];
   /** Smallest and largest amount the solver may use, any phase. Default: the starting amounts ±40%. 0 makes the item optional. */
   range?: readonly [number, number];
   /** Amounts are multiples of this (default 5 g; eggs 50 g). */
@@ -163,9 +163,10 @@ const MORNING_PACK = 'Morning (about 3 minutes): pack the box straight from the 
 // (with or without tofu) moved the same curd to other meals and lost riboflavin
 // (PROGRESS.md, curd review). So curd stays, but the lunches that already carry a
 // dairy or egg protein (paneer roll, egg roll) have a peanut chutney instead, and
-// those days have curd in 2 meals, not 3. Without the curd, Phase 0 of the
-// vegetarian plan has no solution within the fibre cap and the saturated-fat limit
-// unless the paneer roll also has tofu (fibre-free protein with little saturated fat).
+// those days have curd in 2 meals, not 3. Without the curd, the vegetarian plan
+// had no solution in the 35 g-fibre ramp weeks (removed Nov 2026) within the
+// saturated-fat limit unless the paneer roll also had tofu (fibre-free protein
+// with little saturated fat).
 const PEANUT_CHUTNEY = { food: 'peanuts', g: 15, range: [10, 25], note: 'dry-roasted, ground into a green chutney' } as const;
 const CHUTNEY_STEP = 'Chutney: grind the roasted peanuts with a handful of mint and coriander, 1 green chilli, a small piece of garlic, salt, lemon juice and a little water. Keep it in a small closed box in the fridge and eat it within 2 days.';
 const MORNING_PACK_CHUTNEY = 'Morning (about 3 minutes): pack the box and the chutney straight from the fridge with the frozen bottle.';
@@ -186,7 +187,7 @@ const M1_VEG = meal({
   title: 'Oats cooked in milk with peanuts and seeds, and {fruit1}',
   items: [
     { food: 'milk', g: 300, rising: true },
-    { food: 'oats', g: [55, 60, 60], rising: true },
+    { food: 'oats', g: [60, 60], rising: true },
     { food: 'peanuts', g: 10, range: [10, 10], note: 'dry-roasted, crushed, on top' },
     SEED_JAR,
     FRUIT1,
@@ -211,8 +212,8 @@ const M1_VEG = meal({
 });
 
 // Veg + Eggs has 1 egg, Non-veg 2. Solver (Round 7): with 2 eggs here, Veg + Eggs
-// Phase 0 has no plan that keeps saturated fat under 10% of kcal within the 35 g
-// fibre cap (its egg lunch and egg dinner already add saturated fat); Non-veg does.
+// had no plan in the 35 g-fibre ramp weeks (removed Nov 2026) that kept saturated
+// fat under 10% of kcal (its egg lunch and egg dinner already add saturated fat).
 const m1Egg = (id: string, eggs: 1 | 2, why: string) =>
   meal({
     id,
@@ -243,7 +244,7 @@ const m1Egg = (id: string, eggs: 1 | 2, why: string) =>
     requiresReheat: false,
   });
 
-const M1_EGG = m1Egg('m1-egg', 1, 'Same base as the vegetarian Meal 1; an egg replaces the peanuts. One egg, not two: this plan already has an egg lunch and an egg dinner, and with a second egg here Phase 0 can’t keep saturated fat under 10% of calories within the fibre cap.');
+const M1_EGG = m1Egg('m1-egg', 1, 'Same base as the vegetarian Meal 1; an egg replaces the peanuts. One egg, not two: this plan already has an egg lunch and an egg dinner, and both add saturated fat.');
 const M1_NONVEG = m1Egg('m1-nonveg', 2, 'The Veg + Eggs Meal 1 with 2 eggs: this plan’s chicken and fish meals leave room for the second egg within the saturated-fat limit.');
 
 // Meal 3 ─────────────────────────────────────────────────────────────────────
@@ -254,7 +255,7 @@ const M3_WEEKDAY = meal({
   items: [
     { food: 'curd', g: 225 },
     { slot: 'fruit3', g: 110, range: [80, 200], note: 'packed whole' },
-    { food: 'dates', g: [20, 30, 40], step: 10 },
+    { food: 'dates', g: [30, 40], step: 10 },
     { food: 'peanuts', g: 10, note: 'dry-roasted' },
     { food: 'sunflowerSeeds', g: 5, range: [0, 20] },
   ],
@@ -284,11 +285,11 @@ const L_SATTU = meal({
   id: 'l-sattu-paratha',
   title: 'Sattu parathas with curd and salad',
   items: [
-    { food: 'atta', g: [55, 55, 75], note: ['2 parathas', '2 parathas', '2 large parathas'] },
-    { food: 'sattu', g: [25, 25, 40], note: 'filling' },
-    { food: 'oil', g: [9, 9, 12], note: 'dough and tawa' },
+    { food: 'atta', g: [55, 75], note: ['2 parathas', '2 large parathas'] },
+    { food: 'sattu', g: [25, 40], note: 'filling' },
+    { food: 'oil', g: [9, 12], note: 'dough and tawa' },
     { food: 'curd', g: 225 },
-    { slot: 'salad', g: [50, 50, 80], range: [40, 120], note: '{salad}' },
+    { slot: 'salad', g: [50, 80], range: [40, 120], note: '{salad}' },
     { food: 'lemon', g: 5, note: 'in the filling' },
     { food: 'sesame', g: 5, range: [0, 10], note: 'til, in the dough' },
   ],
@@ -320,12 +321,12 @@ const L_PANEER_ROLL = meal({
   id: 'l-paneer-bhurji-roll',
   title: 'Paneer-tofu bhurji rolls with peanut chutney',
   items: [
-    { food: 'atta', g: [80, 80, 90], note: ['2 rotis', '2 rotis', '2 large rotis'] },
-    { food: 'paneer', g: [60, 80, 110] },
+    { food: 'atta', g: [80, 90], note: ['2 rotis', '2 large rotis'] },
+    { food: 'paneer', g: [80, 110] },
     { food: 'tofu', g: 50, range: [30, 150], note: 'firm, plain; crumbled' },
-    { food: 'onion', g: [25, 30, 35] },
-    { food: 'tomato', g: [20, 30, 30] },
-    { food: 'capsicum', g: [15, 20, 25] },
+    { food: 'onion', g: [30, 35] },
+    { food: 'tomato', g: [30, 30] },
+    { food: 'capsicum', g: [20, 25] },
     { food: 'oil', g: 4 },
     PEANUT_CHUTNEY,
   ],
@@ -358,12 +359,12 @@ const L_CHILLA = meal({
   id: 'l-besan-chilla',
   title: 'Besan chillas with paneer and curd',
   items: [
-    { food: 'besan', g: [65, 85, 110], note: ['2 chillas', '2 chillas', '3 chillas'] },
+    { food: 'besan', g: [85, 110], note: ['2 chillas', '3 chillas'] },
     { food: 'paneer', g: 30, note: 'grated, inside' },
     { food: 'onion', g: 70, note: 'chopped, with coriander' },
     { food: 'tomato', g: 70, note: 'chopped' },
-    { food: 'oil', g: [5, 6, 6] },
-    { food: 'curd', g: [125, 125, 225] },
+    { food: 'oil', g: [6, 6] },
+    { food: 'curd', g: [125, 225] },
   ],
   steps: [
     'Whisk the besan with water, salt, ajwain and haldi into a pouring batter; stir in the chopped onion, tomato, chilli and coriander.',
@@ -391,10 +392,10 @@ const L_SOYA_ROLL = meal({
   id: 'l-soya-keema-roll',
   title: 'Soya keema rolls with curd',
   items: [
-    { food: 'atta', g: [55, 55, 70], note: ['2 rotis', '2 rotis', '2 large rotis'] },
-    { food: 'soyaChunks', g: [20, 35, 45], note: 'soaked, squeezed, minced' },
-    { slot: 'sabzi', g: [50, 55, 100], note: '{sabzi}, finely chopped' },
-    { food: 'oil', g: [9, 9, 12] },
+    { food: 'atta', g: [55, 70], note: ['2 rotis', '2 large rotis'] },
+    { food: 'soyaChunks', g: [35, 45], note: 'soaked, squeezed, minced' },
+    { slot: 'sabzi', g: [55, 100], note: '{sabzi}, finely chopped' },
+    { food: 'oil', g: [9, 12] },
     { food: 'curd', g: 250 },
   ],
   steps: [
@@ -412,7 +413,7 @@ const L_SOYA_ROLL = meal({
     { swap: 'Soya chunks', with: 'Paneer, about 2.5× the weight' },
     { swap: 'The vegetables', with: 'Grated carrot or capsicum' },
   ],
-  why: 'Soya is the cheapest protein in the food table. It stays at ≤ 20 g a day in Phase 0 while your gut adjusts.',
+  why: 'Soya is the cheapest protein in the food table.',
   keeps: COLD_PACK,
   tutorials: ['soyaKeema', 'roti'],
   requiresReheat: false,
@@ -424,9 +425,9 @@ const L_ALOO_PANEER = meal({
   id: 'l-aloo-paneer-paratha',
   title: 'Aloo-paneer parathas with curd',
   items: [
-    { food: 'atta', g: 110, note: ['2 parathas', '2 parathas', '2 large parathas'] },
-    { food: 'potato', g: [55, 70, 70], note: 'boiled with dinner' },
-    { food: 'paneer', g: [60, 60, 75], note: 'grated' },
+    { food: 'atta', g: 110, note: ['2 parathas', '2 large parathas'] },
+    { food: 'potato', g: [70, 70], note: 'boiled with dinner' },
+    { food: 'paneer', g: [60, 75], note: 'grated' },
     { food: 'oil', g: 6 },
     { food: 'curd', g: 225 },
   ],
@@ -456,12 +457,12 @@ const L_EGG_ROLL = meal({
   id: 'l-egg-bhurji-roll',
   title: 'Egg bhurji rolls with peanut chutney',
   items: [
-    { food: 'atta', g: [90, 105, 110], note: ['2 rotis', '2 rotis', '2 large rotis'] },
-    { food: 'egg', g: [100, 100, 150], step: 50, range: [100, 200] },
-    { food: 'onion', g: [20, 25, 25] },
-    { food: 'tomato', g: [15, 20, 20] },
-    { food: 'capsicum', g: [15, 15, 20] },
-    { food: 'oil', g: [5, 5, 7] },
+    { food: 'atta', g: [105, 110], note: ['2 rotis', '2 large rotis'] },
+    { food: 'egg', g: [100, 150], step: 50, range: [100, 200] },
+    { food: 'onion', g: [25, 25] },
+    { food: 'tomato', g: [20, 20] },
+    { food: 'capsicum', g: [15, 20] },
+    { food: 'oil', g: [5, 7] },
     PEANUT_CHUTNEY,
   ],
   steps: [
@@ -489,11 +490,11 @@ const L_CHICKEN_ROLL = meal({
   id: 'l-chicken-roll',
   title: 'Chicken bhuna rolls with curd',
   items: [
-    { food: 'atta', g: [100, 105, 110], note: ['2 rotis', '2 rotis', '2 large rotis'] },
-    { food: 'chicken', g: [60, 70, 80], note: 'boneless, cooked the night before' },
-    { slot: 'salad', g: [50, 60, 60], range: [40, 120], note: '{salad}, sliced' },
-    { food: 'oil', g: [9, 9, 12] },
-    { food: 'curd', g: [100, 125, 250] },
+    { food: 'atta', g: [105, 110], note: ['2 rotis', '2 large rotis'] },
+    { food: 'chicken', g: [70, 80], note: 'boneless, cooked the night before' },
+    { slot: 'salad', g: [60, 60], range: [40, 120], note: '{salad}, sliced' },
+    { food: 'oil', g: [9, 12] },
+    { food: 'curd', g: [125, 250] },
   ],
   steps: [
     'Tuesday night: when the dinner chicken is browned in masala and fully cooked (no pink inside), lift this portion out before adding water. Cool and refrigerate in a closed box.',
@@ -521,11 +522,11 @@ const D_MOONG = meal({
   id: 'd-moong-dal-rice',
   title: 'Moong dal, rice and soya sabzi',
   items: [
-    { food: 'moongDal', g: [35, 35, 40] },
+    { food: 'moongDal', g: [35, 40] },
     { food: 'rice', g: 130 },
-    { food: 'soyaChunks', g: [20, 40, 45], note: 'soaked 10 min, squeezed' },
+    { food: 'soyaChunks', g: [40, 45], note: 'soaked 10 min, squeezed' },
     { slot: 'sabzi', g: 50, range: [50, 200], note: '{sabzi}' },
-    { food: 'oil', g: [8, 9, 11], note: 'sabzi and tadka' },
+    { food: 'oil', g: [9, 11], note: 'sabzi and tadka' },
     { food: 'curd', g: 175 },
   ],
   steps: [
@@ -553,10 +554,10 @@ const D_RAJMA = meal({
   id: 'd-rajma-rice',
   title: 'Rajma chawal with salad and curd',
   items: [
-    { food: 'rajma', g: [50, 60, 80], note: 'soaked overnight' },
-    { food: 'rice', g: [60, 65, 65] },
-    { slot: 'salad', g: [80, 80, 100], range: [50, 150], note: '{salad}' },
-    { food: 'oil', g: [8, 10, 12] },
+    { food: 'rajma', g: [60, 80], note: 'soaked overnight' },
+    { food: 'rice', g: [65, 65] },
+    { slot: 'salad', g: [80, 100], range: [50, 150], note: '{salad}' },
+    { food: 'oil', g: [10, 12] },
     { food: 'curd', g: 175 },
   ],
   steps: [
@@ -581,9 +582,9 @@ const D_PALAK_PANEER = meal({
   title: 'Saag paneer, moong dal and rice',
   items: [
     { food: 'paneer', g: 30 },
-    { food: 'moongDal', g: [30, 35, 40], note: 'thin dal' },
-    { slot: 'greens', g: [125, 135, 250], range: [100, 300], note: '{greens}' },
-    { food: 'rice', g: [115, 125, 125] },
+    { food: 'moongDal', g: [35, 40], note: 'thin dal' },
+    { slot: 'greens', g: [135, 250], range: [100, 300], note: '{greens}' },
+    { food: 'rice', g: [125, 125] },
     { food: 'oil', g: 4 },
     { food: 'curd', g: 175 },
   ],
@@ -609,10 +610,10 @@ const D_TOOR = meal({
   id: 'd-toor-dal-aloo',
   title: 'Toor dal, rice and jeera aloo',
   items: [
-    { food: 'toorDal', g: [80, 80, 85] },
+    { food: 'toorDal', g: [80, 85] },
     { food: 'rice', g: 105 },
-    { food: 'potato', g: [40, 60, 100] },
-    { food: 'oil', g: [9, 10, 12] },
+    { food: 'potato', g: [60, 100] },
+    { food: 'oil', g: [10, 12] },
     { food: 'curd', g: 150 },
   ],
   steps: [
@@ -635,11 +636,11 @@ const D_SOYA_CURRY = meal({
   id: 'd-soya-curry-rice',
   title: 'Soya chunk curry with rice and salad',
   items: [
-    { food: 'soyaChunks', g: [20, 35, 45], note: 'soaked 10 min, squeezed' },
-    { food: 'rice', g: [85, 85, 105] },
-    { food: 'potato', g: [60, 60, 80], note: 'cubed, in the curry' },
-    { slot: 'salad', g: [80, 100, 100], range: [50, 150], note: '{salad}' },
-    { food: 'oil', g: [4, 6, 8] },
+    { food: 'soyaChunks', g: [35, 45], note: 'soaked 10 min, squeezed' },
+    { food: 'rice', g: [85, 105] },
+    { food: 'potato', g: [60, 80], note: 'cubed, in the curry' },
+    { slot: 'salad', g: [100, 100], range: [50, 150], note: '{salad}' },
+    { food: 'oil', g: [6, 8] },
     { food: 'curd', g: 175 },
   ],
   steps: [
@@ -664,8 +665,8 @@ const D_EGG_CURRY = meal({
   id: 'd-egg-curry-rice',
   title: 'Egg curry with rice and sabzi',
   items: [
-    { food: 'egg', g: [100, 100, 150], step: 50, range: [100, 150] },
-    { food: 'rice', g: [125, 130, 130] },
+    { food: 'egg', g: [100, 150], step: 50, range: [100, 150] },
+    { food: 'rice', g: [130, 130] },
     { slot: 'sabzi', g: 200, range: [100, 250], note: 'onion-tomato masala and a side sabzi of {sabzi}' },
     { food: 'oil', g: 4 },
     { food: 'curd', g: 150 },
@@ -689,11 +690,11 @@ const D_CHICKEN = meal({
   id: 'd-chicken-curry-rice',
   title: 'Chicken curry with rice and salad',
   items: [
-    { food: 'chicken', g: [65, 70, 75] },
-    { food: 'rice', g: [125, 130, 130] },
+    { food: 'chicken', g: [70, 75] },
+    { food: 'rice', g: [130, 130] },
     { slot: 'salad', g: 150, range: [50, 200], note: '{salad}' },
     { food: 'oil', g: 12 },
-    { food: 'curd', g: [200, 200, 250], note: 'half in the marinade' },
+    { food: 'curd', g: [200, 250], note: 'half in the marinade' },
   ],
   steps: [
     'Marinate the chicken in half the curd with salt, haldi and chilli (30 min, or overnight in the fridge).',
@@ -716,11 +717,11 @@ const D_FISH = meal({
   id: 'd-fish-curry-rice',
   title: 'Fish curry with rice and sabzi',
   items: [
-    { food: 'fish', g: [80, 85, 115], note: 'rohu or katla pieces' },
-    { food: 'rice', g: [120, 120, 130] },
-    { slot: 'sabzi', g: [65, 120, 120], range: [60, 200], note: '{sabzi}, in the curry' },
-    { food: 'oil', g: [4, 10, 12] },
-    { food: 'curd', g: [75, 75, 125] },
+    { food: 'fish', g: [85, 115], note: 'rohu or katla pieces' },
+    { food: 'rice', g: [120, 130] },
+    { slot: 'sabzi', g: [120, 120], range: [60, 200], note: '{sabzi}, in the curry' },
+    { food: 'oil', g: [10, 12] },
+    { food: 'curd', g: [75, 125] },
   ],
   steps: [
     'Rub the fish with salt and haldi.',
@@ -744,11 +745,11 @@ const W_PULAO = meal({
   id: 'w-paneer-pulao',
   title: 'Soya-paneer pulao with raita',
   items: [
-    { food: 'rice', g: [75, 75, 80] },
+    { food: 'rice', g: [75, 80] },
     { food: 'paneer', g: 30 },
-    { food: 'soyaChunks', g: [15, 30, 45], note: 'soaked 10 min, squeezed' },
-    { slot: 'sabzi', g: [100, 100, 120], range: [60, 200], note: '{sabzi}' },
-    { food: 'oil', g: [4, 4, 9] },
+    { food: 'soyaChunks', g: [30, 45], note: 'soaked 10 min, squeezed' },
+    { slot: 'sabzi', g: [100, 120], range: [60, 200], note: '{sabzi}' },
+    { food: 'oil', g: [4, 9] },
     { food: 'curd', g: 225, note: 'raita with cucumber' },
   ],
   steps: [
@@ -770,10 +771,10 @@ const W_POHA = meal({
   id: 'w-poha-chaas',
   title: 'Kanda poha with peanuts and chaas',
   items: [
-    { food: 'poha', g: [40, 55, 60] },
-    { food: 'peanuts', g: [10, 10, 15] },
-    { food: 'onion', g: [50, 50, 60], note: 'sliced' },
-    { food: 'oil', g: [4, 5, 5] },
+    { food: 'poha', g: [55, 60] },
+    { food: 'peanuts', g: [10, 15] },
+    { food: 'onion', g: [50, 60], note: 'sliced' },
+    { food: 'oil', g: [5, 5] },
     { food: 'curd', g: 250, note: 'whisked into chaas' },
     { food: 'lemon', g: 5 },
   ],
@@ -797,8 +798,8 @@ const W_KALA_CHANA = meal({
   title: 'Kala chana curry, rice and salad',
   items: [
     { food: 'kalaChana', g: 80, note: 'soaked overnight' },
-    { food: 'rice', g: [70, 70, 90] },
-    { slot: 'salad', g: [80, 100, 100], range: [50, 150], note: '{salad}' },
+    { food: 'rice', g: [70, 90] },
+    { slot: 'salad', g: [100, 100], range: [50, 150], note: '{salad}' },
     { food: 'oil', g: 4 },
     { food: 'curd', g: 150 },
   ],
@@ -822,9 +823,9 @@ const W_KHICHDI = meal({
   id: 'w-khichdi',
   title: 'Moong dal khichdi with curd and sabzi',
   items: [
-    { food: 'rice', g: [85, 85, 90] },
-    { food: 'moongDal', g: [65, 80, 90] },
-    { slot: 'sabzi', g: [50, 60, 165], range: [50, 200], note: '{sabzi}, cooked into the khichdi' },
+    { food: 'rice', g: [85, 90] },
+    { food: 'moongDal', g: [80, 90] },
+    { slot: 'sabzi', g: [60, 165], range: [50, 200], note: '{sabzi}, cooked into the khichdi' },
     { food: 'ghee', g: 4 },
     { food: 'curd', g: 250 },
   ],
@@ -848,8 +849,8 @@ const W_SHAKE = meal({
   items: [
     { food: 'milk', g: 325 },
     { food: 'banana', g: 110 },
-    { food: 'dates', g: [10, 20, 20], step: 10 },
-    { food: 'roastedChana', g: [20, 25, 40] },
+    { food: 'dates', g: [20, 20], step: 10 },
+    { food: 'roastedChana', g: [25, 40] },
   ],
   steps: ['Blend the cold milk, banana and dates 30 seconds.', 'Eat the roasted chana alongside.'],
   activeMin: 5,
@@ -864,11 +865,11 @@ const W_MATAR_PANEER = meal({
   id: 'w-paneer-soya-sabzi-rice',
   title: 'Paneer and soya sabzi with rice',
   items: [
-    { food: 'paneer', g: [50, 55, 55] },
-    { food: 'soyaChunks', g: [20, 30, 30], note: 'soaked 10 min, squeezed' },
-    { slot: 'sabzi', g: [90, 90, 150], range: [60, 200], note: '{sabzi}' },
-    { food: 'rice', g: [95, 95, 105] },
-    { food: 'oil', g: [8, 8, 10] },
+    { food: 'paneer', g: [55, 55] },
+    { food: 'soyaChunks', g: [30, 30], note: 'soaked 10 min, squeezed' },
+    { slot: 'sabzi', g: [90, 150], range: [60, 200], note: '{sabzi}' },
+    { food: 'rice', g: [95, 105] },
+    { food: 'oil', g: [8, 10] },
     { food: 'curd', g: 100 },
   ],
   steps: [
@@ -984,12 +985,12 @@ export interface PlannedDay {
   meals: [PlannedMeal, PlannedMeal, PlannedMeal, PlannedMeal];
 }
 
-export const gramsFor = (g: Grams, phase: PhaseId): number => (typeof g === 'number' ? g : g[phase]);
+export const gramsFor = (g: Grams, phase: PhaseId): number => (typeof g === 'number' ? g : g[phaseIndex(phase)]);
 
 /** The amount of an item for a phase: the solver's result, or the starting amount if the meal hasn't been solved. */
 export function solvedGrams(m: Meal, it: PlanItem, phase: PhaseId): number {
   const q = (QUANTITIES as Record<string, Record<string, number[]> | undefined>)[m.id]?.[itemKey(it)];
-  return q ? q[phase] : gramsFor(it.g, phase);
+  return q ? q[phaseIndex(phase)] : gramsFor(it.g, phase);
 }
 
 /** Replace {fruit1}, {sabzi}… with the slot's food names. */
@@ -1004,7 +1005,7 @@ export function resolveMeal(m: Meal, phase: PhaseId): ResolvedMeal {
   for (const it of m.items) {
     const g = solvedGrams(m, it, phase);
     if (g <= 0) continue;
-    const note = it.note === undefined ? undefined : f(typeof it.note === 'string' ? it.note : it.note[phase]);
+    const note = it.note === undefined ? undefined : f(typeof it.note === 'string' ? it.note : it.note[phaseIndex(phase)]);
     if (it.slot) {
       for (const { food, share, alt, for: forKey } of SLOTS[it.slot].foods) {
         const fg = Math.round(g * share * 10) / 10;

@@ -21,16 +21,20 @@
 //
 // HARD rules (every plan × day):
 //   • kcal and protein inside the phase band; fibre ≤ the phase cap; fat 25–30% of kcal.
-//   • Phase 0: soya chunks ≤ 20 g and sattu ≤ 25 g a day; later phases soya ≤ 50 g.
+//   • Soya chunks ≤ 50 g a day (plus any per-phase caps in PHASES).
 //   • Upper limits (iron, zinc, calcium, phosphorus, copper, selenium, manganese, vitamin C).
 //   • Variety: no food > 25% of the week's energy; eggs ≤ 21 a week; every item
 //     inside its range; milk + curd ≤ 1,100 g a day (backstop).
 //   • The three plans' kcal and protein on the same day within 5% of each other.
 //   • Items marked `rising` (Meal 1 oats and milk) are never less than in the phase before.
 //   • Monthly cost ≤ CAP (default BUDGET.planningMax) at default prices.
-// A hard dairy cap was tried first: Phases 0–1 are infeasible below ~1,100 g/day in the
-// vegetarian plan, because the calories then have to come from atta, rice and pulses,
-// which break the 35/40 g fibre caps. So dairy is priced instead.
+// A hard dairy cap was tried first: the early phases were infeasible below ~1,100 g/day
+// in the vegetarian plan, because the calories then have to come from atta, rice and
+// pulses, which break the fibre caps. So dairy is priced instead.
+// Nov 2026: the two-week ramp before Phase 1 was removed. The quantities file was
+// trimmed to Phases 1 and 2 without re-solving; a fresh solve now starts at Phase 1
+// with no earlier phase for `rising` items and default ranges from the Phase 1–2
+// starting amounts only, so it may not reproduce the committed amounts exactly.
 //
 // Env: CAP=₹ (cost ceiling), DAIRY_G / DAIRY_SHARE (exploration overrides), TL=seconds per phase (default 300), GAP (default 0.005),
 // NOWRITE=1 (don't write the quantities file), OFF=group,... (debugging).
@@ -42,7 +46,7 @@ import { SLOTS } from '../lib/data/produce';
 import { FOODS, type FoodId } from '../lib/data/foods';
 import { NUTRIENTS, type NutrientInfo } from '../lib/data/nutrients';
 import type { NutrientKey } from '../lib/data/nutrient-keys';
-import { BUDGET, DAILY, PHASES, PHASE_IDS, ATWATER, PLAN_RULES, type PhaseId } from '../lib/config';
+import { BUDGET, DAILY, PHASES, PHASE_IDS, ATWATER, PLAN_RULES, phaseIndex, type PhaseId } from '../lib/config';
 import { DEFAULT_PRICE_TABLE } from '../lib/data/prices';
 import { PANTRY_MONTHLY } from '../lib/data/nutrition-guide';
 
@@ -132,11 +136,11 @@ async function solvePhase(highs: Awaited<ReturnType<typeof highsLoader>>, ph: Ph
   for (const m of meals.values()) {
     for (const it of m.items) {
       const key = itemKey(it);
-      const anchors = [0, 1, 2].map((p) => gramsFor(it.g, p as PhaseId));
+      const anchors = PHASE_IDS.map((p) => gramsFor(it.g, p));
       const [rLo, rHi] = it.range ?? [Math.round(0.6 * Math.min(...anchors)), Math.round(1.4 * Math.max(...anchors))];
       const step = stepOf(it);
       const lo = it.rising && prev?.has(`${m.id}|${key}`) ? Math.max(rLo, prev.get(`${m.id}|${key}`)!) : rLo;
-      const v: Var = { name: `x${i++}`, meal: m, item: it, key, step, lo, hi: rHi, anchor: anchors[ph] };
+      const v: Var = { name: `x${i++}`, meal: m, item: it, key, step, lo, hi: rHi, anchor: anchors[phaseIndex(ph)] };
       vars.push(v);
       varOf.set(`${m.id}|${key}`, v);
     }
@@ -209,7 +213,7 @@ async function solvePhase(highs: Awaited<ReturnType<typeof highsLoader>>, ph: Ph
         // saturated fat < 10% of kcal (Round 5)
         if (!OFF.has('sfa')) con(sum(scale(day.n.sfa, 9), scale(day.kcal, -(DAILY.satFatEnergyMax - 0.003))), '<=', 0);
         if (!OFF.has('caps')) for (const [food, capG] of Object.entries(P.caps)) if (day.grams.get(food as FoodId)) con(day.grams.get(food as FoodId)!, '<=', capG!);
-        if (!OFF.has('caps') && ph > 0 && day.grams.get('soyaChunks')) con(day.grams.get('soyaChunks')!, '<=', PLAN_RULES.soyaMaxG);
+        if (!OFF.has('caps') && day.grams.get('soyaChunks')) con(day.grams.get('soyaChunks')!, '<=', PLAN_RULES.soyaMaxG);
         if (!OFF.has('ul')) for (const [key, ul] of Object.entries(UPPER)) con(day.n[key as NutrientKey], '<=', ul!);
         if (!OFF.has('dairy')) {
           const milkCurd = sum(day.grams.get('milk'), day.grams.get('curd'));
@@ -301,12 +305,12 @@ export async function solveAll(cap: number): Promise<{ results: Record<PhaseId, 
   const results = {} as Record<PhaseId, PhaseResult>;
   const only = process.env.PHASE ? [Number(process.env.PHASE) as PhaseId] : PHASE_IDS;
   for (const ph of only) {
-    const r = await solvePhase(highs, ph, cap, results[(ph - 1) as PhaseId]?.grams);
+    const r = await solvePhase(highs, ph, cap, ph === 2 ? results[1]?.grams : undefined);
     results[ph] = r;
     for (const [k, g] of r.grams) {
       const [mealId, key] = k.split('|');
-      const q = ((quantities[mealId] ??= {})[key] ??= [0, 0, 0]);
-      q[ph] = g;
+      const q = ((quantities[mealId] ??= {})[key] ??= [0, 0]);
+      q[phaseIndex(ph)] = g;
     }
   }
   return { results, quantities };
@@ -338,7 +342,7 @@ async function main() {
     }
   if (process.env.NOWRITE || process.env.PHASE) return;
   const header = `// GENERATED by scripts/solve-plans.ts — do not edit by hand. Run \`npm run solve\`.
-// Grams per meal item: [phase 0, 1, 2].
+// Grams per meal item: [phase 1, phase 2].
 // Cost ceiling at solve time: ₹${cap}/month at default prices.
 `;
   writeFileSync('lib/data/plan-quantities.generated.ts', `${header}export const QUANTITIES: Record<string, Record<string, number[]>> = ${JSON.stringify(quantities, null, 2)};\n`);

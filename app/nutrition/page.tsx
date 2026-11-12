@@ -80,7 +80,7 @@ export default function NutritionPage() {
               ))}
             </dl>
             <p className="mt-3 text-sm text-ink-2">
-              These targets are estimates, not measurements. Phase 0 adds ~100–200 kcal for the new training. Your weekly weigh-in then shows
+              These targets are estimates, not measurements. They include ~100–200 kcal for the new training. Your weekly weigh-in then shows
               whether the target is right for you.
             </p>
             <p className="mt-2 text-xs text-muted">{ENERGY_NOTE}</p>
@@ -207,7 +207,7 @@ export default function NutritionPage() {
                 {fixedMeals.map((m) => (
                   <tbody key={m.id} className="divide-y divide-line">
                     <tr>
-                      <th colSpan={4} scope="rowgroup" className="pt-3 pb-1 text-left text-xs font-semibold text-ink-2">
+                      <th colSpan={1 + PHASE_IDS.length} scope="rowgroup" className="pt-3 pb-1 text-left text-xs font-semibold text-ink-2">
                         {m.id.startsWith('m1') ? 'Meal 1' : 'Meal 3'}: {fillSlots(m.title)}
                       </th>
                     </tr>

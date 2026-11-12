@@ -136,7 +136,7 @@ export function NutrientAudit({ plan }: { plan: ComputedPlan }) {
               Why gaps remain: the solver closes as much of every gap as the hard limits allow (the phase’s calorie, protein and fibre
               limits, the upper limits, the dairy and variety rules) and prices every 1% of an average need at ₹1,000 a month, so a gap below the average need is never a saving. The foods richest
               in B6, B1 and vitamin E per calorie are vegetables, seeds and nuts, and the fibre cap limits how much of them fits, most of all in
-              Phase 0 (35 g). Phases 0 and 1 last two weeks each.
+              Phase 1 (45 g, weeks 1–4).
             </li>
           )}
           <li>Biotin isn’t planned: 7 foods (oats, soya chunks, oil, ghee, kabuli chana, pumpkin seeds, fish) have no biotin value in either table, so its total is too low by an unknown amount. Biotin deficiency is rare on a mixed diet.</li>

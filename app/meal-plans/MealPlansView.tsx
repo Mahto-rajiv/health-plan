@@ -11,7 +11,7 @@ import { PRICES_AS_OF } from '@/lib/data/prices';
 import { useSettings } from '@/lib/storage';
 import { useToday } from '@/lib/hooks';
 import { usePlans, usePrices } from '@/lib/plan-hooks';
-import { phaseOn } from '@/lib/phase';
+import { parsePhase, phaseOn } from '@/lib/phase';
 import { NutrientAudit } from '@/components/meals/NutrientAudit';
 import { dayName } from '@/lib/dates';
 import { formatINR, roundTo, cn } from '@/lib/utils';
@@ -36,7 +36,7 @@ export function MealPlansView() {
   const today = useToday();
   const activePhase = phaseOn(today);
   const [pickedPhase, setPickedPhase] = useState<PhaseId | null>(null);
-  const phase: PhaseId = pickedPhase ?? 0;
+  const phase: PhaseId = pickedPhase ?? activePhase;
   const plans = usePlans(phase);
   const [pickedDay, setPickedDay] = useState<DayName | null>(null);
   const [view, setView] = useState<View>('day');
@@ -54,7 +54,7 @@ export function MealPlansView() {
           wrap
           label="Phase"
           value={String(phase)}
-          onChange={(v) => setPickedPhase(Number(v) as PhaseId)}
+          onChange={(v) => setPickedPhase(parsePhase(v))}
           options={PHASE_IDS.map((p) => ({ value: String(p), label: `Phase ${p}${p === activePhase ? ' · now' : ''}` }))}
         />
         <p className="mt-1.5 text-xs text-muted">

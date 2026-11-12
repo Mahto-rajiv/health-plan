@@ -3,7 +3,7 @@
 import { writeFileSync } from 'node:fs';
 import { allDefaultPlans } from '../lib/meal-plans';
 import { auditPlan, fatLimits, fmtAmount } from '../lib/nutrient-audit';
-import { PHASES } from '../lib/config';
+import { PHASES, PHASE_IDS } from '../lib/config';
 import { FOODS } from '../lib/data/foods';
 
 const plans = allDefaultPlans();
@@ -37,6 +37,6 @@ for (const p of plans) {
     `| ${p.phase} | ${p.def.shortName} | ${r('kcal')} | ${r('protein')} | ${r('fiber')} | ${Math.round(Math.min(...fat))}–${Math.round(Math.max(...fat))} | ${fatLimits(p).satPct.toFixed(1)}, ${fatLimits(p).satPctMaxDay.toFixed(1)} | ${Math.round(p.dairyPerDay)} | ${Math.round((dairyProtein / protein) * 100)} | ${Math.max(...morning)} | ${Math.round(p.monthlyCost).toLocaleString('en-IN')} | ${below.join('; ') || '—'} | ${star.join('; ') || '—'} |`,
   );
 }
-lines.push('', `Phase bands: ${[0, 1, 2].map((ph) => `${ph}: ${PHASES[ph as 0].kcal.join('–')} kcal, ${PHASES[ph as 0].protein.map(Math.round).join('–')} g protein, fibre ≤ ${PHASES[ph as 0].fibreMax} g`).join(' · ')}.`, '');
+lines.push('', `Phase bands: ${PHASE_IDS.map((ph) => `${ph}: ${PHASES[ph].kcal.join('–')} kcal, ${PHASES[ph].protein.map(Math.round).join('–')} g protein, fibre ≤ ${PHASES[ph].fibreMax} g`).join(' · ')}.`, '');
 writeFileSync('docs/plan-report.md', lines.join('\n'));
 console.log(lines.join('\n'));

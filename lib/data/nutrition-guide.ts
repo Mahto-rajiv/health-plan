@@ -64,22 +64,21 @@ export const ENERGY_NOTE =
   'Calories are calculated from the macros: 4 kcal per g of protein and of available carbohydrate, 9 per g of fat, and 2 per g of fibre (the FAO factor for fibre in mixed diets). Meal and day totals therefore always add up. Food-table values differ by a few percent for some foods; real food varies more than that.';
 
 export const ENERGY_MATH = [
-  { label: 'Phase 0 · weeks 1–2 (stop the loss)', value: '≈ 2,200 kcal' },
-  { label: 'Phase 1 · weeks 3–4', value: '≈ 2,400 kcal' },
+  { label: 'Phase 1 · weeks 1–4', value: '≈ 2,400 kcal' },
   { label: 'Phase 2 · week 5 on (slow gain)', value: '2,550–2,700 kcal' },
 ];
 
 // ─── Weight-gain rules (static; the app stores no weights) ───────────────────
 
 export const GAIN_RULES = {
-  rate: 'First stop the loss (Phase 0). Then +0.5–1.0 kg per month (≈ 0.2–0.35% of body weight per week). After ~6 months, as beginner gains slow, +0.3–0.7 kg per month.',
+  rate: 'First stop the loss. Then +0.5–1.0 kg per month (≈ 0.2–0.35% of body weight per week). After ~6 months, as beginner gains slow, +0.3–0.7 kg per month.',
   why: 'A review of off-season nutrition suggests 0.25–0.5% of body weight per week for novices. This plan sits in the lower half of that range because your goals are strength, health and a moderate physique, not maximum size. In trials, bigger surpluses mostly added fat, not more muscle. Beginners gain muscle well even on small surpluses, because training is the main driver.',
   refs: ['helms2023', 'garthe', 'iraki', 'slater', 'benito'] as RefId[],
   timeline: 'At that rate, each kilo takes 1–2 months, counted from when the loss has stopped. Much of what you notice early will be strength and shape, not scale weight.',
   /** How to weigh. Nothing is logged in the app. */
   weigh: 'Weigh yourself once a week: same day, in the morning, after the toilet and before food or water. A single reading can swing by 0.5–1.5 kg, so look at the direction over 2–3 weeks.',
   decisions: [
-    { when: 'Phase 0: still losing weight after 2 weeks although you ate the plan', then: 'Add about 200 kcal a day: 55 g raw rice more at dinner (≈ 195 kcal), cooked and drained as usual.' },
+    { when: 'Still losing weight after 2 weeks although you ate the plan', then: 'Add about 200 kcal a day: 55 g raw rice more at dinner (≈ 195 kcal), cooked and drained as usual.' },
     { when: 'Phase 2: the scale has not gone up after 4 weeks, and you ate the plan most days', then: 'Add ~150 kcal (e.g. +1 roti), then wait another 4 weeks.' },
     { when: 'Gaining more than about 1 kg a month after the first month', then: 'Slow down: remove ~150 kcal (one roti or a third of the dinner rice).' },
     { when: 'Poor sleep, illness or a heavy work stretch', then: 'Maintain instead of gaining until life settles.' },
@@ -137,7 +136,7 @@ export const HYDRATION = [
 export const GUT = {
   intro: 'The plan doesn’t cut out nutritious foods. Instead it changes how they are prepared and how quickly fibre increases.',
   steps: [
-    { title: 'Ramp up with the phases', body: 'Fibre is capped at 35 g a day in weeks 1–2, 45 g in weeks 3–4 and 50 g from week 5, and soya and sattu are capped at 20 g and 25 g a day in Phase 0. The table below shows how Meals 1 and 3 grow. Gas usually settles as your gut adapts.' },
+    { title: 'Ramp up with the phases', body: 'Fibre is capped at 45 g a day in weeks 1–4 and 50 g from week 5. The table below shows how Meals 1 and 3 grow. Gas usually settles as your gut adapts.' },
     { title: 'Soak, discard, pressure-cook', body: 'Soak chana, rajma and whole moong 8–16 h, throw away the soaking water and pressure-cook until very soft. Soaking and cooking reduce the gas-forming sugars (oligosaccharides).' },
     { title: 'Meal size', body: 'Four moderate meals are easier than two large ones. Eat lunch and dinner slowly; finish dinner 2–3 hours before bed.' },
     { title: 'Fluids with fibre', body: 'Fibre needs water. Spread 2.5–3.5 L across the day rather than drinking a lot at once with meals.' },

@@ -13,7 +13,7 @@ import type { NutrientKey } from './nutrient-keys';
 // Nutrients and costs are worked out for the main food, not the alternative.
 // Round 4: the same-calorie rule alone lost most of the vitamin C and folate
 // (papaya 150 g → apple 60 g: vitamin C 65 → 2 mg) and added fibre on days at
-// the Phase 0 cap (banana → apple +2.6 g). So:
+// the fibre cap (banana → apple +2.6 g). So:
 //   • the swaps are chosen to keep what the main food is there for: orange for
 //     papaya (keeps ~70% of the vitamin C), dates for banana (the fruit with the
 //     least fibre per calorie after banana; a dry staple kept at home);

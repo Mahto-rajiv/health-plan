@@ -5,7 +5,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { MEAL_PLAN_DEFINITIONS, WEEKDAYS, DAYS, buildWeek, planDinners, mealsForDay, itemKey, type Meal } from '../lib/data/meal-plans';
 import { FOODS, FOOD_IDS, type FoodId } from '../lib/data/foods';
 import { DEFAULT_PRICE_TABLE } from '../lib/data/prices';
-import { BUDGET, PHASES, PHASE_IDS, DAILY, PLAN_RULES, type PhaseId } from '../lib/config';
+import { BUDGET, PHASES, PHASE_IDS, DAILY, PLAN_RULES, phaseIndex, type PhaseId } from '../lib/config';
 import { atwaterKcal, itemsNutrients, itemsCost } from '../lib/nutrition';
 import { computePlan, computePlans, allDefaultPlans, storageAdvice } from '../lib/meal-plans';
 import { PANTRY_MONTHLY, FOOD_SAFETY } from '../lib/data/nutrition-guide';
@@ -146,17 +146,6 @@ for (const def of MEAL_PLAN_DEFINITIONS) {
           }
         });
 
-        if (ph === 0) {
-          it('Phase 0 caps soya chunks at 20 g and sattu at 25 g a day', () => {
-            for (const d of week) {
-              const items = d.meals.flatMap((m) => m.meal.items);
-              const g = (f: FoodId) => items.filter((i) => i.food === f).reduce((s, i) => s + i.g, 0);
-              assert.ok(g('soyaChunks') <= (P.caps.soyaChunks ?? Infinity), `${d.day}: soya ${g('soyaChunks')} g`);
-              assert.ok(g('sattu') <= (P.caps.sattu ?? Infinity), `${d.day}: sattu ${g('sattu')} g`);
-            }
-          });
-        }
-
         it('no day goes above a tolerable upper intake level', () => {
           for (const d of plan.days) for (const n of NUTRIENTS) if (n.ul) assert.ok(d.totals[n.key] <= n.ul, `${d.day}: ${n.label} ${d.totals[n.key].toFixed(1)} > ${n.ul}`);
         });
@@ -166,7 +155,7 @@ for (const def of MEAL_PLAN_DEFINITIONS) {
         });
 
         // Round 3 variety and balance rules (lib/config.ts PLAN_RULES).
-        it('variety: no food gives more than 25% of the week’s energy; eggs ≤ 21 a week; milk + curd within the backstop; soya ≤ 50 g after Phase 0', () => {
+        it('variety: no food gives more than 25% of the week’s energy; eggs ≤ 21 a week; milk + curd within the backstop; soya ≤ 50 g', () => {
           const weekKcal = plan.days.reduce((t, d) => t + d.totals.kcal, 0);
           const byFood = new Map<FoodId, number>();
           let eggs = 0;
@@ -181,7 +170,7 @@ for (const def of MEAL_PLAN_DEFINITIONS) {
                 if (it.food === 'soyaChunks') soya += it.g;
               }
             assert.ok(milkCurd <= PLAN_RULES.milkCurdMaxG + 1e-9, `${d.day}: milk + curd ${milkCurd} g`);
-            if (ph > 0) assert.ok(soya <= PLAN_RULES.soyaMaxG + 1e-9, `${d.day}: soya ${soya} g`);
+            assert.ok(soya <= PLAN_RULES.soyaMaxG + 1e-9, `${d.day}: soya ${soya} g`);
           }
           for (const [food, kcal] of byFood) assert.ok(kcal / weekKcal <= PLAN_RULES.foodEnergyShareMax + 0.005, `${food}: ${((kcal / weekKcal) * 100).toFixed(1)}% of the week's energy`);
           assert.ok(eggs <= PLAN_RULES.eggsPerWeek + 1e-9, `${eggs} eggs`);
@@ -337,7 +326,7 @@ describe('meal content', () => {
       for (const it of m.items) {
         const q = QUANTITIES[m.id][itemKey(it)];
         for (const g of q) assert.equal(g % 5, 0, `${m.id} ${itemKey(it)}: ${g} g`);
-        if (it.food === 'oats' || it.food === 'milk') assert.ok(q[0] <= q[1] && q[1] <= q[2], `${m.id} ${it.food}: ${q}`);
+        if (it.food === 'oats' || it.food === 'milk') assert.ok(q[0] <= q[1], `${m.id} ${it.food}: ${q}`);
         else assert.ok(q.every((g) => g === q[0] && g > 0), `${m.id} ${itemKey(it)} changes by phase: ${q}`);
       }
     }
@@ -345,7 +334,7 @@ describe('meal content', () => {
     for (const p of MEAL_PLAN_DEFINITIONS) for (const ph of PHASE_IDS) for (const it of buildWeek(p, ph)[0].meals[0].meal.items) assert.equal(it.g % 5, 0, `${p.id} P${ph} ${it.food}: ${it.g} g`);
   });
 
-  it('Meal 1: Veg + Eggs has 1 egg, Non-veg 2 (Veg + Eggs Phase 0 is infeasible with 2)', () => {
+  it('Meal 1: Veg + Eggs has 1 egg, Non-veg 2 (Veg + Eggs was infeasible with 2 in the 35 g-fibre ramp weeks)', () => {
     const eggs = (id: string) => MEAL_PLAN_DEFINITIONS.find((p) => p.id === id)!.meal1.items.find((it) => it.food === 'egg')!.g;
     assert.equal(eggs('egg'), 50);
     assert.equal(eggs('nonveg'), 100);
@@ -379,9 +368,9 @@ describe('meal content', () => {
       const keys = m.items.map(itemKey);
       assert.equal(new Set(keys).size, keys.length, `${m.id}: an item appears twice`);
       for (const it of m.items) {
-        const g = typeof it.g === 'number' ? [it.g, it.g, it.g] : it.g;
+        const g = typeof it.g === 'number' ? [it.g, it.g] : it.g;
         assert.ok(g.every((x) => x > 0), `${m.id}: ${itemKey(it)} has a zero starting amount`);
-        assert.ok(g[0] <= g[1] && g[1] <= g[2], `${m.id}: ${itemKey(it)} starting amount shrinks between phases`);
+        assert.ok(g[0] <= g[1], `${m.id}: ${itemKey(it)} starting amount shrinks between phases`);
       }
     }
   });
@@ -421,7 +410,7 @@ describe('reproducible quantities', () => {
       for (const it of m.items) {
         const q = QUANTITIES[m.id][itemKey(it)];
         for (const ph of PHASE_IDS) {
-          const g = q[ph];
+          const g = q[phaseIndex(ph)];
           if (it.range) assert.ok(g >= it.range[0] && g <= it.range[1], `${m.id} ${itemKey(it)}: ${g} outside ${it.range}`);
           if (it.step) assert.equal(g % it.step, 0, `${m.id} ${itemKey(it)}: ${g} not a multiple of ${it.step}`);
         }
@@ -466,10 +455,9 @@ describe('food data provenance', () => {
 
   it('phase targets match the brief', () => {
     const avg = (r: [number, number]) => (r[0] + r[1]) / 2;
-    assert.ok(Math.abs(avg(PHASES[0].kcal) - 2200) < 1 && Math.abs(avg(PHASES[0].protein) - 90) < 0.01 && PHASES[0].fibreMax === 35);
     assert.ok(Math.abs(avg(PHASES[1].kcal) - 2400) < 1 && Math.abs(avg(PHASES[1].protein) - 105) < 0.01 && PHASES[1].fibreMax === 45);
     assert.deepEqual([PHASES[2].kcal, PHASES[2].protein, PHASES[2].fibreMax], [[2550, 2700], [110, 125], 50]);
-    const phases: PhaseId[] = [0, 1, 2];
+    const phases: PhaseId[] = [1, 2];
     assert.equal(phases.length, PHASE_IDS.length);
   });
 

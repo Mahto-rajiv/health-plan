@@ -5,11 +5,11 @@ import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, Printer } from 'lucide-react';
 import { MEAL_PLAN_DEFINITIONS, planDinners, resolveMeal, type PlanId } from '@/lib/data/meal-plans';
 import { FOODS } from '@/lib/data/foods';
-import { PHASES, PHASE_IDS, type PhaseId } from '@/lib/config';
+import { PHASES, type PhaseId } from '@/lib/config';
 import { formatQuantity, itemsNutrients, roundKcal } from '@/lib/nutrition';
 import { useSettings } from '@/lib/storage';
 import { useToday } from '@/lib/hooks';
-import { phaseOn } from '@/lib/phase';
+import { parsePhase, phaseOn } from '@/lib/phase';
 import { Button } from '@/components/ui/Button';
 
 /** One printable card per dinner: what Mom needs at the stove, nothing else. */
@@ -18,9 +18,8 @@ export function CookingCardsView() {
   const [settings] = useSettings();
   const today = useToday();
   const planParam = params.get('plan') as PlanId | null;
-  const phaseParam = Number(params.get('phase'));
   const def = MEAL_PLAN_DEFINITIONS.find((p) => p.id === (planParam ?? settings.planId)) ?? MEAL_PLAN_DEFINITIONS[0];
-  const phase: PhaseId = PHASE_IDS.includes(phaseParam as PhaseId) && params.get('phase') !== null ? (phaseParam as PhaseId) : phaseOn(today);
+  const phase: PhaseId = parsePhase(params.get('phase')) ?? phaseOn(today);
   const dinners = planDinners(def);
 
   return (

@@ -19,11 +19,11 @@ npm run plans:report # day-by-day calories, macros, micronutrients and cost for 
 |---|---|
 | `/` | Today: the session, today's meals with calories and protein, tonight's prep and tomorrow's session |
 | `/training` | Today's warm-up and workout with alternatives, the week and rescheduling rules, the full program with tutorials, cardio and mobility, progression and easy (deload) weeks |
-| `/meal-plans` | Three 7-day plans × three phases with swaps, vitamins and minerals (nutrient audit, fat limits), grocery list and cost, food safety; `/meal-plans/cards` prints the dinner cooking cards |
+| `/meal-plans` | Three 7-day plans × two phases with swaps, vitamins and minerals (nutrient audit, fat limits), grocery list and cost, food safety; `/meal-plans/cards` prints the dinner cooking cards |
 | `/nutrition` | Targets and how they were derived, meal timing, training-day guidance, when to change the food, digestion, hydration, supplements |
 | `/recovery` | Sleep plan, desk-job movement, rest days, recovery signs |
 
-The phase follows the date only: weeks 1–2, 3–4 and 5+ from Mon 9 Nov 2026 (`PROGRAM_START` in `lib/config.ts`).
+The phase follows the date only: Phase 1 in weeks 1–4, Phase 2 from week 5 (Mon 7 Dec 2026), counted from Mon 9 Nov 2026 (`PROGRAM_START` in `lib/config.ts`).
 
 ## Code layout
 
