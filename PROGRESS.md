@@ -1,5 +1,23 @@
 # Progress
 
+## Phase 0 removed and training redesigned (12 Nov 2026): branch `remove-phase-0`, not pushed
+
+### Phase 0
+- Weight is stable, so the two-week ramp is gone. Phase 1 = weeks 1–4, Phase 2 = week 5 on (Mon 7 Dec 2026).
+- Phase 1 and 2 quantities, targets and costs unchanged: the quantities file only lost each item's first value (not re-solved).
+
+### Training: evidence checked (abstracts, Nov 2026)
+- Size follows weekly hard sets, not frequency: Schoenfeld 2019 (J Sports Sci, PMID 30558493, 25 studies) found no difference between higher and lower frequency when volume is equal. It replaces Schoenfeld 2016's "at least twice a week" (PMID 27102172). Pelland 2026 (PMID 41343037, 67 studies): volume raises size and strength; frequency has negligible effect on size but raises strength (diminishing returns).
+- Strength: ACSM 2026 (PMID 41843416) lists ≥ 2 sessions/week; Grgic 2018 (PMID 29470825) found frequency helps multi-joint strength, mostly through extra sets (equal-volume subgroup p = 0.42). Early strength gains are partly skill (Rutherford & Jones 1986, PMID 3698983). ACSM 2009: novices 2–3 days/week.
+- Verdict on "two muscle groups a day" (each muscle once a week): fine for size if weekly sets match, worse for strength practice, and a missed session drops those muscles for the week.
+
+### New split
+- Saturday lower body, Sunday upper body (fixed, 60–75 min). Full body A (deadlift first, Mon–Wed) and Full body B (overhead press first, Tue–Fri) on weekdays, ≤ 60 min with the warm-up (planned ≤ 55). Weekday windows, the 9 PM cut-off and skip-don't-make-up rules are unchanged.
+- Full week: every main muscle twice; weekend + one weekday session: at least 4 of 5 main muscles twice (the old upper/lower weekdays left half the body at once a week if one was missed).
+- Estimated length (week 3): Saturday 66.8, Sunday 66.8, Full body A 49.5, Full body B 52.7 min.
+- Every exercise and alternative has one YouTube link (42 links). 22 new ones found by search, checked by oEmbed and `npm run links`; they were matched by title, not watched.
+- Plain words: RIR/RPE, "deload", "superset" and "double progression" are gone from the app; a jargon and readability test guards them.
+
 ## Curd review (5 Nov 2026): branch `curd-review`, not pushed
 
 ### Why curd is chosen so often

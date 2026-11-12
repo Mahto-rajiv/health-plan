@@ -1,7 +1,7 @@
 import { AlertTriangle, CalendarClock, Gauge, HeartPulse, Move, Ban } from 'lucide-react';
 import {
   CARDIO,
-  DELOAD_SIGNALS,
+  EASY_WEEK_SIGNS,
   GLOSSARY,
   MOBILITY,
   MOBILITY_NOTES,
@@ -14,8 +14,8 @@ import {
   SESSIONS,
   SESSION_ORDER,
 } from '@/lib/data/training';
-import { EXERCISE_TUTORIALS, type Tutorial } from '@/lib/data/tutorials';
-import { estimateMinutes, sessionTime, TIME_MODEL } from '@/lib/training';
+import { EXERCISE_LINKS, EXERCISE_TUTORIALS, type Tutorial } from '@/lib/data/tutorials';
+import { effortText, estimateMinutes, sessionTime, TIME_MODEL } from '@/lib/training';
 import { WarmupSteps } from './WarmupSteps';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Disclosure } from '@/components/ui/Disclosure';
@@ -30,16 +30,17 @@ export function ProgramDetails() {
       <Card>
         <CardHeader
           title="How the program works"
-          description="4 sessions a week: two upper-body days and two lower-body days, so each muscle is trained twice. Two fixed weekend sessions and two short weekday ones. Strength first, muscle second."
+          description="Up to 4 sessions a week. Saturday is lower body and Sunday upper body. Two weekday sessions train the whole body, so even one of them gives every main muscle and lift a second session that week. Strength first, muscle second."
         />
         <ul className="grid gap-3 text-sm sm:grid-cols-2">
           {[
+            ['Why twice a week', 'Muscle growth depends mostly on how many hard sets a muscle gets in a week. Strength also grows with practice, so each main lift is done twice a week. If a session is missed, every muscle still gets trained.'],
             ['Main lifts', 'Squat, bench, overhead press, deadlift and pull-ups. 4–8 reps, for strength.'],
             ['Smaller exercises', '8–20 reps, for muscle and balance. About 8–12 hard sets per muscle each week.'],
-            ['Effort', 'Stop with 1–3 good reps left in the tank (RIR 1–3). In weeks 1–2, stop with 3–4 left.'],
-            ['Session length', `Saturday and Sunday: 60–75 min, with the warm-up and a 10 min cool-down. Weekdays: 45 min or less, 4–5 exercises.`],
+            ['Effort', 'Stop with 1–3 good reps left. In weeks 1–2, stop with 3–4 left.'],
+            ['Session length', `Saturday and Sunday: 60–75 min, with the warm-up and a 10 min cool-down. Weekdays: 60 min or less with the warm-up, 5 exercises.`],
             ['Progression', 'Add reps until every set reaches the top of the range. Then add the smallest weight step.'],
-            ['Easy (deload) week', 'When the warning signs show up, or at the latest every 8–10 weeks: half the sets, about 10% lighter, for one week.'],
+            ['Easy week', 'When the warning signs show up, or at the latest every 8–10 weeks: half the sets, about 10% lighter, for one week.'],
           ].map(([k, v]) => (
             <li key={k} className="rounded-xl bg-slate-50 p-3">
               <div className="font-medium text-ink">{k}</div>
@@ -47,7 +48,7 @@ export function ProgramDetails() {
             </li>
           ))}
         </ul>
-        <References ids={['acsm2026', 'acsm2009', 'schoenfeldFrequency', 'schoenfeldVolume', 'pelland', 'zourdos', 'singer', 'schoenfeldRest']} />
+        <References ids={['schoenfeldFrequency2019', 'schoenfeldFrequency', 'pelland', 'grgicFrequency', 'rutherfordJones', 'acsm2026', 'acsm2009', 'schoenfeldVolume', 'singer', 'schoenfeldRest']} />
       </Card>
 
       <Card>
@@ -80,12 +81,11 @@ export function ProgramDetails() {
                 <li key={ex.id} className="py-2.5 text-sm">
                   <div className="font-medium text-ink">{ex.name}</div>
                   <div className="tabular mt-0.5 text-xs text-ink-2">
-                    {ex.sets.build} × {ex.reps} · {effort(ex.rir)} · rest {rest(ex.restSec)}
+                    {ex.sets.build} × {ex.reps} · {effortText(ex.repsLeft)} · {ex.pairedWith ? 'after the pair' : `rest ${rest(ex.restSec)}`}
                   </div>
                   <div className="text-xs text-muted">
                     {ex.muscles}
                     {ex.sets.learn !== ex.sets.build ? ` · ${ex.sets.learn} sets in weeks 1–2` : ''}
-                    {ex.fromWeek ? ` · from week ${ex.fromWeek}` : ''}
                   </div>
                 </li>
               ))}
@@ -108,7 +108,6 @@ export function ProgramDetails() {
                         <div className="font-medium text-ink">{ex.name}</div>
                         <div className="text-xs text-muted">
                           {ex.muscles}
-                          {ex.fromWeek ? ` · from week ${ex.fromWeek}` : ''}
                         </div>
                       </td>
                       <td className="px-2 py-2 text-ink-2">
@@ -116,8 +115,8 @@ export function ProgramDetails() {
                         {ex.sets.learn !== ex.sets.build && <span className="text-xs text-muted"> ({ex.sets.learn} wk 1–2)</span>}
                       </td>
                       <td className="px-2 py-2 text-ink-2">{ex.reps}</td>
-                      <td className="px-2 py-2 text-ink-2">{effort(ex.rir)}</td>
-                      <td className="py-2 pl-2 text-ink-2">{ex.supersetWith ? 'after the pair' : rest(ex.restSec)}</td>
+                      <td className="px-2 py-2 text-ink-2">{effortText(ex.repsLeft)}</td>
+                      <td className="py-2 pl-2 text-ink-2">{ex.pairedWith ? 'after the pair' : rest(ex.restSec)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -129,7 +128,6 @@ export function ProgramDetails() {
             </p>
             <div className="mt-3 space-y-2">
               {s.exercises.map((ex) => {
-                const links = tut(ex.tutorials);
                 return (
                   <Disclosure key={ex.id} summary={`${ex.name}: how to`}>
                     <ul className="list-disc space-y-1 pl-4">
@@ -141,15 +139,12 @@ export function ProgramDetails() {
                       <span className="font-medium text-ink">Progress: </span>
                       {ex.increment}.
                     </p>
-                    <p className="mt-1">
-                      <span className="font-medium text-ink">Machine or bench taken? </span>
-                      {ex.alternative}
+                    <TutorialLinks tutorials={[EXERCISE_LINKS[ex.link]]} className="mt-3" />
+                    <p className="mt-3">
+                      <span className="font-medium text-ink">Equipment taken? </span>
+                      {ex.alternative.name} ({ex.alternative.equipment}).{ex.alternative.note ? ` ${ex.alternative.note}` : ''}
                     </p>
-                    {links.length > 0 ? (
-                      <TutorialLinks tutorials={links} className="mt-3" />
-                    ) : (
-                      <p className="mt-2 text-xs text-muted">No verified tutorial link for this one. The cues above cover it.</p>
-                    )}
+                    <TutorialLinks tutorials={[EXERCISE_LINKS[ex.alternative.link]]} className="mt-2" />
                   </Disclosure>
                 );
               })}
@@ -205,12 +200,6 @@ export function ScheduleRules() {
       </Card>
     </div>
   );
-}
-
-/** "2" → "stop with 2 reps left (RIR 2)"; non-numeric cues are shown as written. */
-function effort(rir: string): string {
-  if (!/^\d(?:–\d)?$/.test(rir)) return rir;
-  return `stop with ${rir} reps left (RIR ${rir})`;
 }
 
 const rest = (sec: number) => (sec >= 120 ? `${sec / 60} min` : `${sec} s`);
@@ -314,15 +303,15 @@ function ProgressionGuide() {
         </dl>
         <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/60 p-3 text-sm">
           <div className="flex items-center gap-2 font-medium text-amber-950">
-            <AlertTriangle size={16} className="text-amber-600" aria-hidden /> Take an easy (deload) week when…
+            <AlertTriangle size={16} className="text-amber-600" aria-hidden /> Take an easy week when…
           </div>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-amber-950">
-            {DELOAD_SIGNALS.map((d) => (
+            {EASY_WEEK_SIGNS.map((d) => (
               <li key={d}>{d}</li>
             ))}
           </ul>
         </div>
-        <References ids={['bellDeload', 'colemanDeload', 'zourdos']} />
+        <References ids={['bellEasyWeek', 'colemanEasyWeek']} />
       </Card>
     </>
   );

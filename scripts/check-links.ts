@@ -4,7 +4,7 @@
 import { writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { REFS } from '../lib/data/references';
-import { COOKING_TUTORIALS, EXERCISE_TUTORIALS, type Tutorial } from '../lib/data/tutorials';
+import { COOKING_TUTORIALS, EXERCISE_LINKS, EXERCISE_TUTORIALS, type Tutorial } from '../lib/data/tutorials';
 
 interface Link {
   where: string;
@@ -29,6 +29,7 @@ const links: Link[] = [
   ...Object.entries({ ...EXERCISE_TUTORIALS, ...COOKING_TUTORIALS }).flatMap(([id, list]) =>
     (list as Tutorial[]).map((t) => ({ where: `tutorial:${id}`, expected: t.title, url: t.url })),
   ),
+  ...Object.entries(EXERCISE_LINKS).map(([id, t]: [string, Tutorial]) => ({ where: `exercise:${id}`, expected: t.title, url: t.url })),
 ];
 
 const words = (s: string) => new Set(s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter((w) => w.length > 3));

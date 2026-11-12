@@ -3,36 +3,40 @@ import { dayName } from './dates';
 
 /**
  * Week-dependent sets and effort. Weeks 1–2 are the learning phase. An easy
- * (deload) week is described in the Training text, not computed here.
+ * week is described in the Training text, not computed here.
  */
 export function phaseFor(week: number): 'learn' | 'build' {
   return week <= 2 ? 'learn' : 'build';
 }
 
 export function setsFor(ex: Exercise, week: number): number {
-  if (ex.fromWeek && week < ex.fromWeek) return 0;
   return phaseFor(week) === 'learn' ? ex.sets.learn : ex.sets.build;
 }
 
-export function rirFor(ex: Exercise, week: number): string {
-  return phaseFor(week) === 'learn' && /^\d/.test(ex.rir) ? '3–4' : ex.rir;
+/** Good reps left at the end of each set: 3–4 in the learning weeks, then the listed number. */
+export function repsLeftFor(ex: Exercise, week: number): string {
+  return phaseFor(week) === 'learn' && /^\d/.test(ex.repsLeft) ? '3–4' : ex.repsLeft;
 }
+
+/** "2" → "stop with 2 good reps left"; a plain cue (e.g. "no swinging") is shown as written. */
+export const effortText = (repsLeft: string) => (/^\d(?:–\d)?$/.test(repsLeft) ? `stop with ${repsLeft} good reps left` : repsLeft);
 
 export function activeExercises(sessionId: SessionId, week: number) {
   return SESSIONS[sessionId].exercises.filter((ex) => setsFor(ex, week) > 0);
 }
 
-const FLEX: ('lowerB' | 'upperB')[] = ['lowerB', 'upperB'];
+const FLEX: ('fullA' | 'fullB')[] = ['fullA', 'fullB'];
 
 /**
- * Sessions the week plan allows on a date. Saturday is Lower A and Sunday is
- * Upper A. Lower B may fall Mon–Wed and Upper B Tue–Fri; nothing is logged, so
+ * Sessions the week plan allows on a date. Saturday is the lower-body session
+ * and Sunday the upper-body one. Full body A may fall Mon–Wed and Full body B
+ * Tue–Fri; nothing is logged, so
  * on Tuesday and Wednesday both are listed and you pick the one not done yet.
  */
 export function sessionsFor(iso: string): SessionId[] {
   const day = dayName(iso);
-  if (day === 'Saturday') return ['lowerA'];
-  if (day === 'Sunday') return ['upperA'];
+  if (day === 'Saturday') return ['lower'];
+  if (day === 'Sunday') return ['upper'];
   return FLEX.filter((id) => FLEX_WINDOWS[id].includes(day));
 }
 
@@ -67,7 +71,7 @@ export const warmupMinutes = (sessionId: SessionId) => SESSIONS[sessionId].warmu
 /**
  * Session length, step by step (unrounded minutes):
  * warm-up steps + Σ exercise [sets × (work + rest) + setup + lighter sets] + finisher.
- * Rest is counted after every set. A superset partner adds only its work time
+ * Rest is counted after every set. An exercise paired with another adds only its work time
  * (its rest and setup are shared with the exercise it is paired with).
  */
 export function sessionTime(sessionId: SessionId, week: number): SessionTime {
@@ -76,7 +80,7 @@ export function sessionTime(sessionId: SessionId, week: number): SessionTime {
     const sets = setsFor(ex, week);
     const work = ex.perSide ? TIME_MODEL.perSideWorkSec : TIME_MODEL.workSec;
     const rampSets = ex.rampSets ?? 0;
-    const minutes = ex.supersetWith
+    const minutes = ex.pairedWith
       ? (sets * work) / 60
       : (sets * (work + ex.restSec)) / 60 + TIME_MODEL.setupMin + rampSets * TIME_MODEL.rampSetMin;
     return { id: ex.id, sets, minutes, rampSets };

@@ -18,7 +18,7 @@ npm run plans:report # day-by-day calories, macros, micronutrients and cost for 
 | Route | What it shows |
 |---|---|
 | `/` | Today: the session, today's meals with calories and protein, tonight's prep and tomorrow's session |
-| `/training` | Today's warm-up and workout with alternatives, the week and rescheduling rules, the full program with tutorials, cardio and mobility, progression and easy (deload) weeks |
+| `/training` | Today's warm-up and workout with alternatives, the week and rescheduling rules, the full program with tutorials, cardio and mobility, progression and easy weeks |
 | `/meal-plans` | Three 7-day plans × two phases with swaps, vitamins and minerals (nutrient audit, fat limits), grocery list and cost, food safety; `/meal-plans/cards` prints the dinner cooking cards |
 | `/nutrition` | Targets and how they were derived, meal timing, training-day guidance, when to change the food, digestion, hydration, supplements |
 | `/recovery` | Sleep plan, desk-job movement, rest days, recovery signs |

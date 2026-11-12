@@ -1,19 +1,16 @@
 import { Flame, Info, Repeat } from 'lucide-react';
 import { SESSIONS, type SessionId } from '@/lib/data/training';
-import { EXERCISE_TUTORIALS, type Tutorial } from '@/lib/data/tutorials';
-import { activeExercises, rirFor, setsFor } from '@/lib/training';
+import { EXERCISE_LINKS } from '@/lib/data/tutorials';
+import { activeExercises, effortText, repsLeftFor, setsFor } from '@/lib/training';
 import { Card, CardHeader } from '../ui/Card';
 import { Disclosure } from '../ui/Disclosure';
 import { TutorialLinks } from '../ui/ExternalLink';
 
 const rest = (sec: number) => (sec >= 120 ? `${sec / 60} min` : `${sec} s`);
 
-/** "2" → "stop with 2 reps left"; non-numeric cues are shown as written. */
-const effort = (rir: string) => (/^\d(?:–\d)?\+?$/.test(rir) ? `stop with ${rir} reps left` : rir);
-
 /**
  * Today's exercises, in order: how many sets, reps, rest, and a swap that
- * works the same muscles when the machine or bench is taken. Nothing is logged.
+ * works the same muscles with other equipment when it is taken. Nothing is logged.
  */
 export function SessionExercises({ sessionId, week }: { sessionId: SessionId; week: number }) {
   const session = SESSIONS[sessionId];
@@ -28,7 +25,6 @@ export function SessionExercises({ sessionId, week }: { sessionId: SessionId; we
       <ol className="space-y-3">
         {exercises.map((ex, i) => {
           const sets = setsFor(ex, week);
-          const tutorials = (ex.tutorials ?? []).flatMap((id) => EXERCISE_TUTORIALS[id] as Tutorial[]);
           return (
             <li key={ex.id} className="rounded-xl border border-line p-3">
               <div className="flex items-start gap-3">
@@ -42,14 +38,14 @@ export function SessionExercises({ sessionId, week }: { sessionId: SessionId; we
                     <span className="font-semibold">
                       {sets} {sets === 1 ? 'set' : 'sets'}
                     </span>{' '}
-                    × {ex.reps} · {effort(rirFor(ex, week))} ·{' '}
-                    {ex.supersetWith ? `straight after ${nameOf(ex.supersetWith)}, then rest` : `rest ${rest(ex.restSec)}`}
+                    × {ex.reps} · {effortText(repsLeftFor(ex, week))} ·{' '}
+                    {ex.pairedWith ? `straight after ${nameOf(ex.pairedWith)}, then rest` : `rest ${rest(ex.restSec)}`}
                   </p>
                   <p className="mt-2 flex gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs text-ink-2">
                     <Repeat size={14} className="mt-0.5 shrink-0 text-muted" aria-hidden />
                     <span>
-                      <span className="font-medium text-ink">Machine or bench taken? </span>
-                      {ex.alternative}
+                      <span className="font-medium text-ink">Equipment taken? </span>
+                      {ex.alternative.name} ({ex.alternative.equipment}).{ex.alternative.note ? ` ${ex.alternative.note}` : ''}
                     </span>
                   </p>
                 </div>
@@ -64,7 +60,9 @@ export function SessionExercises({ sessionId, week }: { sessionId: SessionId; we
                   <p className="mt-2">
                     <span className="font-medium text-ink">Adding weight: </span>when every set reaches {ex.repRange[1]} reps, next time {ex.increment}.
                   </p>
-                  {tutorials.length > 0 && <TutorialLinks tutorials={tutorials} className="mt-3" />}
+                  <TutorialLinks tutorials={[EXERCISE_LINKS[ex.link]]} className="mt-3" />
+                  <p className="mt-2 text-xs text-muted">Alternative: {ex.alternative.name}</p>
+                  <TutorialLinks tutorials={[EXERCISE_LINKS[ex.alternative.link]]} className="mt-1" />
                 </Disclosure>
               </div>
             </li>

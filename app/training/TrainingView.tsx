@@ -98,7 +98,7 @@ function TodayTab() {
               onChange={setPicked}
               options={options.map((id) => ({ value: id, label: SESSIONS[id].short }))}
             />
-            <p className="mt-1.5 text-xs text-muted">Both are allowed today. Pick the one you haven’t done this week. Each is done once a week.</p>
+            <p className="mt-1.5 text-xs text-muted">Both are allowed today. Pick the one you haven’t done this week. Each is done once a week. If you can, leave a day between them.</p>
           </div>
         )}
       </Card>
@@ -116,7 +116,7 @@ function WeekTab() {
       <Card>
         <CardHeader
           title="Your week"
-          description={`Saturday and Sunday are fixed. Lower B (Mon–Wed) and Upper B (Tue–Fri) happen only if you can be at the gym by ${WEEKDAY_GYM_CUTOFF.label}. One session a day at most.`}
+          description={`Saturday and Sunday are fixed. Full body A (Mon–Wed) and Full body B (Tue–Fri) happen only if you can be at the gym by ${WEEKDAY_GYM_CUTOFF.label}. One session a day at most.`}
         />
         <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
           {DAYS.map((d) => {
