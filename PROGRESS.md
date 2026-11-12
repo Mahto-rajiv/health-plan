@@ -1,6 +1,6 @@
 # Progress
 
-## Phase 0 removed and training redesigned (12 Nov 2026): branch `remove-phase-0`, not pushed
+## Phase 0 removed and training redesigned (12 Nov 2026): merged into main and pushed
 
 ### Phase 0
 - Weight is stable, so the two-week ramp is gone. Phase 1 = weeks 1–4, Phase 2 = week 5 on (Mon 7 Dec 2026).
