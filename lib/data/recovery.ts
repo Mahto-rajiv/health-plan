@@ -8,14 +8,14 @@ export const SLEEP = {
     { title: 'Keep 12:30 AM as the limit', body: 'On gym nights dinner ends ~10:30 PM; leave about 2 hours between dinner and bed. If you are often later than 12:30, move it 15 minutes earlier every 3–4 days rather than in one jump.' },
     { title: 'Morning light, dim evenings', body: 'Get 10+ minutes of outdoor light soon after waking (the commute counts). Dim the screens and room lights for the last hour before bed.' },
     { title: 'Caffeine cut-off around 3 PM', body: 'Caffeine lingers for hours. Evening training doesn’t need a pre-workout stimulant; Meal 3 is your fuel.' },
-    { title: 'Late workout, still sleep', body: 'Weekday sessions end by about 10 PM, when the gym closes. Keep the cool-down calm, eat dinner, and shower. Exercise itself doesn’t generally ruin sleep, but very late heavy meals and phone time can.' },
+    { title: 'Late workout, still sleep', body: 'On work days, sessions end by about 10 PM, when the gym closes. Keep the cool-down calm, eat dinner, and shower. Exercise itself doesn’t generally ruin sleep, but very late heavy meals and phone time can.' },
   ],
   why: 'In a controlled study, people who slept 5.5 h instead of 8.5 h while dieting lost much more lean mass. That is indirect evidence for gaining, but the direction is clear: sleep is where training adapts.',
   refs: ['aasmSleep', 'windred', 'nedeltcheva'] as RefId[],
 };
 
 export const DESK = {
-  intro: 'Training 4 hours a week doesn’t cancel 9–10 hours of sitting. Short, frequent breaks matter in their own right.',
+  intro: 'Training 4–5 hours a week doesn’t cancel 9–10 hours of sitting. Short, frequent breaks matter in their own right.',
   routine: [
     { time: 'Every 30–45 min', action: 'Stand up, walk to refill water, or take calls standing — 2–3 minutes.' },
     { time: 'After lunch (1:30 PM)', action: '10–15 min walk. It helps post-meal blood sugar and covers ~1,500 steps.' },
@@ -40,7 +40,6 @@ export const RECOVERY_SIGNS = {
 };
 
 export const REST_DAYS = [
-  { day: 'Weekdays without a session', what: 'A 20–30 minute brisk walk and the 6-minute desk reset. You should feel better afterwards, not tired.' },
-  { day: 'Saturday and Sunday', what: 'Training days (lower body, upper body), each ending with 10 minutes of easy cardio and the weekend mobility routine.' },
-  { day: 'Missed session', what: 'Skipped, not made up. No extra sets, no double days.' },
+  { day: 'Days without a session', what: 'A 20–30 minute brisk walk and the 6-minute desk reset. You should feel better afterwards, not tired.' },
+  { day: 'Gym on a day off work', what: 'The next session in the order. Add 8–10 minutes of easy cardio and the longer mobility routine if you have time.' },
 ];

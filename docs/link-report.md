@@ -1,38 +1,28 @@
 # Link check
 
-Run 2026-11-12 with `npm run links`. 146 links: 142 ok, 0 redirected, 4 blocked automated access, 0 failed.
+Run 2026-11-16 with `npm run links`. 142 links: 133 ok, 0 redirected, 7 blocked automated access, 2 failed.
 
 "Match" compares the title the app shows with the page title (YouTube via oEmbed, PubMed via Europe PMC). "check" means the words differ enough to look at by hand; "n/a" means no title could be read (PDF or blocked).
 
 | Status | Code | Where | Match | App label | Page title | URL |
 |---|---|---|---|---|---|---|
-| ok | 200 | exercise:assistedPullupMachine | yes | How to use the Assisted Pull Up Machine | How to use the Assisted Pull Up Machine | https://www.youtube.com/watch?v=THSFzwAqYgk |
 | ok | 200 | exercise:backSquat | yes | Perfect Your Squat: Step-By-Step Form Guide | Perfect Your Squat: Step-By-Step Form Guide | https://www.youtube.com/watch?v=8Kls95w2jFA |
-| ok | 200 | exercise:ballLegCurl | yes | Stability-Ball Leg Curl | Stability-Ball Leg Curl | https://www.youtube.com/watch?v=WXOHRzZIPBA |
-| ok | 200 | exercise:bandPallof | yes | How To: Resistance Band Pallof Press | How To: Resistance Band Pallof Press | https://www.youtube.com/watch?v=lqPrSGXfL1Q |
 | ok | 200 | exercise:benchPress | yes | How to Bench Press | How to Bench Press | https://www.youtube.com/watch?v=BYKScL2sgCs |
 | ok | 200 | exercise:cableLateralRaise | yes | How To Do A Standing Single Arm Cable Lateral Raise | How To Do A STANDING SINGLE ARM CABLE LATERAL RAISE \| Exercise Demonstration Vid | https://www.youtube.com/watch?v=Az_0nsym9AY |
-| ok | 200 | exercise:cablePallof | yes | How To Perform The Standing Cable Pallof Press | How To Perform The Standing Cable Pallof Press | https://www.youtube.com/watch?v=u4XcUc_3F5s |
-| ok | 200 | exercise:calfRaise | yes | 8 Calf Raise Mistakes and How to Fix Them | 8 Calf Raise Mistakes and How to Fix Them | https://www.youtube.com/watch?v=Xa18jxyeSnM |
+| ok | 200 | exercise:cableOverheadExtension | yes | Overhead Rope Tricep Extensions (How To) | Overhead Rope Tricep Extensions (How To) | https://www.youtube.com/watch?v=AUsSlsBu5eg |
 | ok | 200 | exercise:captainsChair | yes | How To Do A Captain's Chair Knee Raise | How To Do A CAPTAIN'S CHAIR KNEE RAISE \| Exercise Demonstration Video and Guide | https://www.youtube.com/watch?v=7KDDZtaUaxw |
-| ok | 200 | exercise:chestSupportedRow | yes | Chest Supported Incline Dumbbell Row | Chest Supported Incline Dumbbell Row - OPEX Exercise Library | https://www.youtube.com/watch?v=0-DXJiceG-0 |
 | ok | 200 | exercise:curl | yes | Alternating Dumbbell Curl — demo | Alternating Dumbbell Curl | https://www.youtube.com/watch?v=iixND1P2lik |
 | ok | 200 | exercise:dbBench | yes | How To: Dumbbell Bench Press \| 3 Golden Rules | How To: Dumbbell Bench Press \| 3 GOLDEN RULES | https://www.youtube.com/watch?v=Y_7aHqXeCfQ |
-| ok | 200 | exercise:dbCalfRaise | yes | How To Do a Single Leg Dumbbell Calf Raise | How To Do a Single Leg Dumbbell Calf Raise | https://www.youtube.com/watch?v=1D7s-VyLq0Y |
 | ok | 200 | exercise:dbRdl | yes | Dumbbell Romanian Deadlift \| Exercise Technique Library | Dumbbell Romanian Deadlift \| Exercise Technique Library | https://www.youtube.com/watch?v=IJdUtnxAmNo |
-| ok | 200 | exercise:deadlift | yes | How To Deadlift: 5 Step Deadlift | How To Deadlift: 5 Step Deadlift \| 2022 | https://www.youtube.com/watch?v=MBbyAqvTNkU |
+| ok | 200 | exercise:dbSkullCrusher | yes | Dumbbell Skull Crusher Tutorial \| Lying Triceps Exercise | Dumbbell Skull Crusher Tutorial \| Lying Triceps Exercise \| Proper Step by Step G | https://www.youtube.com/watch?v=8ncEJDm7Cig |
 | ok | 200 | exercise:ezCurl | yes | Exercise Tutorial: EZ Bar Bicep Curl | Exercise Tutorial: EZ Bar Bicep Curl | https://www.youtube.com/watch?v=SDFZBaJcTsU |
 | ok | 200 | exercise:facePull | yes | Face Pull — form demo | How to do a Face Pull \| Proper Form & Technique \| NASM | https://www.youtube.com/watch?v=eTCBSFlCJ_s |
-| ok | 200 | exercise:gobletSquat | yes | How To Do A Goblet Squat Correctly | How To Do A Goblet Squat Correctly | https://www.youtube.com/watch?v=JO7D6GJ98wY |
 | ok | 200 | exercise:hackSquat | yes | How To Do A Machine Hack Squat | How To Do A MACHINE HACK SQUAT \| Exercise Demonstration Video and Guide | https://www.youtube.com/watch?v=VY8ko6ecfso |
 | ok | 200 | exercise:hangingKneeRaise | yes | Hanging Knee Raise — demo | Hanging Knee Raise | https://www.youtube.com/watch?v=RD_A-Z15ER4 |
-| ok | 200 | exercise:hipThrust | yes | Proper Hip Thrust Form | Proper Hip Thrust Form | https://www.youtube.com/watch?v=LM8XHLYJoYs |
-| ok | 200 | exercise:hipThrustMachine | yes | How to Use the Hip Thrust Machine | How to Use the Hip Thrust Machine | https://www.youtube.com/watch?v=UlljOYPM57U |
 | ok | 200 | exercise:inclineDbPress | yes | Two-Arm Incline Dumbbell Chest Press — demo | How to do a Two-Arm Incline Dumbbell Chest Press \| Proper Form & Technique \| NAS | https://www.youtube.com/watch?v=JKnpHchOWPU |
 | ok | 200 | exercise:inclineMachinePress | yes | How To Do A Machine Incline Chest Press | How To Do A MACHINE INCLINE CHEST PRESS (Star Trac) \| Exercise Demonstration Vid | https://www.youtube.com/watch?v=7_scLkTCwTU |
 | ok | 200 | exercise:lateralRaise | yes | Dumbbell Lateral Raise — demo | How to do a Dumbbell Lateral Raise | https://www.youtube.com/watch?v=XPPfnSEATJA |
 | ok | 200 | exercise:latPulldown | yes | 8 Lat Pulldown Mistakes and How to Fix Them | 8 Lat Pulldown Mistakes and How to Fix Them | https://www.youtube.com/watch?v=MyQVLFBwlJ8 |
-| ok | 200 | exercise:legCurl | yes | Seated Leg Curl — form demo | How to do a Seated Leg Curl  \| Proper Form & Technique \| NASM | https://www.youtube.com/watch?v=_2Kd0d-JEUM |
 | ok | 200 | exercise:legPress | yes | Leg Press — form demo | How to do a Leg Press  \| Proper Form & Technique \| NASM | https://www.youtube.com/watch?v=cDGOn-yfKJA |
 | ok | 200 | exercise:machineChestPress | yes | How To Use Gym Equipment: Seated Chest Press Machine | How To Use Gym Equipment: Seated Chest Press Machine | https://www.youtube.com/watch?v=Nv7TPc6btPk |
 | ok | 200 | exercise:oneArmRow | yes | One Arm Dumbbell Row | One Arm Dumbbell Row - Back Exercise - Bodybuilding.com | https://www.youtube.com/watch?v=PgpQ4-jHiq4 |
@@ -40,35 +30,36 @@ Run 2026-11-12 with `npm run links`. 146 links: 142 ok, 0 redirected, 4 blocked 
 | ok | 200 | exercise:overheadPress | yes | Learning to Press | Learning to Press \| The Starting Strength Method | https://www.youtube.com/watch?v=8dacy5hjaE8 |
 | ok | 200 | exercise:pullUp | yes | Band-Assisted Pull-Up — form demo | How to do a Band Assisted Pull-Up \| Proper Form & Technique \| NASM | https://www.youtube.com/watch?v=B_VkNQS5YLs |
 | ok | 200 | exercise:pushdown | yes | Rope Pushdown — demo | Rope Pushdown | https://www.youtube.com/watch?v=-xa-6cQaZKY |
+| ok | 200 | exercise:pushUp | yes | The RIGHT Way To Do Push-Ups (PERFECT FORM) | The RIGHT Way To Do Push-Ups (PERFECT FORM) | https://www.youtube.com/watch?v=i9sTjhN4Z3M |
 | ok | 200 | exercise:rdl | yes | How To: Romanian Deadlift | STOP deadlifting until you learn how to do THIS/How To:Romanian DL | https://www.youtube.com/watch?v=jEy_czb3RKA |
 | ok | 200 | exercise:reverseFly | yes | How To Do Reverse Pec Deck / Reverse Fly Machine | How To Do Reverse Pec Deck/ Reverse Fly Machine | https://www.youtube.com/watch?v=e4dJ1QoxUtI |
 | ok | 200 | exercise:seatedDbPress | yes | Seated Dumbbell Shoulder Press: Demonstration | Seated Dumbbell Shoulder Press: Demonstration | https://www.youtube.com/watch?v=SSXS4Z8OkCg |
 | ok | 200 | exercise:seatedRow | yes | Seated Cable Row — demo | Seated Cable Row | https://www.youtube.com/watch?v=UCXxvVItLoM |
-| ok | 200 | exercise:smithSplitSquat | yes | How To Do Smith Machine Split Squat | How To Do Smith Machine Split Squat \| Exercise Demo | https://www.youtube.com/watch?v=y8XdzYUGDaI |
 | ok | 200 | exercise:smithSquat | yes | Exercise Tutorial: Smith Machine Squat | Exercise Tutorial: Smith Machine Squat | https://www.youtube.com/watch?v=iAcRGCsG_PY |
-| ok | 200 | exercise:splitSquat | yes | The Ultimate Bulgarian Split Squat Tutorial | The ULTIMATE Bulgarian Split Squat Tutorial | https://www.youtube.com/watch?v=-4LVK1crLSw |
-| ok | 200 | exercise:trapBarDeadlift | yes | The Trap Bar Deadlift | The Trap Bar Deadlift | https://www.youtube.com/watch?v=TU2xZ7s4jus |
 | ok | 200 | ref:aasmSleep | yes | Watson NF et al. (2015). Recommended amount of sleep for a healthy adult (AASM/S | Recommended Amount of Sleep for a Healthy Adult: A Joint Consensus Statement of  | https://pubmed.ncbi.nlm.nih.gov/26039963/ |
 | ok | 200 | ref:acsm2009 | yes | ACSM (2009). Progression models in resistance training for healthy adults. Med S | American College of Sports Medicine position stand. Progression models in resist | https://pubmed.ncbi.nlm.nih.gov/19204579/ |
 | ok | 200 | ref:acsm2026 | yes | Currier BS et al. (2026). ACSM position stand: resistance training prescription. | American College of Sports Medicine Position Stand. Resistance Training Prescrip | https://pubmed.ncbi.nlm.nih.gov/41843416/ |
 | ok | 200 | ref:alizadeh | yes | Alizadeh S et al. (2023). Resistance training induces improvements in range of m | Resistance Training Induces Improvements in Range of Motion: A Systematic Review | https://pubmed.ncbi.nlm.nih.gov/36622555/ |
 | ok | 200 | ref:antonioCreatine | yes | Antonio J et al. (2021). Common questions and misconceptions about creatine supp | Common questions and misconceptions about creatine supplementation: what does th | https://pubmed.ncbi.nlm.nih.gov/33557850/ |
+| ok | 200 | ref:bartolomeiSplit | yes | Bartolomei S et al. (2021). Total body and split routine resistance training in  | A Comparison Between Total Body and Split Routine Resistance Training Programs i | https://pubmed.ncbi.nlm.nih.gov/32168178/ |
 | ok | 200 | ref:behm | yes | Behm DG et al. (2016). Acute effects of muscle stretching on physical performanc | Acute effects of muscle stretching on physical performance, range of motion, and | https://pubmed.ncbi.nlm.nih.gov/26642915/ |
 | ok | 200 | ref:bellEasyWeek | yes | Bell L et al. (2023). Planned easier training weeks in strength and physique spo | Integrating Deloading into Strength and Physique Sports Training Programmes: An  | https://pubmed.ncbi.nlm.nih.gov/37730925/ |
 | ok | 200 | ref:benito | yes | Benito PJ et al. (2020). Effect of resistance training on whole-body muscle grow | A Systematic Review with Meta-Analysis of the Effect of Resistance Training on W | https://pubmed.ncbi.nlm.nih.gov/32079265/ |
 | ok | 200 | ref:colemanEasyWeek | yes | Coleman M et al. (2024). Gaining more from doing less? A one-week easier period  | Gaining more from doing less? The effects of a one-week deload period during sup | https://pubmed.ncbi.nlm.nih.gov/38274324/ |
 | ok | 200 | ref:devries | yes | Devries MC et al. (2018). Protein intake and kidney function in healthy adults:  | Changes in Kidney Function Do Not Differ between Healthy Adults Consuming Higher | https://pubmed.ncbi.nlm.nih.gov/30383278/ |
-| ok | 200 | ref:driElements | yes | Health Canada. Dietary Reference Intakes tables: reference values for elements ( | Dietary reference intakes tables: Reference values for elements - Canada.ca | https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-elements.html |
+| failed | Error | ref:driElements | n/a | Health Canada. Dietary Reference Intakes tables: reference values for elements ( |  | https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-elements.html |
 | ok | 200 | ref:driMacros | yes | Health Canada. Dietary Reference Intakes tables: reference values for macronutri | Dietary reference intakes tables: Reference values for macronutrients - Canada.c | https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-macronutrients.html |
-| ok | 200 | ref:driVitamins | yes | Health Canada. Dietary Reference Intakes tables: reference values for vitamins. | Dietary reference intakes tables: Reference values for vitamins - Canada.ca | https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-vitamins.html |
+| failed | Error | ref:driVitamins | n/a | Health Canada. Dietary Reference Intakes tables: reference values for vitamins. |  | https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-vitamins.html |
 | ok | 200 | ref:dunstan | yes | Dunstan DW et al. (2012). Breaking up prolonged sitting reduces postprandial glu | Breaking up prolonged sitting reduces postprandial glucose and insulin responses | https://pubmed.ncbi.nlm.nih.gov/22374636/ |
 | blocked | 403 | ref:efsaErucic | n/a | EFSA CONTAM Panel (2016). Erucic acid in feed and food. EFSA Journal 14(11):4593 | Just a moment... | https://www.efsa.europa.eu/en/efsajournal/pub/4593 → https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2016.4593 |
 | blocked | 403 | ref:efsaWater | n/a | EFSA NDA Panel (2010). Dietary reference values for water. EFSA Journal. | Just a moment... | https://doi.org/10.2903/j.efsa.2010.1459 → http://doi.wiley.com/10.2903/j.efsa.2010.1459 |
 | ok | 200 | ref:faoEnergy | yes | FAO/WHO/UNU (2004). Human energy requirements — physical activity levels. | Human energy requirements | https://www.fao.org/4/y5686e/y5686e07.htm |
 | ok | 200 | ref:faoFoodEnergy | yes | FAO (2003). Food energy — methods of analysis and conversion factors. Chapter 3: | CHAPTER 3: CALCULATION OF THE ENERGY CONTENT OF FOODS - ENERGY CONVERSION FACTOR | https://www.fao.org/4/y5022e/y5022e04.htm |
-| ok | 200 | ref:fsisLeftovers | yes | USDA FSIS. Leftovers and food safety. | Leftovers and Food Safety \| Food Safety and Inspection Service | https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/food-safety-basics/leftovers-and-food-safety |
+| blocked | 403 | ref:fsisLeftovers | n/a | USDA FSIS. Leftovers and food safety. | Access Denied | https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/food-safety-basics/leftovers-and-food-safety |
 | ok | 200 | ref:fssRice | yes | Food Standards Scotland. Food storage (cooked rice, hard-boiled eggs, leftovers) | Food storage \| Food Standards Scotland | https://www.foodstandards.gov.scot/consumer-advice/food-safety/food-safety-in-the-kitchen/food-storage |
 | ok | 200 | ref:garthe | yes | Garthe I et al. (2013). Effect of nutritional intervention on body composition i | Effect of nutritional intervention on body composition and performance in elite  | https://pubmed.ncbi.nlm.nih.gov/23679146/ |
+| ok | 200 | ref:gentilArms2013 | yes | Gentil P et al. (2013). Adding single-joint exercises to a multi-joint program i | Effect of adding single-joint exercises to a multi-joint exercise resistance-tra | https://pubmed.ncbi.nlm.nih.gov/23537028/ |
+| ok | 200 | ref:gentilArms2015 | yes | Gentil P et al. (2015). Single vs. multi-joint resistance exercises: effects on  | Single vs. Multi-Joint Resistance Exercises: Effects on Muscle Strength and Hype | https://pubmed.ncbi.nlm.nih.gov/26446291/ |
 | ok | 200 | ref:gill2021 | yes | Gill KS et al. (2021). Assays for erucic acid content in Indian mustard (Brassic | Development and Validation of Kompetitive Allele-Specific PCR Assays for Erucic  | https://pubmed.ncbi.nlm.nih.gov/34975937/ |
 | ok | 200 | ref:girigowda | yes | Girigowda K et al. (2005). Effect of processing on oligosaccharides in black gra | Oligosaccharins of black gram (Vigna mungo L.) as affected by processing methods | https://pubmed.ncbi.nlm.nih.gov/16395628/ |
 | ok | 200 | ref:gray2016 | yes | Gray PJ et al. (2016). Cooking rice in excess water reduces both arsenic and enr | Cooking rice in excess water reduces both arsenic and enriched vitamins in the c | https://pubmed.ncbi.nlm.nih.gov/26515534/ |
@@ -83,6 +74,7 @@ Run 2026-11-12 with `npm run links`. 146 links: 142 ok, 0 redirected, 4 blocked 
 | ok | 200 | ref:iraki | yes | Iraki J et al. (2019). Nutrition recommendations for bodybuilders in the off-sea | Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review | https://pubmed.ncbi.nlm.nih.gov/31247944/ |
 | ok | 200 | ref:issnCreatine | yes | Kreider RB et al. (2017). ISSN position stand: safety and efficacy of creatine s | International Society of Sports Nutrition position stand: safety and efficacy of | https://pubmed.ncbi.nlm.nih.gov/28615996/ |
 | ok | 200 | ref:konrad | yes | Konrad A et al. (2024). Chronic effects of stretching on range of motion: meta-a | Chronic effects of stretching on range of motion with consideration of potential | https://pubmed.ncbi.nlm.nih.gov/37301370/ |
+| ok | 200 | ref:mannarinoArms | yes | Mannarino P et al. (2021). Single-joint exercise results in more elbow-flexor gr | Single-Joint Exercise Results in Higher Hypertrophy of Elbow Flexors Than Multij | https://pubmed.ncbi.nlm.nih.gov/31268995/ |
 | ok | 200 | ref:morton | yes | Morton RW et al. (2018). Protein supplementation and resistance-training gains:  | A systematic review, meta-analysis and meta-regression of the effect of protein  | https://pubmed.ncbi.nlm.nih.gov/28698222/ |
 | ok | 200 | ref:namWater | yes | National Academies (2004). Dietary reference intakes for water, potassium, sodiu | Report Sets Dietary Intake Levels for Water, Salt, and Potassium To Maintain Hea | https://www.nationalacademies.org/news/report-sets-dietary-intake-levels-for-water-salt-and-potassium-to-maintain-health-and-reduce-chronic-disease-risk |
 | ok | 200 | ref:nciCookedMeat | yes | US National Cancer Institute. Chemicals in meat cooked at high temperatures and  | Chemicals in Meat Cooked at High Temperatures and Cancer Risk - NCI | https://www.cancer.gov/about-cancer/causes-prevention/risk/diet/cooked-meats-fact-sheet |
@@ -92,14 +84,18 @@ Run 2026-11-12 with `npm run links`. 146 links: 142 ok, 0 redirected, 4 blocked 
 | ok | 200 | ref:niddkGas | yes | NIDDK. Eating, diet and nutrition for gas in the digestive tract. | Eating, Diet, & Nutrition for Gas in the Digestive Tract - NIDDK | https://www.niddk.nih.gov/health-information/digestive-diseases/gas-digestive-tract/eating-diet-nutrition |
 | blocked | 403 | ref:odsIodine | n/a | NIH Office of Dietary Supplements. Iodine — fact sheet. | Just a moment... | https://ods.od.nih.gov/factsheets/Iodine-HealthProfessional/ |
 | ok | 200 | ref:paluch | yes | Paluch AE et al. (2022). Daily steps and all-cause mortality: meta-analysis of 1 | Daily steps and all-cause mortality: a meta-analysis of 15 international cohorts | https://pubmed.ncbi.nlm.nih.gov/35247352/ |
+| ok | 200 | ref:pedersenSplit | yes | Pedersen H et al. (2022). Split-body versus full-body resistance training in non | A randomized trial on the efficacy of split-body versus full-body resistance tra | https://pubmed.ncbi.nlm.nih.gov/35568897/ |
 | ok | 200 | ref:pelland | yes | Pelland JC et al. (2026). Resistance-training dose–response meta-regressions. Sp | The Resistance Training Dose Response: Meta-Regressions Exploring the Effects of | https://pubmed.ncbi.nlm.nih.gov/41343037/ |
 | ok | 200 | ref:philips2024 | yes | Philips CA et al. (2024). Citizens protein project: analysis of popular protein  | Citizens protein project: A self-funded, transparent, and concerning report on a | https://pubmed.ncbi.nlm.nih.gov/38579036/ |
 | ok | 200 | ref:purdueBagLunch | yes | Purdue University Extension (2022). Keeping “bagged” lunches safe. | Keeping “Bagged” Lunches Safe | https://extension.purdue.edu/news/county/putnam/2022/09/keeping-bagged-lunches-safe.html |
+| ok | 200 | ref:radaelliRecovery | yes | Radaelli R et al. (2012). Time course of strength recovery after resistance exer | Time course of strength and echo intensity recovery after resistance exercise in | https://pubmed.ncbi.nlm.nih.gov/22037095/ |
+| ok | 200 | ref:ramosCampoSplit | yes | Ramos-Campo DJ et al. (2024). Split versus full-body resistance training on stre | Efficacy of Split Versus Full-Body Resistance Training on Strength and Muscle Gr | https://pubmed.ncbi.nlm.nih.gov/38595233/ |
 | ok | 200 | ref:rutherfordJones | yes | Rutherford OM, Jones DA (1986). The role of learning and coordination in strengt | The role of learning and coordination in strength training. | https://pubmed.ncbi.nlm.nih.gov/3698983/ |
 | ok | 200 | ref:schoenfeldAragon | yes | Schoenfeld BJ, Aragon AA (2018). How much protein can the body use in a single m | How much protein can the body use in a single meal for muscle-building? Implicat | https://pubmed.ncbi.nlm.nih.gov/29497353/ |
 | ok | 200 | ref:schoenfeldFrequency | yes | Schoenfeld BJ et al. (2016). Effects of resistance training frequency on measure | Effects of Resistance Training Frequency on Measures of Muscle Hypertrophy: A Sy | https://pubmed.ncbi.nlm.nih.gov/27102172/ |
 | ok | 200 | ref:schoenfeldFrequency2019 | yes | Schoenfeld BJ et al. (2019). How many times per week should a muscle be trained  | How many times per week should a muscle be trained to maximize muscle hypertroph | https://pubmed.ncbi.nlm.nih.gov/30558493/ |
 | ok | 200 | ref:schoenfeldRest | yes | Schoenfeld BJ et al. (2016). Longer rest between sets increases muscle strength  | Longer Interset Rest Periods Enhance Muscle Strength and Hypertrophy in Resistan | https://pubmed.ncbi.nlm.nih.gov/26605807/ |
+| ok | 200 | ref:schoenfeldSplit2015 | yes | Schoenfeld BJ et al. (2015). Influence of resistance training frequency on muscu | Influence of Resistance Training Frequency on Muscular Adaptations in Well-Train | https://pubmed.ncbi.nlm.nih.gov/25932981/ |
 | ok | 200 | ref:schoenfeldVolume | yes | Schoenfeld BJ et al. (2017). Dose–response of weekly training volume and muscle  | Dose-response relationship between weekly resistance training volume and increas | https://pubmed.ncbi.nlm.nih.gov/27433992/ |
 | ok | 200 | ref:schumann | yes | Schumann M et al. (2022). Compatibility of concurrent aerobic and strength train | Compatibility of Concurrent Aerobic and Strength Training for Skeletal Muscle Si | https://pubmed.ncbi.nlm.nih.gov/34757594/ |
 | ok | 200 | ref:singer | yes | Singer A et al. (2024). Rest between sets and muscle growth: Bayesian meta-analy | Give it a rest: a systematic review with Bayesian meta-analysis on the effect of | https://pubmed.ncbi.nlm.nih.gov/39205815/ |
@@ -124,7 +120,7 @@ Run 2026-11-12 with `npm run links`. 146 links: 142 ok, 0 redirected, 4 blocked 
 | ok | 200 | tutorial:dal | yes | Dal Tadka | Dal Tadka Recipe - Swasthi&#039;s Recipes | https://www.indianhealthyrecipes.com/dal-tadka/ |
 | ok | 200 | tutorial:eggBhurji | yes | Egg Bhurji | Egg Bhurji - Spicy Scrambled Eggs - Cook With Manali | https://www.cookwithmanali.com/egg-bhurji/ |
 | ok | 200 | tutorial:fishCurry | yes | Bengali Fish Curry (rohu) | Bengali Fish Curry | https://www.sanjeevkapoor.com/Recipe/Bengali-Fish-Curry.html |
-| ok | 200 | tutorial:fishCurry | yes | Bihari-Style Fish Curry | Easy Bihari style Fish Curry सरसों वाली बिहारी स्टाइल मच्छी करी spicy Fish Curry | https://ranveerbrar.com/recipes/bihari-style-fish-curry/ |
+| blocked | 403 | tutorial:fishCurry | n/a | Bihari-Style Fish Curry | Bot Verification | https://ranveerbrar.com/recipes/bihari-style-fish-curry/ |
 | ok | 200 | tutorial:grilledChicken | yes | Tandoori Chicken (oven / pan) | Tandoori Chicken Recipe (Restaurant Style) - Swasthi&#039;s Recipes | https://www.indianhealthyrecipes.com/tandoori-chicken-recipe/ |
 | ok | 200 | tutorial:hip9090 | yes | 90/90 Hip Transitions (hands supported) | 90/90 Hip Transitions (Hands Supported) | https://www.youtube.com/watch?v=Lx07WIkllbA |
 | ok | 200 | tutorial:hipFlexorStretch | yes | Half Kneeling Hip Flexor Stretch | Half Kneeling Hip Flexor Stretch | https://www.youtube.com/watch?v=vIDzsqJiAIo |
@@ -148,7 +144,7 @@ Run 2026-11-12 with `npm run links`. 146 links: 142 ok, 0 redirected, 4 blocked 
 | ok | 200 | tutorial:soyaChunks | yes | Soya Chunks Curry | Soya Chunks Curry Recipe (Meal Maker Curry) - Swasthi&#039;s Recipes | https://www.indianhealthyrecipes.com/soya-chunks-curry-meal-maker-curry/ |
 | ok | 200 | tutorial:soyaKeema | yes | Soya Keema | Soya Keema Recipe (Soya Granules Recipe) - Swasthi&#039;s Recipes | https://www.indianhealthyrecipes.com/soya-keema/ |
 | ok | 200 | tutorial:sweetPotato | yes | Sweet Potato Chaat (roasted or boiled) | Sweet Potato Chaat - Cook With Manali | https://www.cookwithmanali.com/sweet-potato-chaat/ |
+| blocked | 403 | tutorial:talkTest | n/a | How to Measure Physical Activity Intensity (talk test) | Access Denied | https://www.cdc.gov/physical-activity-basics/measuring/index.html |
 | ok | 200 | tutorial:talkTest | yes | What Is Zone 2 Cardio? | What Is Zone 2 Cardio? | https://health.clevelandclinic.org/zone-2-cardio |
-| ok | 200 | tutorial:talkTest | yes | How to Measure Physical Activity Intensity (talk test) | How to Measure Physical Activity Intensity \| Physical Activity Basics \| CDC | https://www.cdc.gov/physical-activity-basics/measuring/index.html |
 | ok | 200 | tutorial:warmUp | yes | Science-Based Warm Up & Mobility Routine (Full Body) | The Most Effective Science-Based Warm Up & Mobility Routine (Full Body) | https://www.youtube.com/watch?v=E81GN-3A8XM |
 | ok | 200 | tutorial:worldsGreatestStretch | yes | The World's Greatest Stretch | The World's Greatest Stretch (Mobility Exercise) by Squat University | https://www.youtube.com/watch?v=-CiWQ2IvY34 |

@@ -1,5 +1,29 @@
 # Progress
 
+## Split routine (16 Nov 2026): branch `split-routine`, not pushed
+
+### Owner's request
+- A split routine only (e.g. Back + Biceps, Chest + Triceps). No full-body and no lower-body-only sessions.
+- Any day of the week, Monday to Sunday; no fixed weekdays.
+- Owner's answers: legs stay, as Legs + Shoulders; one plan of 5 gym days a week (first 4–5, then 5 only).
+
+### Evidence (PubMed abstracts, checked 16 Nov 2026)
+- Split vs full body, weekly sets equal: no difference in strength or size. Ramos-Campo 2024 (J Strength Cond Res, PMID 38595233, 14 studies): bench MD 1.19 [−1.28, 3.65], lower-limb strength MD 2.47 [−2.11, 7.05]. Pedersen 2022 (PMID 35568897): untrained women, upper/lower split vs full body, no difference.
+- Against: Schoenfeld 2015 (PMID 25932981, 20 trained men): full body grew the elbow flexors more than a once-a-week split; strength the same. Bartolomei 2021 (PMID 32168178, 21 trained men): mixed, split better for thigh thickness. Schoenfeld 2016 meta-analysis (PMID 27102172) favoured twice a week; the larger 2019 one (PMID 30558493) did not when volume is equal.
+- Frequency: strength rises a little with frequency, size hardly (Pelland 2026, PMID 41343037; Grgic 2018, PMID 29470825). So 5 days a week (each muscle ~1.7×) beats 3.
+- Recovery: untrained muscle needed > 72 h to recover fully after a hard arm session (Radaelli 2012, PMID 22037095). A three-session order over 5 days gives about that.
+- Arms: presses and pulls alone grew beginners' arms about as much as adding curls/extensions (Gentil 2013, PMID 23537028; Gentil 2015, PMID 26446291). Mannarino 2021 (PMID 31268995, 10 men) found curls better. Kept one or two direct arm exercises.
+- Not found: any study of a Chest + Triceps / Back + Biceps / Legs + Shoulders rotation in beginners, or of training different muscles on back-to-back days. The ACSM 2009 "48 h" wording is not in its abstract.
+
+### New split
+- Order: Chest + Triceps (bench) → Back + Biceps (pull-up) → Legs + Shoulders (squat) → repeat. Each gym day does the next one; a missed day loses nothing.
+- Any day; one session a day; at most 3 days in a row (with 2, a 5-day week can't repeat; a test caught this). Work days (Mon–Fri) keep the 9 PM arrival rule.
+- Every session ≤ 60 min with the warm-up (planned ≤ 55), 5 exercises. Estimated (weeks 1–2 / week 3+): Chest + Triceps 44.3 / 49.2, Back + Biceps 38.7 / 48.3, Legs + Shoulders 48.3 / 53.7 min.
+- Hard sets per round of 3 sessions (week 3+): chest 8, triceps 5, back 6 + 3 face pulls, biceps 3, front of thighs 5, back of thighs 3 (RDL), shoulders 5, core 2. Multiply by ~1.7 for a 5-day week.
+- Removed: trap-bar deadlift, split squat, goblet squat, hip thrust, leg curl, calf raise, Pallof press, standing overhead press (now the alternative to the seated dumbbell press). Their 15 tutorial links are gone; 3 new ones (push-up, dumbbell skull crusher, overhead cable triceps extension) were found by search and checked by oEmbed and `npm run links`, matched by title, not watched.
+- UI: the Week tab shows the order of the three sessions instead of a 7-day grid (no example weeks: owner wants one plan, 5 days); Today and the dashboard let you pick any of the three sessions.
+- Owner's follow-up: no "if you miss this, do that" instructions. Removed the missed-session rule and the whole "Missed sessions and real life" list (late arrival, 3-day weeks, short on time, back after time off, illness), the "make up" line in Never do, the busy-week example, the "walk instead" lines on Today and the dashboard, the easy-week life-event hints, and the Recovery page's "Missed session" row.
+
 ## Phase 0 removed and training redesigned (12 Nov 2026): merged into main and pushed
 
 ### Phase 0

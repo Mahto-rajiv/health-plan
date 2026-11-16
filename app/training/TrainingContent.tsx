@@ -1,4 +1,4 @@
-import { AlertTriangle, CalendarClock, Gauge, HeartPulse, Move, Ban } from 'lucide-react';
+import { AlertTriangle, Gauge, HeartPulse, Move, Ban } from 'lucide-react';
 import {
   CARDIO,
   EASY_WEEK_SIGNS,
@@ -7,10 +7,8 @@ import {
   MOBILITY_NOTES,
   NEVER_DO,
   INJURY_PREVENTION,
-  MISSED_SESSION_RULE,
   PHASES,
   PROGRESSION_RULES,
-  SCHEDULE_RULES,
   SESSIONS,
   SESSION_ORDER,
 } from '@/lib/data/training';
@@ -30,15 +28,17 @@ export function ProgramDetails() {
       <Card>
         <CardHeader
           title="How the program works"
-          description="Up to 4 sessions a week. Saturday is lower body and Sunday upper body. Two weekday sessions train the whole body, so even one of them gives every main muscle and lift a second session that week. Strength first, muscle second."
+          description="A split: each session trains two muscle groups. Three sessions in a fixed order, on any 5 days of the week. Strength first, muscle second."
         />
         <ul className="grid gap-3 text-sm sm:grid-cols-2">
           {[
-            ['Why twice a week', 'Muscle growth depends mostly on how many hard sets a muscle gets in a week. Strength also grows with practice, so each main lift is done twice a week. If a session is missed, every muscle still gets trained.'],
-            ['Main lifts', 'Squat, bench, overhead press, deadlift and pull-ups. 4–8 reps, for strength.'],
-            ['Smaller exercises', '8–20 reps, for muscle and balance. About 8–12 hard sets per muscle each week.'],
+            ['Why a split works', 'Muscle growth depends mostly on how many hard sets a muscle gets in a week. A split and a full-body plan give about the same strength and muscle when the weekly sets match.'],
+            ['How often', '5 gym days a week, so each muscle comes round about 1.7 times a week. Strength grows a little faster with more practice.'],
+            ['Rest for each muscle', 'A new lifter’s muscle can take about 3 days to recover after a hard session. Three sessions over 5 days gives each muscle about that long.'],
+            ['Main lifts', 'Bench press, pull-ups and squat. 5–8 reps (pull-ups 5–10), for strength.'],
+            ['Smaller exercises', '8–20 reps, for muscle and balance. About 8–13 hard sets per big muscle each week.'],
             ['Effort', 'Stop with 1–3 good reps left. In weeks 1–2, stop with 3–4 left.'],
-            ['Session length', `Saturday and Sunday: 60–75 min, with the warm-up and a 10 min cool-down. Weekdays: 60 min or less with the warm-up, 5 exercises.`],
+            ['Session length', 'About 45–55 min with the warm-up, 5 exercises. Any session fits a work evening: at the gym by 9 PM, out by 10.'],
             ['Progression', 'Add reps until every set reaches the top of the range. Then add the smallest weight step.'],
             ['Easy week', 'When the warning signs show up, or at the latest every 8–10 weeks: half the sets, about 10% lighter, for one week.'],
           ].map(([k, v]) => (
@@ -48,7 +48,7 @@ export function ProgramDetails() {
             </li>
           ))}
         </ul>
-        <References ids={['schoenfeldFrequency2019', 'schoenfeldFrequency', 'pelland', 'grgicFrequency', 'rutherfordJones', 'acsm2026', 'acsm2009', 'schoenfeldVolume', 'singer', 'schoenfeldRest']} />
+        <References ids={['ramosCampoSplit', 'pedersenSplit', 'schoenfeldSplit2015', 'bartolomeiSplit', 'schoenfeldFrequency2019', 'schoenfeldFrequency', 'pelland', 'grgicFrequency', 'rutherfordJones', 'radaelliRecovery', 'gentilArms2013', 'gentilArms2015', 'mannarinoArms', 'acsm2026', 'acsm2009', 'schoenfeldVolume', 'singer', 'schoenfeldRest']} />
       </Card>
 
       <Card>
@@ -158,47 +158,28 @@ export function ProgramDetails() {
   );
 }
 
-export function ScheduleRules() {
+export function SafetyRules() {
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-      <Card>
-        <CardHeader
-          title="Missed sessions and real life"
-          icon={<CalendarClock size={18} />}
-          description="Consistency over perfection. The Today tab shows the sessions these rules allow on each day."
-        />
-        <p className="mb-3 rounded-xl bg-accent-soft/60 p-3 text-sm font-medium text-ink">{MISSED_SESSION_RULE}</p>
-        <ul className="space-y-3">
-          {SCHEDULE_RULES.map((r) => (
-            <li key={r.situation} className="rounded-xl border border-line p-3">
-              <div className="text-sm font-semibold text-ink">{r.situation}</div>
-              <p className="mt-1 text-sm text-ink-2">{r.action}</p>
-              {r.why && <p className="mt-1 text-xs text-muted">{r.why}</p>}
-            </li>
-          ))}
-        </ul>
-      </Card>
-      <Card className="h-fit">
-        <CardHeader title="Never do this" icon={<Ban size={18} />} description="Catch-up training costs more than a missed session." />
-        <ul className="space-y-2.5 text-sm text-ink-2">
-          {NEVER_DO.map((n) => (
-            <li key={n} className="flex gap-2">
-              <span className="mt-2 size-1.5 shrink-0 rounded-full bg-rose-400" aria-hidden />
-              {n}
-            </li>
-          ))}
-        </ul>
-        <h3 className="mt-5 text-sm font-semibold text-ink">Injury prevention</h3>
-        <ul className="mt-2 space-y-2 text-sm text-ink-2">
-          {INJURY_PREVENTION.map((n) => (
-            <li key={n} className="flex gap-2">
-              <span className="mt-2 size-1.5 shrink-0 rounded-full bg-accent" aria-hidden />
-              {n}
-            </li>
-          ))}
-        </ul>
-      </Card>
-    </div>
+    <Card>
+      <CardHeader title="Never do this" icon={<Ban size={18} />} />
+      <ul className="space-y-2.5 text-sm text-ink-2">
+        {NEVER_DO.map((n) => (
+          <li key={n} className="flex gap-2">
+            <span className="mt-2 size-1.5 shrink-0 rounded-full bg-rose-400" aria-hidden />
+            {n}
+          </li>
+        ))}
+      </ul>
+      <h3 className="mt-5 text-sm font-semibold text-ink">Injury prevention</h3>
+      <ul className="mt-2 space-y-2 text-sm text-ink-2">
+        {INJURY_PREVENTION.map((n) => (
+          <li key={n} className="flex gap-2">
+            <span className="mt-2 size-1.5 shrink-0 rounded-full bg-accent" aria-hidden />
+            {n}
+          </li>
+        ))}
+      </ul>
+    </Card>
   );
 }
 

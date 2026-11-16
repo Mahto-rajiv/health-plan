@@ -4,13 +4,13 @@ import Link from 'next/link';
 import { ChevronRight, Clock, Dumbbell, Utensils, ListTodo } from 'lucide-react';
 import { useToday } from '@/lib/hooks';
 import { addDays, dayName, longDate } from '@/lib/dates';
-import { SESSIONS, WEEK_PLAN, WEEKDAY_GYM_CUTOFF } from '@/lib/data/training';
+import { SESSIONS, WORKDAY_GYM_CUTOFF } from '@/lib/data/training';
 import { MEAL_SLOTS } from '@/lib/data/meal-plans';
 import { PHASES } from '@/lib/config';
 import { useActivePlan } from '@/lib/plan-hooks';
 import { weekLabel, weekOn } from '@/lib/phase';
 import { roundKcal } from '@/lib/nutrition';
-import { activeExercises, estimateMinutes, plannedFor, sessionsFor, setsFor } from '@/lib/training';
+import { estimateMinutes, isWorkday, plannedFor, sessionsFor } from '@/lib/training';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { ButtonLink } from '@/components/ui/Button';
@@ -65,10 +65,7 @@ function Dashboard({ today }: { today: string }) {
 }
 
 function TrainingCard({ today, week }: { today: string; week: number }) {
-  const options = sessionsFor(today);
-  const s = SESSIONS[options[0]];
-  const exercises = activeExercises(s.id, week);
-  const weekday = s.slot === 'weekday';
+  const workday = isWorkday(today);
   return (
     <Card className="lg:col-span-2">
       <CardHeader
@@ -81,36 +78,27 @@ function TrainingCard({ today, week }: { today: string; week: number }) {
         }
       />
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <h3 className="text-lg font-semibold text-ink">{options.length > 1 ? options.map((id) => SESSIONS[id].short).join(' or ') : s.name}</h3>
-        <span className="text-sm text-muted">≈ {estimateMinutes(s.id, week)} min</span>
-        {weekday && (
+        <h3 className="text-lg font-semibold text-ink">Gym day? Do the next session in the order</h3>
+        {workday && (
           <Badge tone="caution">
-            <Clock size={12} aria-hidden /> at the gym by {WEEKDAY_GYM_CUTOFF.label}
+            <Clock size={12} aria-hidden /> at the gym by {WORKDAY_GYM_CUTOFF.label}
           </Badge>
         )}
       </div>
       <p className="mt-1 text-sm text-ink-2">
-        {options.length > 1
-          ? 'Do the one you haven’t done this week. If you can’t get to the gym in time, walk 20–30 min instead.'
-          : weekday
-            ? 'If you can’t get to the gym in time, skip it and walk 20–30 min. Don’t make it up later.'
-            : WEEK_PLAN[dayName(today)].detail}
+        Pick the one after the one you did last.
       </p>
-      {options.length === 1 && (
-        <ol className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
-          {exercises.map((ex, i) => (
-            <li key={ex.id} className="flex items-baseline justify-between gap-3 border-b border-line/70 py-1">
-              <span className="min-w-0 truncate text-ink">
-                <span className="tabular mr-2 text-xs text-muted">{i + 1}</span>
-                {ex.name}
-              </span>
-              <span className="tabular shrink-0 text-xs text-muted">
-                {setsFor(ex, week)} × {ex.reps}
-              </span>
-            </li>
-          ))}
-        </ol>
-      )}
+      <ol className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1.5 text-sm sm:grid-cols-3">
+        {sessionsFor().map((id, i) => (
+          <li key={id} className="flex items-baseline justify-between gap-3 border-b border-line/70 py-1">
+            <span className="min-w-0 truncate text-ink">
+              <span className="tabular mr-2 text-xs text-muted">{i + 1}</span>
+              {SESSIONS[id].short}
+            </span>
+            <span className="tabular shrink-0 text-xs text-muted">≈ {estimateMinutes(id, week)} min</span>
+          </li>
+        ))}
+      </ol>
       <ButtonLink href="/training" variant="primary" className="mt-4 w-full sm:w-auto">
         See warm-up and workout
       </ButtonLink>

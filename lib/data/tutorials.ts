@@ -135,51 +135,39 @@ export type ExerciseTutorialId = keyof typeof EXERCISE_TUTORIALS;
 // ─── One link per exercise and per alternative ───────────────────────────────
 // A single tutorial each, a YouTube video wherever one could be found. The first
 // group was checked on 7 Oct 2026 (docs/link-report.md); the rest were found by
-// YouTube search and checked with the oEmbed endpoint on 12 Nov 2026 (title and
-// channel shown here are from oEmbed). Run `npm run links` to re-check them all.
+// YouTube search and checked with the oEmbed endpoint on 12 Nov 2026 (pushUp, dbSkullCrusher and
+// cableOverheadExtension on 16 Nov 2026; title and channel shown here are from oEmbed). Run `npm run links` to re-check them all.
 export const EXERCISE_LINKS = {
   backSquat: { title: 'Perfect Your Squat: Step-By-Step Form Guide', url: 'https://www.youtube.com/watch?v=8Kls95w2jFA', source: 'Squat University', kind: 'video' },
   benchPress: { title: 'How to Bench Press', url: 'https://www.youtube.com/watch?v=BYKScL2sgCs', source: 'Alan Thrall', kind: 'video' },
   rdl: { title: 'How To: Romanian Deadlift', url: 'https://www.youtube.com/watch?v=jEy_czb3RKA', source: 'Alan Thrall', kind: 'video' },
-  trapBarDeadlift: { title: 'The Trap Bar Deadlift', url: 'https://www.youtube.com/watch?v=TU2xZ7s4jus', source: 'Alan Thrall', kind: 'video' },
-  deadlift: { title: 'How To Deadlift: 5 Step Deadlift', url: 'https://www.youtube.com/watch?v=MBbyAqvTNkU', source: 'Alan Thrall', kind: 'video' },
   overheadPress: { title: 'Learning to Press', url: 'https://www.youtube.com/watch?v=8dacy5hjaE8', source: 'Starting Strength', kind: 'video' },
   latPulldown: { title: '8 Lat Pulldown Mistakes and How to Fix Them', url: 'https://www.youtube.com/watch?v=MyQVLFBwlJ8', source: 'Renaissance Periodization', kind: 'video' },
   pullUp: { title: 'Band-Assisted Pull-Up — form demo', url: 'https://www.youtube.com/watch?v=B_VkNQS5YLs', source: 'NASM', kind: 'video' },
   seatedRow: { title: 'Seated Cable Row — demo', url: 'https://www.youtube.com/watch?v=UCXxvVItLoM', source: 'Renaissance Periodization', kind: 'video' },
   inclineDbPress: { title: 'Two-Arm Incline Dumbbell Chest Press — demo', url: 'https://www.youtube.com/watch?v=JKnpHchOWPU', source: 'NASM', kind: 'video' },
-  splitSquat: { title: 'The Ultimate Bulgarian Split Squat Tutorial', url: 'https://www.youtube.com/watch?v=-4LVK1crLSw', source: 'Squat University', kind: 'video' },
-  hipThrust: { title: 'Proper Hip Thrust Form', url: 'https://www.youtube.com/watch?v=LM8XHLYJoYs', source: 'Bret Contreras', kind: 'video' },
   legPress: { title: 'Leg Press — form demo', url: 'https://www.youtube.com/watch?v=cDGOn-yfKJA', source: 'NASM', kind: 'video' },
-  legCurl: { title: 'Seated Leg Curl — form demo', url: 'https://www.youtube.com/watch?v=_2Kd0d-JEUM', source: 'NASM', kind: 'video' },
   lateralRaise: { title: 'Dumbbell Lateral Raise — demo', url: 'https://www.youtube.com/watch?v=XPPfnSEATJA', source: 'NASM', kind: 'video' },
   facePull: { title: 'Face Pull — form demo', url: 'https://www.youtube.com/watch?v=eTCBSFlCJ_s', source: 'NASM', kind: 'video' },
   pushdown: { title: 'Rope Pushdown — demo', url: 'https://www.youtube.com/watch?v=-xa-6cQaZKY', source: 'Renaissance Periodization', kind: 'video' },
   curl: { title: 'Alternating Dumbbell Curl — demo', url: 'https://www.youtube.com/watch?v=iixND1P2lik', source: 'Renaissance Periodization', kind: 'video' },
-  calfRaise: { title: '8 Calf Raise Mistakes and How to Fix Them', url: 'https://www.youtube.com/watch?v=Xa18jxyeSnM', source: 'Renaissance Periodization', kind: 'video' },
   hangingKneeRaise: { title: 'Hanging Knee Raise — demo', url: 'https://www.youtube.com/watch?v=RD_A-Z15ER4', source: 'Renaissance Periodization', kind: 'video' },
   smithSquat: { title: 'Exercise Tutorial: Smith Machine Squat', url: 'https://www.youtube.com/watch?v=iAcRGCsG_PY', source: 'Travis Tarrant', kind: 'video' },
   hackSquat: { title: 'How To Do A Machine Hack Squat', url: 'https://www.youtube.com/watch?v=VY8ko6ecfso', source: 'Live Lean TV', kind: 'video' },
   dbRdl: { title: 'Dumbbell Romanian Deadlift | Exercise Technique Library', url: 'https://www.youtube.com/watch?v=IJdUtnxAmNo', source: 'Dr. Jacob Goodin', kind: 'video' },
-  ballLegCurl: { title: 'Stability-Ball Leg Curl', url: 'https://www.youtube.com/watch?v=WXOHRzZIPBA', source: 'Testosterone Nation', kind: 'video' },
-  dbCalfRaise: { title: 'How To Do a Single Leg Dumbbell Calf Raise', url: 'https://www.youtube.com/watch?v=1D7s-VyLq0Y', source: 'Precision Nutrition', kind: 'video' },
-  bandPallof: { title: 'How To: Resistance Band Pallof Press', url: 'https://www.youtube.com/watch?v=lqPrSGXfL1Q', source: 'Fitness Lab', kind: 'video' },
-  cablePallof: { title: 'How To Perform The Standing Cable Pallof Press', url: 'https://www.youtube.com/watch?v=u4XcUc_3F5s', source: 'Exercise Healthcare Australia', kind: 'video' },
   dbBench: { title: 'How To: Dumbbell Bench Press | 3 Golden Rules', url: 'https://www.youtube.com/watch?v=Y_7aHqXeCfQ', source: 'ScottHermanFitness', kind: 'video' },
   oneArmRow: { title: 'One Arm Dumbbell Row', url: 'https://www.youtube.com/watch?v=PgpQ4-jHiq4', source: 'Bodybuilding.com', kind: 'video' },
   inclineMachinePress: { title: 'How To Do A Machine Incline Chest Press', url: 'https://www.youtube.com/watch?v=7_scLkTCwTU', source: 'Live Lean TV', kind: 'video' },
-  assistedPullupMachine: { title: 'How to use the Assisted Pull Up Machine', url: 'https://www.youtube.com/watch?v=THSFzwAqYgk', source: 'McMaster Marauders', kind: 'video' },
   cableLateralRaise: { title: 'How To Do A Standing Single Arm Cable Lateral Raise', url: 'https://www.youtube.com/watch?v=Az_0nsym9AY', source: 'Live Lean TV', kind: 'video' },
   overheadExtension: { title: 'Dumbbell Seated Overhead Tricep Extension', url: 'https://www.youtube.com/watch?v=dxdr8iSRLA8', source: 'OPEX Fitness', kind: 'video' },
   ezCurl: { title: 'Exercise Tutorial: EZ Bar Bicep Curl', url: 'https://www.youtube.com/watch?v=SDFZBaJcTsU', source: 'Travis Tarrant', kind: 'video' },
   seatedDbPress: { title: 'Seated Dumbbell Shoulder Press: Demonstration', url: 'https://www.youtube.com/watch?v=SSXS4Z8OkCg', source: 'StrengthLog', kind: 'video' },
-  smithSplitSquat: { title: 'How To Do Smith Machine Split Squat', url: 'https://www.youtube.com/watch?v=y8XdzYUGDaI', source: 'OriGym', kind: 'video' },
   captainsChair: { title: "How To Do A Captain's Chair Knee Raise", url: 'https://www.youtube.com/watch?v=7KDDZtaUaxw', source: 'Live Lean TV', kind: 'video' },
-  gobletSquat: { title: 'How To Do A Goblet Squat Correctly', url: 'https://www.youtube.com/watch?v=JO7D6GJ98wY', source: 'Jack Hanrahan Fitness', kind: 'video' },
-  chestSupportedRow: { title: 'Chest Supported Incline Dumbbell Row', url: 'https://www.youtube.com/watch?v=0-DXJiceG-0', source: 'OPEX Fitness', kind: 'video' },
   machineChestPress: { title: 'How To Use Gym Equipment: Seated Chest Press Machine', url: 'https://www.youtube.com/watch?v=Nv7TPc6btPk', source: 'GO Health Clubs', kind: 'video' },
-  hipThrustMachine: { title: 'How to Use the Hip Thrust Machine', url: 'https://www.youtube.com/watch?v=UlljOYPM57U', source: 'Gainesville Health & Fitness', kind: 'video' },
   reverseFly: { title: 'How To Do Reverse Pec Deck / Reverse Fly Machine', url: 'https://www.youtube.com/watch?v=e4dJ1QoxUtI', source: 'Train For Life', kind: 'video' },
+  pushUp: { title: 'The RIGHT Way To Do Push-Ups (PERFECT FORM)', url: 'https://www.youtube.com/watch?v=i9sTjhN4Z3M', source: 'Mind Pump TV', kind: 'video' },
+  dbSkullCrusher: { title: 'Dumbbell Skull Crusher Tutorial | Lying Triceps Exercise', url: 'https://www.youtube.com/watch?v=8ncEJDm7Cig', source: 'Lean Physique Lab', kind: 'video' },
+  cableOverheadExtension: { title: 'Overhead Rope Tricep Extensions (How To)', url: 'https://www.youtube.com/watch?v=AUsSlsBu5eg', source: 'Champion Method', kind: 'video' },
 } satisfies Record<string, Tutorial>;
 
 export type ExerciseLinkId = keyof typeof EXERCISE_LINKS;

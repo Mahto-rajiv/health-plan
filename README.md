@@ -40,7 +40,7 @@ lib/config.ts      program start, phases, budget and energy factors (single sour
 lib/phase.ts       program week and phase for a date
 lib/nutrition.ts   nutrient/cost maths (kcal from macros; all totals computed, never typed in)
 lib/meal-plans.ts  computed plans: daily totals, ranges, grocery list, monthly cost
-lib/training.ts    weekly schedule (fixed weekend, flexible weekday sessions), session length
+lib/training.ts    split order (any day), session length
 lib/storage.ts     hydration-safe localStorage store for the picked plan
 components/        UI primitives, app shell, feature components
 ```

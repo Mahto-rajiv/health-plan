@@ -9,7 +9,7 @@ export default function TrainingPage() {
     <>
       <PageHeader
         title="Training"
-        description="Up to 4 sessions a week for a beginner. Saturday (lower body) and Sunday (upper body) are fixed. Two full-body weekday sessions happen only if you can be at the gym by 9 PM. Every session starts with a warm-up. Missed sessions are skipped, not made up."
+        description="A beginner split: Chest + Triceps, Back + Biceps, Legs + Shoulders, done in order on any 5 days a week. On work days, go only if you can be at the gym by 9 PM. Every session starts with a warm-up."
       />
       <TrainingView />
     </>

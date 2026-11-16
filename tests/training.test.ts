@@ -2,11 +2,11 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import * as TRAINING from '../lib/data/training';
-import { FLEX_WINDOWS, SESSIONS, SESSION_ORDER, type Exercise } from '../lib/data/training';
+import { GYM_DAYS_PER_WEEK, MAX_DAYS_IN_A_ROW, SESSIONS, SESSION_ORDER, type Exercise, type SessionId } from '../lib/data/training';
 import * as RECOVERY from '../lib/data/recovery';
 import { EXERCISE_LINKS, EXERCISE_TUTORIALS } from '../lib/data/tutorials';
 import { REFS, type RefId } from '../lib/data/references';
-import { activeExercises, plannedFor, sessionsFor, sessionTime, TIME_MODEL, warmupMinutes } from '../lib/training';
+import { activeExercises, isWorkday, nextSession, plannedFor, sessionsFor, sessionTime, TIME_MODEL, warmupMinutes } from '../lib/training';
 import { parsePhase, phaseOn, weekLabel } from '../lib/phase';
 import { startsLabel } from '../lib/dates';
 
@@ -17,39 +17,30 @@ const WEEKS = [1, 2, 3, 8, 12];
 const allExercises = (): Exercise[] => Object.values(SESSIONS).flatMap((s) => s.exercises);
 
 describe('sessions', () => {
+  // Any session can fall on a work evening, so every one keeps the work-evening limit: 60 min including
+  // the warm-up (owner), planned to ≤ 55 min. The time constants (40 s a set, 1 min setup) are estimates,
+  // not timed, so the plan keeps a 5-min (~8%) margin.
   for (const id of SESSION_ORDER) {
-    const s = SESSIONS[id];
-    if (s.slot === 'weekday') {
-      // Hard limit 60 min including the warm-up (owner). Planned to ≤ 55 min: the time constants
-      // (40 s a set, 1 min setup) are estimates, not timed, so the plan keeps a 5-min (~8%) margin.
-      it(`${id}: warm-up included, ≤ 60 min (planned ≤ 55) and ≤ 5 exercises in every week`, () => {
-        for (const week of WEEKS) {
-          const t = sessionTime(id, week);
-          const n = activeExercises(id, week).length;
-          assert.ok(n <= 5, `${id} week ${week}: ${n} exercises`);
-          assert.ok(t.warmup > 0 && t.total > t.warmup, `${id} week ${week}: warm-up not counted`);
-          assert.ok(t.total <= 60, `${id} week ${week}: ${t.total.toFixed(1)} min > 60 (${JSON.stringify(t)})`);
-          assert.ok(t.total <= 55, `${id} week ${week}: ${t.total.toFixed(1)} min > 55 planned (${JSON.stringify(t)})`);
-        }
-      });
-    } else {
-      it(`${id}: 60–75 min including the warm-up, in every week`, () => {
-        for (const week of WEEKS) {
-          const t = sessionTime(id, week);
-          assert.ok(t.total >= 60 && t.total <= 75, `${id} week ${week}: ${t.total.toFixed(1)} min, outside 60–75 (${JSON.stringify(t)})`);
-        }
-      });
-    }
+    it(`${id}: warm-up included, ≤ 60 min (planned ≤ 55) and ≤ 5 exercises in every week`, () => {
+      for (const week of WEEKS) {
+        const t = sessionTime(id, week);
+        const n = activeExercises(id, week).length;
+        assert.ok(n <= 5, `${id} week ${week}: ${n} exercises`);
+        assert.ok(t.warmup > 0 && t.total > t.warmup, `${id} week ${week}: warm-up not counted`);
+        assert.ok(t.total <= 60, `${id} week ${week}: ${t.total.toFixed(1)} min > 60 (${JSON.stringify(t)})`);
+        assert.ok(t.total <= 55, `${id} week ${week}: ${t.total.toFixed(1)} min > 55 planned (${JSON.stringify(t)})`);
+      }
+    });
   }
 
   it('session time is the sum of its parts, using the stated constants', () => {
-    // Full body B week 3 by hand: warm-up 10; press 3×(40+180)s + 1 = 12; pull-up 3×(40+150)s + 1 + 1 lighter set = 11.5;
-    // goblet squat 3×(40+90)s + 1 = 7.5; hip thrust 2×(40+120)s + 1 + 1 lighter set = 7.33; face pull 2×(40+60)s + 1 = 4.33; no finish.
+    // Legs + Shoulders week 3 by hand: warm-up 11; squat 3×(40+180)s + 1 = 12; Romanian deadlift 3×(40+120)s + 1 + 1 lighter set = 10;
+    // leg press 2×(40+120)s + 1 = 6.33; shoulder press 3×(40+120)s + 1 + 1 lighter set = 10; lateral raise 2×(40+60)s + 1 = 4.33; no finish.
     assert.deepEqual(TIME_MODEL, { workSec: 40, perSideWorkSec: 80, setupMin: 1, rampSetMin: 1 });
-    const t = sessionTime('fullB', 3);
-    assert.equal(t.warmup, 10);
+    const t = sessionTime('legsShoulders', 3);
+    assert.equal(t.warmup, 11);
     assert.equal(t.finisher, 0);
-    assert.ok(Math.abs(t.total - (10 + 12 + 11.5 + 7.5 + (320 / 60 + 2) + (200 / 60 + 1))) < 1e-9, String(t.total));
+    assert.ok(Math.abs(t.total - (11 + 12 + 10 + (320 / 60 + 1) + 10 + (200 / 60 + 1))) < 1e-9, String(t.total));
     for (const sid of SESSION_ORDER) {
       const st = sessionTime(sid, 3);
       const sum = st.warmup + st.exercises.reduce((a, e) => a + e.minutes, 0) + st.finisher;
@@ -113,52 +104,68 @@ describe('sessions', () => {
   });
 });
 
-describe('split (frequency)', () => {
-  const MUSCLES = ['thighs', 'glutes', 'chest', 'back', 'shoulders'];
-  const sessionsHitting = (ids: (keyof typeof SESSIONS)[], m: string) => ids.filter((id) => SESSIONS[id].exercises.some((e) => e.muscles.toLowerCase().includes(m))).length;
+describe('split', () => {
+  const text = (id: SessionId) => SESSIONS[id].exercises.map((e) => e.muscles.toLowerCase()).join(' ');
+  const LEGS = /thighs|glutes|calves/;
 
-  it('Saturday and Sunday train different halves of the body and together cover every main muscle', () => {
-    assert.match(SESSIONS.lower.name, /Lower body/);
-    assert.match(SESSIONS.upper.name, /Upper body/);
-    for (const m of MUSCLES) assert.ok(sessionsHitting(['lower', 'upper'], m) >= 1, m);
-  });
-
-  it('the weekday sessions are full body: each trains legs and upper body', () => {
-    for (const id of ['fullA', 'fullB'] as const) {
-      const text = SESSIONS[id].exercises.map((e) => e.muscles.toLowerCase()).join(' ');
-      assert.match(text, /thighs|glutes/, id);
-      assert.match(text, /shoulders|chest|back/, id);
+  it('three split sessions, named for their two muscle groups: Chest + Triceps, Back + Biceps, Legs + Shoulders', () => {
+    assert.deepEqual(SESSION_ORDER, ['chestTri', 'backBi', 'legsShoulders']);
+    assert.deepEqual(Object.keys(SESSIONS).sort(), [...SESSION_ORDER].sort());
+    for (const id of SESSION_ORDER) {
+      const s = SESSIONS[id];
+      assert.equal(s.short, s.groups.join(' + '), id);
+      assert.ok(s.name.startsWith(s.short), id);
     }
   });
 
-  it('a full week trains every main muscle at least twice; weekend plus either weekday session trains at least 4 of 5 twice', () => {
-    for (const m of MUSCLES) assert.ok(sessionsHitting(['lower', 'upper', 'fullA', 'fullB'], m) >= 2, m);
-    for (const extra of ['fullA', 'fullB'] as const) {
-      const twice = MUSCLES.filter((m) => sessionsHitting(['lower', 'upper', extra], m) >= 2);
-      assert.ok(twice.length >= 4, `${extra}: twice only for ${twice}`);
+  it('no full-body and no lower-body-only session: only Legs + Shoulders trains legs, and it also trains shoulders', () => {
+    for (const id of SESSION_ORDER) {
+      assert.doesNotMatch(SESSIONS[id].name, /full body|full-body|lower body|upper body/i, id);
+      if (id !== 'legsShoulders') assert.doesNotMatch(text(id), LEGS, `${id} trains legs`);
     }
+    assert.match(text('legsShoulders'), LEGS);
+    const shoulderOnly = SESSIONS.legsShoulders.exercises.filter((e) => /shoulder/i.test(e.muscles) && !LEGS.test(e.muscles.toLowerCase()));
+    assert.ok(shoulderOnly.length >= 2);
+  });
+
+  it('each session starts with its main lift and trains its two groups', () => {
+    const want: Record<SessionId, [RegExp, RegExp]> = { chestTri: [/chest/, /triceps/], backBi: [/back/, /biceps/], legsShoulders: [/thighs/, /shoulders/] };
+    for (const id of SESSION_ORDER) {
+      assert.ok(SESSIONS[id].exercises[0].isMainLift, `${id}: first exercise is not a main lift`);
+      for (const re of want[id]) assert.match(text(id), re, `${id}: ${re}`);
+    }
+  });
+
+  it('each arm muscle gets direct work: a triceps-only and a biceps-only exercise', () => {
+    assert.ok(SESSIONS.chestTri.exercises.some((e) => /^triceps/i.test(e.muscles)));
+    assert.ok(SESSIONS.backBi.exercises.some((e) => /^biceps$/i.test(e.muscles)));
   });
 });
 
-describe('schedule', () => {
-  it('Saturday is the lower-body session and Sunday the upper-body one', () => {
-    assert.deepEqual(sessionsFor(SAT), ['lower']);
-    assert.deepEqual(sessionsFor(SUN), ['upper']);
+describe('schedule (any day of the week)', () => {
+  it('every session is allowed on every day, Monday to Sunday, in the same order', () => {
+    for (const d of [MON, TUE, WED, THU, FRI, SAT, SUN]) assert.deepEqual(sessionsFor(), SESSION_ORDER, d);
   });
 
-  it('weekday windows are unchanged: Full body A Mon–Wed, Full body B Tue–Fri; Tue and Wed offer both', () => {
-    assert.deepEqual(sessionsFor(MON), ['fullA']);
-    assert.deepEqual(sessionsFor(TUE), ['fullA', 'fullB']);
-    assert.deepEqual(sessionsFor(WED), ['fullA', 'fullB']);
-    assert.deepEqual(sessionsFor(THU), ['fullB']);
-    assert.deepEqual(sessionsFor(FRI), ['fullB']);
-    assert.ok(!FLEX_WINDOWS.fullB.includes('Monday'));
-    assert.ok(!FLEX_WINDOWS.fullA.includes('Thursday') && !FLEX_WINDOWS.fullA.includes('Friday'));
+  it('the order goes round: Chest + Triceps → Back + Biceps → Legs + Shoulders → Chest + Triceps', () => {
+    assert.equal(nextSession('chestTri'), 'backBi');
+    assert.equal(nextSession('backBi'), 'legsShoulders');
+    assert.equal(nextSession('legsShoulders'), 'chestTri');
   });
 
-  it('tomorrow line names the session(s) and the 9 PM cut-off on weekdays', () => {
-    assert.match(plannedFor(SAT), /Lower body/);
-    assert.equal(plannedFor(TUE), 'Full body A or Full body B if you can be at the gym by 9:00 PM');
+  it('the 9 PM arrival rule applies on work days (Mon–Fri) only, and the tomorrow line names no fixed session', () => {
+    for (const d of [MON, TUE, WED, THU, FRI]) assert.ok(isWorkday(d), d);
+    for (const d of [SAT, SUN]) assert.ok(!isWorkday(d), d);
+    assert.equal(plannedFor(TUE), 'The next session in the order, or a day off. Gym only if you can be there by 9:00 PM');
+    assert.equal(plannedFor(SAT), 'The next session in the order, or a day off');
+  });
+
+  it('5 gym days a week fit the rest rule: at most 3 days in a row needs at least 2 days off in 7', () => {
+    assert.equal(GYM_DAYS_PER_WEEK, 5);
+    assert.equal(MAX_DAYS_IN_A_ROW, 3);
+    // In a repeating 7-day week, every run of training days ends with a day off.
+    const minDaysOff = Math.ceil(7 / (MAX_DAYS_IN_A_ROW + 1));
+    assert.ok(GYM_DAYS_PER_WEEK + minDaysOff <= 7, `${GYM_DAYS_PER_WEEK} days need ${minDaysOff} days off`);
   });
 });
 

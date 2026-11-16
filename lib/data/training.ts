@@ -1,44 +1,38 @@
-import type { DayName } from './meal-plans';
 import type { ExerciseLinkId, ExerciseTutorialId } from './tutorials';
 
-// ─── Program design (Nov 2026 redesign; evidence in PROGRESS.md) ──────────────
+// ─── Program design (16 Nov 2026: split routine; evidence in PROGRESS.md) ─────
+// The owner asked for a split (two muscle groups a session), no full-body and no
+// lower-body-only session, and no fixed weekdays.
 // Evidence (abstracts checked Nov 2026):
 //  • Muscle size depends on weekly hard sets, not on how often a muscle is
-//    trained. Schoenfeld 2016 (Sports Med) favoured ≥ 2×/week, but the larger
-//    Schoenfeld 2019 (J Sports Sci, 25 studies) found no difference when weekly
-//    sets are equal. Pelland 2026 (Sports Med, 67 studies) agrees: volume matters
-//    for size; frequency has little or no effect on size.
-//  • Strength does rise with frequency: Pelland 2026 (with diminishing returns);
-//    ACSM 2026 lists ≥ 2 sessions a week for strength. Grgic 2018 found the
-//    frequency effect mostly explained by extra sets, strongest for multi-joint
-//    lifts. Early strength gains are partly skill (Rutherford & Jones 1986), and
-//    skill needs practice, so beginners benefit from doing each main lift twice
-//    a week. ACSM 2009 advises 2–3 days a week for novices.
-//  • So two muscle groups a day (each muscle once a week) can build size if
-//    weekly sets match, but it practises each lift only once a week, and a missed
-//    session means those muscles aren't trained that week. Training each muscle
-//    2× a week is the better choice for a strength-first beginner.
+//    trained (Schoenfeld 2019; Pelland 2026). A split and a full-body plan give
+//    similar strength and size when weekly sets match (Ramos-Campo 2024, 14
+//    studies; Pedersen 2022 in untrained women). Two small studies in trained
+//    men disagree in opposite directions (Schoenfeld 2015, Bartolomei 2021).
+//  • Recovery: an untrained muscle can need about 72 h to recover fully after a
+//    hard session (Radaelli 2012). Three sessions over 5 days gives each
+//    muscle about that much time.
+//  • Arms: in beginners, presses and pulls grow the arms about as much as adding
+//    curls and extensions (Gentil 2013, 2015); one small study found curls did
+//    better (Mannarino 2021). So each arm muscle keeps direct work.
+//  • Strength rises a little with frequency (Pelland 2026, diminishing returns;
+//    Grgic 2018: mostly through extra sets). So 5 gym days a week (each muscle
+//    about 1.7 times a week) is better for strength than 3.
+//  • Sets: about 10 hard sets per muscle a week is a sound target for growth
+//    (Schoenfeld 2017). Beginners grow on less.
 //
-// The split: up to 4 sessions a week, built around the two days that always
-// happen (Saturday and Sunday) and two weekday sessions that happen only when
-// you can be at the gym by 9 PM.
-//  • Saturday: lower body. Sunday: upper body. Back-to-back days, so they train
-//    different halves of the body. On their own they train every muscle once.
-//  • Weekday A (Mon–Wed) and Weekday B (Tue–Fri) are full-body sessions. A starts
-//    with the legs (deadlift), B with the upper body (overhead press). Either one
-//    adds a second session for every main muscle, so a week with only one weekday
-//    session still trains most muscles twice. The old upper/lower weekdays lost
-//    half the body's second session whenever one was missed.
-//  • Each main lift is practised twice a week when the week is complete: squat
-//    pattern (back squat, split squat, goblet squat), hinge (Romanian deadlift,
-//    deadlift, hip thrust), horizontal press (bench, dumbbell bench), overhead
-//    press, rows and pull-downs/pull-ups.
-//  • Weekly hard sets with all 4 sessions (from week 3): thighs (front) 10,
-//    back of thighs and glutes 11, chest 8, back 12, shoulders 7 (plus all the
-//    presses), arms 2 each plus the presses and pulls. Weekend only: 5–6 per big
-//    muscle, still enough for a beginner to progress.
-//  • Effort: stop with 1–3 good reps left (3–4 in weeks 1–2). Loads: 4–8 reps on
-//    the main barbell lifts for strength, 8–20 on the rest.
+// The split: three sessions in a fixed order, on any days of the week.
+//  1. Chest + Triceps (bench press first)
+//  2. Back + Biceps (pull-ups first)
+//  3. Legs + Shoulders (squat first)
+// Then back to 1. A gym day always does the next session in the order.
+//  • Weekly hard sets from week 3 (per round of 3 sessions; ×1.7 for a 5-day
+//    week): chest 8, triceps 5 plus all presses, back 6 plus 3 face
+//    pulls, biceps 3 plus all pulls, front of thighs 5, back of thighs and glutes
+//    3 plus the squat, shoulders 5 plus the presses and face pulls, core 2.
+//  • Main lifts: bench press, pull-up, squat. 5–8 reps (pull-ups 5–10).
+//  • Effort: stop with 1–3 good reps left (3–4 in weeks 1–2). Loads: 8–20 reps
+//    on the smaller exercises.
 //  • Rest: 2–3 min on main lifts, 60–120 s on smaller ones.
 //  • Adding weight: reps first, then the smallest weight step.
 //  • Easy week: when the warning signs show, or at the latest every 8–10 weeks.
@@ -51,10 +45,11 @@ import type { ExerciseLinkId, ExerciseTutorialId } from './tutorials';
 // Work = 40 s per set (80 s for one-side-at-a-time sets). Rest is counted after
 // every set, including the last one. An exercise paired with another (done
 // straight after it, at the same spot) adds only its work time.
-// Limits: weekday sessions ≤ 60 min including the warm-up (planned to ≤ 55 min,
-// a 5-minute margin because the times are estimates); weekend 60–75 min.
+// Limit: any session can fall on a work evening, so every session is ≤ 60 min
+// including the warm-up (planned to ≤ 55 min, a 5-minute margin because the
+// times are estimates), with at most 5 exercises.
 
-export type SessionId = 'lower' | 'upper' | 'fullA' | 'fullB';
+export type SessionId = 'chestTri' | 'backBi' | 'legsShoulders';
 
 /** What to do when the equipment is taken: same muscles, similar movement, different equipment. */
 export interface Alternative {
@@ -109,10 +104,10 @@ export interface Session {
   id: SessionId;
   name: string;
   short: string;
+  /** The two muscle groups this session trains. */
+  groups: [string, string];
   focus: string;
   minutes: string;
-  /** Weekend sessions are fixed (60–75 min, including a 10 min finish); weekday ones are flexible and ≤ 60 min. */
-  slot: 'weekend' | 'weekday';
   /** Done in order before the first exercise. Its minutes add up to the warm-up time. */
   warmup: WarmupStep[];
   exercises: Exercise[];
@@ -179,15 +174,213 @@ const DRILL = {
 // ─── Sessions ─────────────────────────────────────────────────────────────────
 
 const LIGHTER_SET_CUE = 'Lighter set first: 1 set of 5 at about half your work weight.';
+const FINISH = 'Nothing extra needed. Go home and eat. On a day off work, you may add 8–10 min of easy bike and the longer mobility routine.';
 
 export const SESSIONS: Record<SessionId, Session> = {
-  lower: {
-    id: 'lower',
-    name: 'Lower body — Squat day (Saturday)',
-    short: 'Lower body',
-    focus: 'Squat strength, plus the back of the legs, calves and core.',
-    minutes: '60–75 min',
-    slot: 'weekend',
+  chestTri: {
+    id: 'chestTri',
+    name: 'Chest + Triceps — Bench day',
+    short: 'Chest + Triceps',
+    groups: ['Chest', 'Triceps'],
+    focus: 'Three presses for the chest, then two triceps exercises. The bench press is the main strength lift.',
+    minutes: '45–50 min (estimate)',
+    warmup: [easyCardio('Rower or bike'), DRILL.armCircles, DRILL.pullAparts, DRILL.openBook, rampUp('bench press', 'Empty bar')],
+    exercises: [
+      {
+        id: 'bench',
+        name: 'Barbell bench press',
+        muscles: 'Chest, front of shoulders, triceps',
+        equipment: 'Barbell and bench with safety pins',
+        sets: { learn: 3, build: 3 },
+        reps: '5–8',
+        repRange: [5, 8],
+        repsLeft: '2',
+        restSec: 180,
+        increment: '+2.5 kg',
+        cues: [
+          'Lie with your eyes under the bar.',
+          'Pull your shoulder blades back and down. Keep a small arch.',
+          'Feet flat on the floor.',
+          'Lower the bar slowly to your lower chest. Forearms straight up and down.',
+          'Press up and slightly back toward your face.',
+          'Always use the safety pins or a spotter.',
+        ],
+        alternative: { name: 'Dumbbell bench press', equipment: 'Dumbbells and a flat bench', note: 'Same sets and reps.', link: 'dbBench' },
+        link: 'benchPress',
+        isMainLift: true,
+      },
+      {
+        id: 'incline-db',
+        name: 'Incline dumbbell press',
+        muscles: 'Upper chest, front of shoulders, triceps',
+        equipment: 'Dumbbells and an incline bench',
+        sets: { learn: 2, build: 3 },
+        reps: '8–12',
+        repRange: [8, 12],
+        repsLeft: '2',
+        restSec: 120,
+        increment: 'next dumbbell',
+        cues: ['Bench at 30°.', 'Lower until you feel a stretch in your chest.', 'Keep the elbows a little tucked in.'],
+        alternative: { name: 'Incline chest press machine', equipment: 'Incline chest press machine', link: 'inclineMachinePress' },
+        link: 'inclineDbPress',
+      },
+      {
+        id: 'chest-press',
+        name: 'Seated chest press machine',
+        muscles: 'Chest, triceps',
+        equipment: 'Chest press machine',
+        sets: { learn: 2, build: 2 },
+        reps: '10–15',
+        repRange: [10, 15],
+        repsLeft: '1–2',
+        restSec: 90,
+        increment: 'next pin',
+        cues: ['Handles at mid-chest height.', 'Shoulder blades back against the pad.', 'Press out, then take 2–3 s to come back.'],
+        alternative: { name: 'Push-up', equipment: 'Floor (hands on a bench to make it easier)', note: 'Same sets. Stop with 1–2 good reps left.', link: 'pushUp' },
+        link: 'machineChestPress',
+      },
+      {
+        id: 'pushdown',
+        name: 'Triceps rope pushdown',
+        muscles: 'Triceps',
+        equipment: 'Cable machine with a rope',
+        sets: { learn: 2, build: 3 },
+        reps: '10–15',
+        repRange: [10, 15],
+        repsLeft: '1–2',
+        restSec: 90,
+        increment: 'next pin',
+        cues: ['Elbows stay at your sides.', 'Pull the rope apart at the bottom.', 'Let it up slowly.'],
+        alternative: { name: 'Dumbbell skull crusher', equipment: 'Dumbbells and a flat bench', note: 'Lie on the bench. Bend only at the elbows.', link: 'dbSkullCrusher' },
+        link: 'pushdown',
+      },
+      {
+        id: 'overhead-ext',
+        name: 'Overhead dumbbell triceps extension',
+        muscles: 'Triceps (long head, stretched overhead)',
+        equipment: 'One dumbbell, held in both hands',
+        sets: { learn: 2, build: 2 },
+        reps: '10–15',
+        repRange: [10, 15],
+        repsLeft: '1–2',
+        restSec: 60,
+        increment: 'next dumbbell',
+        cues: ['Sit on a bench with back support.', 'Lower the dumbbell behind your head. Elbows point up.', 'Straighten your arms without arching your back.'],
+        alternative: { name: 'Overhead cable triceps extension', equipment: 'Cable machine with a rope', note: 'Face away from the machine.', link: 'cableOverheadExtension' },
+        link: 'overheadExtension',
+      },
+    ],
+    finisher: FINISH,
+    finisherMin: 0,
+  },
+  backBi: {
+    id: 'backBi',
+    name: 'Back + Biceps — Pull-up day',
+    short: 'Back + Biceps',
+    groups: ['Back', 'Biceps'],
+    focus: 'A vertical pull, a row and face pulls for the back, then curls and core. The pull-up is the main strength lift.',
+    minutes: '45–50 min (estimate)',
+    warmup: [
+      easyCardio('Rower or bike'),
+      DRILL.catCow,
+      DRILL.pullAparts,
+      DRILL.openBook,
+      {
+        name: 'Lighter sets for the pull-up',
+        how: 'Two or three easy sets that get harder. Rest about 30 s between them. They are practice, not work.',
+        dose: 'Lat pulldown, light × 10, then medium × 5; or pull-ups with extra help × 5',
+        minutes: 3,
+        kind: 'ramp',
+      },
+    ],
+    exercises: [
+      {
+        id: 'pullup',
+        name: 'Pull-up (with help until you can do 3 × 5)',
+        muscles: 'Sides of the back, biceps, upper back',
+        equipment: 'Pull-up bar with a band, or the assisted pull-up machine',
+        sets: { learn: 2, build: 3 },
+        reps: '5–10',
+        repRange: [5, 10],
+        repsLeft: '2',
+        restSec: 150,
+        increment: 'less help first; then more reps; then a little added weight',
+        cues: ['Start hanging with straight arms and your shoulders pulled down.', 'Pull your chest up to the bar.', 'Lower slowly, in about 2–3 s.'],
+        alternative: { name: 'Lat pulldown', equipment: 'Cable pulldown station', note: 'Same sets. 6–10 reps.', link: 'latPulldown' },
+        link: 'pullUp',
+        isMainLift: true,
+      },
+      {
+        id: 'cable-row',
+        name: 'Seated cable row',
+        muscles: 'Upper back, sides of the back, back of shoulders',
+        equipment: 'Cable row station',
+        sets: { learn: 2, build: 3 },
+        reps: '8–12',
+        repRange: [8, 12],
+        repsLeft: '2',
+        restSec: 120,
+        increment: 'next pin',
+        cues: ['Sit tall, chest up, small bend in the knees.', 'Pull the handle to your lower ribs, elbows close to your sides.', 'Let your shoulders reach forward at the start of each rep.'],
+        alternative: { name: 'One-arm dumbbell row', equipment: 'One dumbbell and a bench', note: 'One hand and knee on the bench.', link: 'oneArmRow' },
+        link: 'seatedRow',
+      },
+      {
+        id: 'face-pull',
+        name: 'Face pull',
+        muscles: 'Upper back, back of shoulders',
+        equipment: 'Cable machine with a rope',
+        sets: { learn: 2, build: 3 },
+        reps: '12–20',
+        repRange: [12, 20],
+        repsLeft: '2',
+        restSec: 60,
+        increment: 'add reps, then the next pin',
+        cues: ['Rope at forehead height.', 'Pull toward your eyes. Hands apart, thumbs back.', 'Pause 1 s, then let it back slowly.'],
+        alternative: { name: 'Reverse fly machine', equipment: 'Reverse fly (rear delt) machine', note: 'Sit facing the pad, arms straight out in front, open them wide.', link: 'reverseFly' },
+        link: 'facePull',
+      },
+      {
+        id: 'curl',
+        name: 'Dumbbell curl',
+        muscles: 'Biceps',
+        equipment: 'Dumbbells',
+        sets: { learn: 2, build: 3 },
+        reps: '10–15',
+        repRange: [10, 15],
+        repsLeft: '1–2',
+        restSec: 90,
+        increment: 'next dumbbell',
+        cues: ['Keep your elbows still.', 'Turn the palm up as you curl.', 'Lower slowly.', 'No swinging.'],
+        alternative: { name: 'EZ-bar curl', equipment: 'EZ bar', link: 'ezCurl' },
+        link: 'curl',
+      },
+      {
+        id: 'knee-raise',
+        name: 'Hanging knee raise',
+        muscles: 'Core, grip',
+        equipment: 'Pull-up bar',
+        sets: { learn: 2, build: 2 },
+        reps: '8–12',
+        repRange: [8, 12],
+        repsLeft: 'no swinging',
+        restSec: 60,
+        increment: 'lower more slowly, then straighten the legs',
+        cues: ['Curl your hips up toward your chest. Don’t just lift the knees.', 'Lower slowly.'],
+        alternative: { name: 'Knee raise on the captain’s chair', equipment: 'Captain’s chair (dip station with back pad)', link: 'captainsChair' },
+        link: 'hangingKneeRaise',
+      },
+    ],
+    finisher: FINISH,
+    finisherMin: 0,
+  },
+  legsShoulders: {
+    id: 'legsShoulders',
+    name: 'Legs + Shoulders — Squat day',
+    short: 'Legs + Shoulders',
+    groups: ['Legs', 'Shoulders'],
+    focus: 'Squat, Romanian deadlift and leg press for the legs, then a shoulder press and lateral raises. The squat is the main strength lift.',
+    minutes: '50–55 min (estimate)',
     warmup: [easyCardio('Bike or incline walk'), DRILL.legSwings, DRILL.worldsGreatest, DRILL.ankleRocks, rampUp('squat', 'Empty bar')],
     exercises: [
       {
@@ -217,11 +410,11 @@ export const SESSIONS: Record<SessionId, Session> = {
         name: 'Romanian deadlift',
         muscles: 'Back of thighs, glutes, lower back',
         equipment: 'Barbell',
-        sets: { learn: 3, build: 3 },
+        sets: { learn: 2, build: 3 },
         reps: '8–10',
         repRange: [8, 10],
         repsLeft: '2',
-        restSec: 150,
+        restSec: 120,
         increment: '+2.5–5 kg',
         rampSets: 1,
         cues: [
@@ -249,131 +442,20 @@ export const SESSIONS: Record<SessionId, Session> = {
         link: 'legPress',
       },
       {
-        id: 'leg-curl',
-        name: 'Seated or lying leg curl',
-        muscles: 'Back of thighs',
-        equipment: 'Leg curl machine',
+        id: 'db-press',
+        name: 'Seated dumbbell shoulder press',
+        muscles: 'Shoulders, triceps',
+        equipment: 'Dumbbells and an upright bench',
         sets: { learn: 2, build: 3 },
-        reps: '10–15',
-        repRange: [10, 15],
-        repsLeft: '1–2',
-        restSec: 60,
-        increment: 'next pin',
-        cues: ['Use the full movement.', 'Squeeze at the top.', 'Take 2–3 s to let it back.'],
-        alternative: { name: 'Stability-ball leg curl', equipment: 'Stability ball', note: 'Heels on the ball, hips up, roll it in and out.', link: 'ballLegCurl' },
-        link: 'legCurl',
-      },
-      {
-        id: 'calf-raise',
-        name: 'Standing calf raise',
-        muscles: 'Calves',
-        equipment: 'Calf raise machine',
-        sets: { learn: 2, build: 2 },
-        reps: '10–15',
-        repRange: [10, 15],
-        repsLeft: '1–2',
-        restSec: 60,
-        increment: 'next pin',
-        cues: ['Let the heels drop for a full stretch. Pause 1 s.', 'Rise as high as you can.'],
-        alternative: { name: 'One-leg dumbbell calf raise', equipment: 'One dumbbell and a step', note: 'Hold a rack with the free hand.', link: 'dbCalfRaise' },
-        link: 'calfRaise',
-      },
-      {
-        id: 'pallof',
-        name: 'Cable Pallof press',
-        muscles: 'Core (stops your body from twisting)',
-        equipment: 'Cable machine',
-        sets: { learn: 2, build: 2 },
-        reps: '8–10 per side',
-        repRange: [8, 10],
-        repsLeft: 'slow, perfect form',
-        restSec: 60,
-        increment: 'next pin when 2 × 10 per side is easy',
-        perSide: true,
-        cues: ['Stand side-on to the cable, handle at your chest.', 'Press it straight out and hold 2 s. Don’t let it pull you round.', 'Bring it back slowly.'],
-        alternative: { name: 'Band Pallof press', equipment: 'Resistance band tied to a rack', link: 'bandPallof' },
-        link: 'cablePallof',
-      },
-    ],
-    finisher: 'Easy bike for 8 min (you can still talk in full sentences). Then hip flexor stretch and couch stretch, 30 s per side.',
-    finisherMin: 10,
-  },
-  upper: {
-    id: 'upper',
-    name: 'Upper body — Bench day (Sunday)',
-    short: 'Upper body',
-    focus: 'Pushing and pulling. The bench press is the main strength lift.',
-    minutes: '60–75 min',
-    slot: 'weekend',
-    warmup: [easyCardio('Rower or bike'), DRILL.armCircles, DRILL.pullAparts, DRILL.openBook, rampUp('bench press', 'Empty bar')],
-    exercises: [
-      {
-        id: 'bench',
-        name: 'Barbell bench press',
-        muscles: 'Chest, front of shoulders, triceps',
-        equipment: 'Barbell and bench with safety pins',
-        sets: { learn: 3, build: 3 },
-        reps: '5–8',
-        repRange: [5, 8],
-        repsLeft: '2',
-        restSec: 180,
-        increment: '+2.5 kg',
-        cues: [
-          'Lie with your eyes under the bar.',
-          'Pull your shoulder blades back and down. Keep a small arch.',
-          'Feet flat on the floor.',
-          'Lower the bar slowly to your lower chest. Forearms straight up and down.',
-          'Press up and slightly back toward your face.',
-          'Always use the safety pins or a spotter.',
-        ],
-        alternative: { name: 'Dumbbell bench press', equipment: 'Dumbbells and a flat bench', note: 'Same sets and reps.', link: 'dbBench' },
-        link: 'benchPress',
-        isMainLift: true,
-      },
-      {
-        id: 'cable-row',
-        name: 'Seated cable row',
-        muscles: 'Upper back, sides of the back, back of shoulders',
-        equipment: 'Cable row station',
-        sets: { learn: 3, build: 3 },
-        reps: '8–12',
-        repRange: [8, 12],
-        repsLeft: '2',
-        restSec: 120,
-        increment: 'next pin',
-        cues: ['Sit tall, chest up, small bend in the knees.', 'Pull the handle to your lower ribs, elbows close to your sides.', 'Let your shoulders reach forward at the start of each rep.'],
-        alternative: { name: 'One-arm dumbbell row', equipment: 'One dumbbell and a bench', note: 'One hand and knee on the bench.', link: 'oneArmRow' },
-        link: 'seatedRow',
-      },
-      {
-        id: 'incline-db',
-        name: 'Incline dumbbell press',
-        muscles: 'Upper chest, front of shoulders, triceps',
-        equipment: 'Dumbbells and an incline bench',
-        sets: { learn: 2, build: 2 },
         reps: '8–12',
         repRange: [8, 12],
         repsLeft: '2',
         restSec: 120,
         increment: 'next dumbbell',
-        cues: ['Bench at 30°.', 'Lower until you feel a stretch in your chest.', 'Keep the elbows a little tucked in.'],
-        alternative: { name: 'Incline chest press machine', equipment: 'Incline chest press machine', link: 'inclineMachinePress' },
-        link: 'inclineDbPress',
-      },
-      {
-        id: 'pulldown',
-        name: 'Lat pulldown',
-        muscles: 'Sides of the back, biceps',
-        equipment: 'Cable pulldown station',
-        sets: { learn: 2, build: 3 },
-        reps: '8–12',
-        repRange: [8, 12],
-        repsLeft: '1–2',
-        restSec: 90,
-        increment: 'next pin (+2.5–5 kg)',
-        cues: ['Lean back a little, chest up.', 'Pull the bar to your upper chest by driving the elbows down.', 'Let your arms stretch fully at the top.'],
-        alternative: { name: 'Assisted pull-up', equipment: 'Assisted pull-up machine', note: 'Choose enough help to get the reps.', link: 'assistedPullupMachine' },
-        link: 'latPulldown',
+        rampSets: 1,
+        cues: [LIGHTER_SET_CUE, 'Back against the pad, feet flat.', 'Start with the dumbbells at your ears, palms forward.', 'Press up until your arms are straight. Lower slowly.'],
+        alternative: { name: 'Standing barbell overhead press', equipment: 'Barbell in a rack', note: 'Same sets. Start light: about the weight of both dumbbells together.', link: 'overheadPress' },
+        link: 'seatedDbPress',
       },
       {
         id: 'lateral',
@@ -390,272 +472,33 @@ export const SESSIONS: Record<SessionId, Session> = {
         alternative: { name: 'One-arm cable lateral raise', equipment: 'Cable machine, low pulley', link: 'cableLateralRaise' },
         link: 'lateralRaise',
       },
-      {
-        id: 'pushdown',
-        name: 'Triceps rope pushdown (paired with the curl)',
-        muscles: 'Triceps',
-        equipment: 'Cable machine with a rope',
-        sets: { learn: 2, build: 2 },
-        reps: '10–15',
-        repRange: [10, 15],
-        repsLeft: '1–2',
-        restSec: 90,
-        increment: 'next pin',
-        cues: ['Do a set of curls straight after each pushdown set, then rest.', 'Elbows stay at your sides.', 'Pull the rope apart at the bottom.', 'Let it up slowly.'],
-        alternative: { name: 'Overhead dumbbell triceps extension', equipment: 'One dumbbell, held in both hands', link: 'overheadExtension' },
-        link: 'pushdown',
-      },
-      {
-        id: 'curl',
-        name: 'Dumbbell curl',
-        muscles: 'Biceps',
-        equipment: 'Dumbbells',
-        sets: { learn: 2, build: 2 },
-        reps: '10–15',
-        repRange: [10, 15],
-        repsLeft: '1–2',
-        restSec: 90,
-        increment: 'next dumbbell',
-        pairedWith: 'pushdown',
-        cues: ['Done straight after each pushdown set; the rest comes after the curls.', 'Keep your elbows still.', 'Turn the palm up as you curl.', 'No swinging.'],
-        alternative: { name: 'EZ-bar curl', equipment: 'EZ bar', link: 'ezCurl' },
-        link: 'curl',
-      },
     ],
-    finisher: 'Easy bike or incline walk for 8 min (you can still talk in full sentences). Then 2 min of stretching. It counts toward your weekly cardio.',
-    finisherMin: 10,
-  },
-  fullA: {
-    id: 'fullA',
-    name: 'Full body A — Deadlift day (weekday)',
-    short: 'Full body A',
-    focus: 'Legs first: the deadlift is the main strength lift, then one-leg work, a press, a row and core. Plan on 55 min or less.',
-    minutes: '45–50 min (estimate)',
-    slot: 'weekday',
-    warmup: [easyCardio('Bike or incline walk'), DRILL.catCow, DRILL.worldsGreatest, rampUp('deadlift', 'Empty bar (or a light weight)')],
-    exercises: [
-      {
-        id: 'deadlift',
-        name: 'Trap-bar deadlift',
-        muscles: 'Back of the body, thighs, grip',
-        equipment: 'Trap bar (hex bar)',
-        sets: { learn: 2, build: 3 },
-        reps: '4–6',
-        repRange: [4, 6],
-        repsLeft: '2',
-        restSec: 180,
-        increment: '+5 kg while you are new, later +2.5 kg',
-        cues: [
-          'Stand in the middle of the bar.',
-          'Hips down, chest up. Pull the bar up just enough to take the slack out.',
-          'Push the floor away. Hips and shoulders rise together.',
-          'Let the bar settle on the floor between reps. No bouncing.',
-        ],
-        alternative: { name: 'Barbell deadlift', equipment: 'Straight barbell', note: 'Same sets and reps. Start lighter: it is harder to learn.', link: 'deadlift' },
-        link: 'trapBarDeadlift',
-        isMainLift: true,
-      },
-      {
-        id: 'split-squat',
-        name: 'Bulgarian split squat',
-        muscles: 'Front of thighs, glutes, balance',
-        equipment: 'Dumbbells and a bench',
-        sets: { learn: 2, build: 2 },
-        reps: '8–12 per leg',
-        repRange: [8, 12],
-        repsLeft: '2',
-        restSec: 90,
-        increment: 'bodyweight first, then the next dumbbell',
-        perSide: true,
-        cues: ['Back foot on a bench. Front foot far enough forward.', 'Drop straight down.', 'Leaning forward a little is fine.'],
-        alternative: { name: 'Smith machine split squat', equipment: 'Smith machine', note: 'Back foot on the floor or a low step.', link: 'smithSplitSquat' },
-        link: 'splitSquat',
-      },
-      {
-        id: 'db-bench',
-        name: 'Dumbbell bench press',
-        muscles: 'Chest, front of shoulders, triceps',
-        equipment: 'Dumbbells and a flat bench',
-        sets: { learn: 2, build: 3 },
-        reps: '8–12',
-        repRange: [8, 12],
-        repsLeft: '2',
-        restSec: 120,
-        increment: 'next dumbbell',
-        cues: ['Kick the dumbbells up from your knees as you lie back.', 'Shoulder blades back and down.', 'Lower until you feel a stretch in your chest, elbows a little tucked in.'],
-        alternative: { name: 'Seated chest press machine', equipment: 'Chest press machine', link: 'machineChestPress' },
-        link: 'dbBench',
-      },
-      {
-        id: 'cs-row',
-        name: 'Chest-supported dumbbell row',
-        muscles: 'Upper back, sides of the back, back of shoulders',
-        equipment: 'Dumbbells and an incline bench',
-        sets: { learn: 2, build: 3 },
-        reps: '8–12',
-        repRange: [8, 12],
-        repsLeft: '2',
-        restSec: 90,
-        increment: 'next dumbbell',
-        cues: ['Lie face down on a bench set to about 30°.', 'Pull the dumbbells toward your hips, elbows close.', 'Pause 1 s at the top. Lower slowly.'],
-        alternative: { name: 'Seated cable row', equipment: 'Cable row station', link: 'seatedRow' },
-        link: 'chestSupportedRow',
-      },
-      {
-        id: 'knee-raise',
-        name: 'Hanging knee raise',
-        muscles: 'Core, grip',
-        equipment: 'Pull-up bar',
-        sets: { learn: 2, build: 2 },
-        reps: '8–12',
-        repRange: [8, 12],
-        repsLeft: 'no swinging',
-        restSec: 60,
-        increment: 'lower more slowly, then straighten the legs',
-        cues: ['Curl your hips up toward your chest. Don’t just lift the knees.', 'Lower slowly.'],
-        alternative: { name: 'Knee raise on the captain’s chair', equipment: 'Captain’s chair (dip station with back pad)', link: 'captainsChair' },
-        link: 'hangingKneeRaise',
-      },
-    ],
-    finisher: 'None on weekdays. Go home, eat and sleep.',
-    finisherMin: 0,
-  },
-  fullB: {
-    id: 'fullB',
-    name: 'Full body B — Press day (weekday)',
-    short: 'Full body B',
-    focus: 'Upper body first: the overhead press and pull-up are the main lifts, then a squat, glutes and the back of the shoulders. Plan on 55 min or less.',
-    minutes: '50–55 min (estimate)',
-    slot: 'weekday',
-    warmup: [easyCardio('Rower or bike'), DRILL.pullAparts, DRILL.openBook, rampUp('overhead press', 'Empty bar')],
-    exercises: [
-      {
-        id: 'ohp',
-        name: 'Standing barbell overhead press',
-        muscles: 'Shoulders, triceps, upper back',
-        equipment: 'Barbell in a rack',
-        sets: { learn: 2, build: 3 },
-        reps: '5–8',
-        repRange: [5, 8],
-        repsLeft: '2',
-        restSec: 180,
-        increment: '+1–2.5 kg (use small plates if you have them)',
-        cues: [
-          'Hands just outside your shoulders, forearms straight up and down.',
-          'Squeeze your glutes. Keep your ribs down.',
-          'Tip your head back a little and press the bar straight up.',
-          'At the top, push your head forward under the bar.',
-        ],
-        alternative: { name: 'Seated dumbbell shoulder press', equipment: 'Dumbbells and an upright bench', note: 'Same sets and reps.', link: 'seatedDbPress' },
-        link: 'overheadPress',
-        isMainLift: true,
-      },
-      {
-        id: 'pullup',
-        name: 'Pull-up (with help until you can do 3 × 5)',
-        muscles: 'Sides of the back, biceps, upper back',
-        equipment: 'Pull-up bar with a band, or the assisted pull-up machine',
-        sets: { learn: 2, build: 3 },
-        reps: '5–10',
-        repRange: [5, 10],
-        repsLeft: '2',
-        restSec: 150,
-        increment: 'less help first; then more reps; then a little added weight',
-        rampSets: 1,
-        cues: [
-          'Lighter set first: 3–5 easy reps with more help from the machine or band.',
-          'Start hanging with straight arms and your shoulders pulled down.',
-          'Pull your chest up to the bar.',
-          'Lower slowly, in about 2–3 s.',
-        ],
-        alternative: { name: 'Lat pulldown', equipment: 'Cable pulldown station', note: 'Same sets and reps.', link: 'latPulldown' },
-        link: 'pullUp',
-        isMainLift: true,
-      },
-      {
-        id: 'goblet',
-        name: 'Goblet squat',
-        muscles: 'Front of thighs, glutes',
-        equipment: 'One dumbbell or kettlebell',
-        sets: { learn: 2, build: 3 },
-        reps: '8–12',
-        repRange: [8, 12],
-        repsLeft: '2–3',
-        restSec: 90,
-        increment: 'next dumbbell',
-        cues: ['Hold the dumbbell upright against your chest.', 'Sit down between your knees, chest up.', 'Elbows brush the inside of your knees at the bottom.', 'Keep it a little easier than Saturday: this is practice for the squat.'],
-        alternative: { name: 'Leg press', equipment: 'Leg press machine', link: 'legPress' },
-        link: 'gobletSquat',
-      },
-      {
-        id: 'hip-thrust',
-        name: 'Barbell hip thrust',
-        muscles: 'Glutes',
-        equipment: 'Barbell, pad and a bench',
-        sets: { learn: 2, build: 2 },
-        reps: '8–12',
-        repRange: [8, 12],
-        repsLeft: '1–2',
-        restSec: 120,
-        increment: '+5 kg',
-        rampSets: 1,
-        cues: [LIGHTER_SET_CUE, 'Upper back on the bench edge, chin tucked.', 'Shins straight up and down at the top.', 'Push your hips all the way up without arching your lower back.'],
-        alternative: { name: 'Hip thrust machine', equipment: 'Hip thrust (glute bridge) machine', link: 'hipThrustMachine' },
-        link: 'hipThrust',
-      },
-      {
-        id: 'face-pull',
-        name: 'Face pull',
-        muscles: 'Back of shoulders, small shoulder muscles',
-        equipment: 'Cable machine with a rope',
-        sets: { learn: 2, build: 2 },
-        reps: '12–20',
-        repRange: [12, 20],
-        repsLeft: '2',
-        restSec: 60,
-        increment: 'add reps, then the next pin',
-        cues: ['Rope at forehead height.', 'Pull toward your eyes. Hands apart, thumbs back.', 'Pause 1 s, then let it back slowly.'],
-        alternative: { name: 'Reverse fly machine', equipment: 'Reverse fly (rear delt) machine', note: 'Sit facing the pad, arms straight out in front, open them wide.', link: 'reverseFly' },
-        link: 'facePull',
-      },
-    ],
-    finisher: 'None on weekdays. Go home, eat and sleep.',
+    finisher: FINISH,
     finisherMin: 0,
   },
 };
 
-/** Order the sessions are listed in on the Program tab. */
-export const SESSION_ORDER: SessionId[] = ['lower', 'upper', 'fullA', 'fullB'];
+/** The order the sessions are done in, on any days. After the last one, start again at the first. */
+export const SESSION_ORDER: SessionId[] = ['chestTri', 'backBi', 'legsShoulders'];
 
-export type DayType = 'lift-fixed' | 'lift-flex' | 'rest';
+// ─── Schedule ─────────────────────────────────────────────────────────────────
+// No fixed days: any session can be done on any day, Monday to Sunday. Each gym
+// day does the next session in the order. Plan: 5 gym days a week, one
+// session a day, and at most 3 days in a row (one full round, then a day off;
+// with at most 2 in a row, 5 days a week can't repeat week after week). On work days the gym session
+// happens only if you can be there by 9:00 PM (it closes at 10 PM); that is a
+// sleep rule, not a day restriction.
 
-// ─── Weekly schedule ──────────────────────────────────────────────────────────
-// Up to 4 sessions a week: Saturday (lower body) and Sunday (upper body) are
-// fixed and train different halves of the body. The two weekday full-body
-// sessions are flexible: they happen only if you can be at the gym by 9:00 PM
-// (it closes at 10 PM), never two on one day, and a missed one is skipped, not
-// made up. The day windows are the same as before the redesign.
+/** Latest arrival at the gym on a work day (24 h clock, local time). */
+export const WORKDAY_GYM_CUTOFF = { hour: 21, minute: 0, label: '9:00 PM' } as const;
 
-/** Latest arrival at the gym for a weekday session (24 h clock, local time). */
-export const WEEKDAY_GYM_CUTOFF = { hour: 21, minute: 0, label: '9:00 PM' } as const;
+/** Gym days a week the plan is built for (each muscle about 1.7 times a week). */
+export const GYM_DAYS_PER_WEEK = 5;
 
-/** Weekdays each flexible session may fall on. */
-export const FLEX_WINDOWS: Record<'fullA' | 'fullB', DayName[]> = {
-  // Starts with the deadlift: not Thursday or Friday, so there are ≥ 2 full days before Saturday's squats.
-  fullA: ['Monday', 'Tuesday', 'Wednesday'],
-  // Starts with the overhead press: not Monday, the day after Sunday's upper-body session.
-  fullB: ['Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-};
+/** Most gym days in a row before a day off. */
+export const MAX_DAYS_IN_A_ROW = 3;
 
-export const WEEK_PLAN: Record<DayName, { type: DayType; label: string; detail: string }> = {
-  Monday: { type: 'lift-flex', label: 'Full body A (if at the gym by 9 PM)', detail: 'Full body A can be Mon, Tue or Wed. If not today, walk 20–30 min.' },
-  Tuesday: { type: 'lift-flex', label: 'Full body A or B', detail: 'Good day for one of the two weekday sessions.' },
-  Wednesday: { type: 'lift-flex', label: 'Full body A or B', detail: 'Last day for Full body A this week.' },
-  Thursday: { type: 'lift-flex', label: 'Full body B (if not done)', detail: 'Full body B can be Tue to Fri.' },
-  Friday: { type: 'lift-flex', label: 'Full body B (if not done)', detail: 'Last chance for Full body B. If not, rest before the weekend.' },
-  Saturday: { type: 'lift-fixed', label: 'Lower body', detail: 'Squat day · 60–75 min, late morning' },
-  Sunday: { type: 'lift-fixed', label: 'Upper body', detail: 'Bench day · 60–75 min, late morning' },
-};
+export const ROTATION_RULE = 'Do the three sessions in order, then start again. Any day of the week works. Each gym day, do the session after the one you did last.';
 
 /** Short definitions shown on the Program tab. Each term is explained once, in plain words. */
 export const GLOSSARY: { term: string; meaning: string }[] = [
@@ -664,7 +507,7 @@ export const GLOSSARY: { term: string; meaning: string }[] = [
   { term: 'Reps left', meaning: 'How many more good reps you could have done. “Stop with 2 left” means stop while 2 more good reps were still possible.' },
   { term: 'Main lift', meaning: 'A heavy barbell lift that uses many muscles at once, like the squat, bench press or deadlift.' },
   { term: 'Lighter sets', meaning: 'Easy sets that build up to your work weight. They don’t count as work sets.' },
-  { term: 'Paired exercises', meaning: 'Two exercises done back to back, then one rest.' },
+  { term: 'Split', meaning: 'Training different muscles on different days, e.g. chest and triceps one day, back and biceps the next.' },
   { term: 'Easy week', meaning: 'A week with half the sets and a bit less weight, to let tiredness clear.' },
   { term: 'Easy pace (Zone 2)', meaning: 'Cardio where you can still talk in full sentences, but not sing.' },
   { term: 'Full range of motion', meaning: 'Moving the joint as far as you can with good form, e.g. a deep squat.' },
@@ -684,7 +527,7 @@ export const PHASES: Phase[] = [
     summary: 'Fewer sets. Stop with 3–4 good reps left. Find your starting weights.',
     details: [
       'Pick weights you could lift 3–4 more times. Good form matters more than weight.',
-      'Film one set of squat, bench and deadlift from the side. Compare it with the videos.',
+      'Film one set of squat, bench and Romanian deadlift from the side. Compare it with the videos.',
       'Expect sore muscles in week 1. It goes away fast. Don’t judge a workout by it.',
     ],
   },
@@ -700,8 +543,7 @@ export const PHASES: Phase[] = [
     summary: 'Same exercises, about half the sets, about 10% lighter, stop with 4 or more reps left.',
     details: [
       'Take one when the warning signs below show up, or at the latest every 8–10 weeks. Many beginners won’t need one sooner.',
-      'A busy work week, illness or travel is a good time for it.',
-      'Sessions are shorter that week. The weekend ones may be under 60 min. That is fine.',
+      'Sessions are shorter that week. That is fine.',
       'Keep cardio easy and keep walking.',
     ],
   },
@@ -740,58 +582,13 @@ export const EASY_WEEK_SIGNS = [
   'Two or more main lifts go down in the same week',
   'You sleep under 6.5 hours most nights for a week',
   'Joints ache (not just sore muscles), or you have no drive to train for over a week',
-  'Illness, exams, travel or a big work deadline is coming. Take the easy week then.',
-];
-
-// ─── Missed sessions and real life ────────────────────────────────────────────
-
-export interface ScheduleRule {
-  situation: string;
-  action: string;
-  why?: string;
-}
-
-export const MISSED_SESSION_RULE =
-  'Missed a session? Skip it. Don’t make it up. Do the next session on its normal day with the same weights. Never add sets, never do two sessions in one day, and never move a weekday session outside its days.';
-
-export const SCHEDULE_RULES: ScheduleRule[] = [
-  {
-    situation: 'You can’t be at the gym by 9:00 PM',
-    action: 'Skip tonight. Try the next day that session is allowed. If its days are over, skip it this week.',
-    why: 'Training until 10 PM pushes dinner and sleep past 12:30 AM. Sleep matters more than one short session.',
-  },
-  {
-    situation: 'Only one weekday session happened',
-    action: 'That is a 3-session week. That’s fine. Carry on as normal next week.',
-    why: 'Three good sessions beat four rushed ones.',
-  },
-  {
-    situation: 'Missed Saturday or Sunday',
-    action: 'Skip it. Don’t do both weekend sessions on one day. Don’t move it to a weekday.',
-  },
-  {
-    situation: 'Short on time (30 min or less at the gym)',
-    action: 'Do the full warm-up, then only the first three exercises.',
-  },
-  {
-    situation: 'Back after 1–2 weeks off',
-    action: 'Use about 90% of your last weights for a week. Then carry on as normal.',
-  },
-  {
-    situation: 'Back after 3+ weeks off',
-    action: 'Use about 80% of your last weights and 2 sets per exercise for a week. Then go back to normal. Strength comes back faster than it took to build.',
-  },
-  {
-    situation: 'Ill',
-    action: 'Only a mild cold (above the neck)? An easy session or a walk is fine. Fever, body aches or chest symptoms? Rest until you are better.',
-  },
 ];
 
 export const NEVER_DO = [
   'Never do two lifting sessions on the same day.',
-  'Never add sets or a fifth session to “make up” for a missed one.',
-  'Never start a weekday session after 9:00 PM.',
-  'Never cut sleep to fit a workout in. A missed session costs far less than a week of short sleep.',
+  'Never train more than 3 days in a row.',
+  'Never start a session on a work day after 9:00 PM.',
+  'Never cut sleep to fit a workout in.',
 ];
 
 export const INJURY_PREVENTION = [
@@ -806,16 +603,16 @@ export const INJURY_PREVENTION = [
 // ─── Cardio & mobility ────────────────────────────────────────────────────────
 
 export const CARDIO = {
-  weeklyTarget: 'Aim for 150+ minutes of moderate activity a week (WHO). Brisk walks, warm-ups and easy cardio after weekend sessions all count.',
+  weeklyTarget: 'Aim for 150+ minutes of moderate activity a week (WHO). Brisk walks, warm-ups and easy cardio after sessions all count.',
   steps: 'Daily steps: build up to 8,000 or more. In large studies of adults under 60, the risk of dying early keeps falling up to about 8,000–10,000 steps a day. Walking on the commute and a 20–30 min walk on non-gym evenings count.',
   sitting: 'Break up sitting: stand or walk for 2–3 minutes every 30–45 minutes at work. Short walks after meals lower blood sugar.',
   zone2: {
-    title: 'Easy cardio (Zone 2): after weekend sessions, or a brisk walk',
-    how: '8–10 min on a bike, rower or incline treadmill after Saturday and Sunday sessions, plus brisk walks. Easy pace: you can talk in full sentences but not sing (the talk test). That is roughly 60–70% of your max heart rate, about 120–137 beats a minute at age 24.',
+    title: 'Easy cardio (Zone 2): after sessions on days off work, or a brisk walk',
+    how: '8–10 min on a bike, rower or incline treadmill after sessions on days off work, plus brisk walks. Easy pace: you can talk in full sentences but not sing (the talk test). That is roughly 60–70% of your max heart rate, about 120–137 beats a minute at age 24.',
   },
   intervals: {
-    title: 'Hard intervals: optional, Sundays from week 8',
-    how: 'After the Sunday upper-body session, if you feel fresh: 30 s hard, 90 s easy on a bike, 6 times. Not after a leg session. Skip them while you are still building up how much you eat.',
+    title: 'Hard intervals: optional, from week 8',
+    how: 'After a Chest + Triceps or Back + Biceps session on a day off work, if you feel fresh: 30 s hard, 90 s easy on a bike, 6 times. Not on Legs + Shoulders days or the day before them. Skip them while you are still building up how much you eat.',
   },
   interference: 'Cardio at this amount doesn’t slow muscle or strength gains (Schumann 2022). Keep hard intervals away from leg days.',
   tutorials: ['talkTest'] as ExerciseTutorialId[],
@@ -839,8 +636,8 @@ export const MOBILITY: { title: string; when: string; items: MobilityItem[] }[] 
     ],
   },
   {
-    title: 'Weekend mobility',
-    when: 'Saturday and Sunday after training, or any evening, about 15 min',
+    title: 'Longer mobility routine',
+    when: 'After a session on a day off work, or any evening, about 15 min',
     items: [
       { name: "World's greatest stretch", dose: '5 per side', tutorials: ['worldsGreatestStretch'] },
       { name: '90/90 hip switches', dose: '6 per side', tutorials: ['hip9090'] },
@@ -852,6 +649,6 @@ export const MOBILITY: { title: string; when: string; items: MobilityItem[] }[] 
 ];
 
 export const MOBILITY_NOTES = [
-  'Lifting through a full range of motion (as deep as good form allows) improves flexibility about as much as stretching. Your squats, Romanian deadlifts and split squats already count.',
+  'Lifting through a full range of motion (as deep as good form allows) improves flexibility about as much as stretching. Your squats, Romanian deadlifts and leg presses already count.',
   'Short stretches (60 s or less per muscle) before lifting don’t make you weaker. Save long holds for after training or another time.',
 ];

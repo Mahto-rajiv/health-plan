@@ -104,7 +104,7 @@ export const SUPPLEMENTS: { name: string; body: string; refs: RefId[] }[] = [
 
 export const TRAINING_DAY = {
   weekday: {
-    title: 'Weekday gym days (at the gym by 9:00 PM)',
+    title: 'Gym on a work day (at the gym by 9:00 PM)',
     points: [
       'Meal 3 at 6:15–6:45 PM is the pre-workout meal: mostly carbohydrate with 12–20 g protein, about 2–2.5 h before training.',
       'Meal 4 when you get home (9:30–10:30 PM) is the post-workout meal. Within ~1–2 hours of training is fine.',
@@ -113,9 +113,9 @@ export const TRAINING_DAY = {
     ],
   },
   weekend: {
-    title: 'Saturday and Sunday (fixed sessions)',
+    title: 'Gym on Saturday or Sunday',
     points: [
-      'Train ~2–3 h after Meal 1, late morning; Meal 2 at ~1:30 PM is the post-workout meal.',
+      'Late morning works well: train ~2–3 h after Meal 1; Meal 2 at ~1:30 PM is the post-workout meal.',
       'If you train in the evening instead, use Meal 3 (~5 PM) as the pre-workout meal and Meal 4 after.',
     ],
   },

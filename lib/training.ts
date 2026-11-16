@@ -1,4 +1,4 @@
-import { FLEX_WINDOWS, SESSIONS, WEEKDAY_GYM_CUTOFF, type Exercise, type SessionId } from './data/training';
+import { SESSION_ORDER, SESSIONS, WORKDAY_GYM_CUTOFF, type Exercise, type SessionId } from './data/training';
 import { dayName } from './dates';
 
 /**
@@ -25,19 +25,20 @@ export function activeExercises(sessionId: SessionId, week: number) {
   return SESSIONS[sessionId].exercises.filter((ex) => setsFor(ex, week) > 0);
 }
 
-const FLEX: ('fullA' | 'fullB')[] = ['fullA', 'fullB'];
+/** Any session can be done on any day: they are listed in the order they are done. */
+export function sessionsFor(): SessionId[] {
+  return [...SESSION_ORDER];
+}
 
-/**
- * Sessions the week plan allows on a date. Saturday is the lower-body session
- * and Sunday the upper-body one. Full body A may fall Mon–Wed and Full body B
- * Tue–Fri; nothing is logged, so
- * on Tuesday and Wednesday both are listed and you pick the one not done yet.
- */
-export function sessionsFor(iso: string): SessionId[] {
+/** The session after this one in the order (after the last, back to the first). */
+export function nextSession(id: SessionId): SessionId {
+  return SESSION_ORDER[(SESSION_ORDER.indexOf(id) + 1) % SESSION_ORDER.length];
+}
+
+/** Monday to Friday: the 9 PM arrival rule applies. */
+export function isWorkday(iso: string): boolean {
   const day = dayName(iso);
-  if (day === 'Saturday') return ['lower'];
-  if (day === 'Sunday') return ['upper'];
-  return FLEX.filter((id) => FLEX_WINDOWS[id].includes(day));
+  return day !== 'Saturday' && day !== 'Sunday';
 }
 
 /**
@@ -98,8 +99,6 @@ export function estimateMinutes(sessionId: SessionId, week: number): number {
 
 /** What the schedule says for a date (used by the dashboard's "tomorrow"). */
 export function plannedFor(iso: string): string {
-  const ids = sessionsFor(iso);
-  if (!ids.length) return 'No session — walk';
-  const names = ids.map((id) => SESSIONS[id].short).join(' or ');
-  return SESSIONS[ids[0]].slot === 'weekend' ? SESSIONS[ids[0]].name : `${names} if you can be at the gym by ${WEEKDAY_GYM_CUTOFF.label}`;
+  const next = 'The next session in the order, or a day off';
+  return isWorkday(iso) ? `${next}. Gym only if you can be there by ${WORKDAY_GYM_CUTOFF.label}` : next;
 }
