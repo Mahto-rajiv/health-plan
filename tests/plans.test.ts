@@ -96,26 +96,26 @@ for (const def of MEAL_PLAN_DEFINITIONS) {
         const week = buildWeek(def, ph);
         const plan = computePlan(def, ph);
 
-        it('has 7 days × exactly 4 meals in slot order', () => {
+        it('has 7 days × the pre-workout banana and exactly 4 meals, in slot order', () => {
           assert.equal(week.length, 7);
-          for (const d of week) assert.deepEqual(d.meals.map((m) => m.slot), [1, 2, 3, 4], d.day);
+          for (const d of week) assert.deepEqual(d.meals.map((m) => m.slot), [0, 1, 2, 3, 4], d.day);
         });
 
-        it('Meal 1 is deep-equal on all 7 days; Meal 3 deep-equal Monday–Friday', () => {
-          for (const d of week) assert.ok(deepEq(d.meals[0].meal, week[0].meals[0].meal), d.day);
+        it('the pre-workout banana and Meal 1 are deep-equal on all 7 days; Meal 3 deep-equal Monday–Friday', () => {
+          for (const i of [0, 1]) for (const d of week) assert.ok(deepEq(d.meals[i].meal, week[0].meals[i].meal), `${d.day} ${i}`);
           const wk = week.filter((d) => !d.isWeekend);
-          for (const d of wk) assert.ok(deepEq(d.meals[2].meal, wk[0].meals[2].meal), d.day);
+          for (const d of wk) assert.ok(deepEq(d.meals[3].meal, wk[0].meals[3].meal), d.day);
         });
 
         it('weekday Meal 2 is a cold office lunch: no reheating, no rice, no cooked dal or gravy', () => {
           for (const d of week.filter((x) => !x.isWeekend)) {
-            const m = d.meals[1].meal;
+            const m = d.meals[2].meal;
             assert.equal(m.requiresReheat, false, `${d.day} ${m.id} requires reheating`);
             assert.ok(!m.items.some((i) => i.food === 'rice'), `${d.day} ${m.id} contains rice`);
             assert.ok(!m.items.some((i) => DAL_FOODS.includes(i.food)), `${d.day} ${m.id} contains dal`);
             assert.ok(!GRAVY_OR_DAL.test(m.title), `${d.day} ${m.id} title suggests dal or gravy`);
             assert.ok(m.madeWhen, `${d.day} ${m.id} has no madeWhen`);
-            assert.ok(storageAdvice(d.meals[1]).includes(FOOD_SAFETY.coldLunch), `${d.day} ${m.id} lacks the cold-lunch note`);
+            assert.ok(storageAdvice(d.meals[2]).includes(FOOD_SAFETY.coldLunch), `${d.day} ${m.id} lacks the cold-lunch note`);
           }
         });
 
@@ -331,7 +331,7 @@ describe('meal content', () => {
       }
     }
     // Each seed in the jar too, as resolved for the app.
-    for (const p of MEAL_PLAN_DEFINITIONS) for (const ph of PHASE_IDS) for (const it of buildWeek(p, ph)[0].meals[0].meal.items) assert.equal(it.g % 5, 0, `${p.id} P${ph} ${it.food}: ${it.g} g`);
+    for (const p of MEAL_PLAN_DEFINITIONS) for (const ph of PHASE_IDS) for (const it of buildWeek(p, ph)[0].meals[1].meal.items) assert.equal(it.g % 5, 0, `${p.id} P${ph} ${it.food}: ${it.g} g`);
   });
 
   it('Meal 1: Veg + Eggs has 1 egg, Non-veg 2 (Veg + Eggs was infeasible with 2 in the 35 g-fibre ramp weeks)', () => {

@@ -94,8 +94,8 @@ export const mealMinutes = (pm: PlannedMeal) => pm.meal.activeMin;
 
 /** Minutes of hands-on work on the morning before leaving: Meal 1, plus packing the office meals. */
 export function morningMinutes(day: PlannedDay): number {
-  if (day.isWeekend) return day.meals[0].meal.activeMin;
-  const [m1, m2, m3] = day.meals;
+  const [, m1, m2, m3] = day.meals;
+  if (day.isWeekend) return m1.meal.activeMin;
   const office = (pm: PlannedMeal) => (pm.meal.madeWhen === 'morning' || pm.meal.madeWhen === 'night-before' ? (pm.meal.morningMin ?? pm.meal.activeMin) : 0);
   return m1.meal.activeMin + office(m2) + office(m3);
 }

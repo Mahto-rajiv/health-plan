@@ -38,7 +38,7 @@ export function ProgramDetails() {
             ['Main lifts', 'Bench press, pull-ups and squat. 5–8 reps (pull-ups 5–10), for strength.'],
             ['Smaller exercises', '8–20 reps, for muscle and balance. About 8–13 hard sets per big muscle each week.'],
             ['Effort', 'Stop with 1–3 good reps left. In weeks 1–2, stop with 3–4 left.'],
-            ['Session length', 'About 45–55 min with the warm-up, 5 exercises. Any session fits a work evening: at the gym by 9 PM, out by 10.'],
+            ['Session length', 'About 45–55 min with the warm-up, 5 exercises. Any session fits a work morning, before you leave.'],
             ['Progression', 'Add reps until every set reaches the top of the range. Then add the smallest weight step.'],
             ['Easy week', 'When the warning signs show up, or at the latest every 8–10 weeks: half the sets, about 10% lighter, for one week.'],
           ].map(([k, v]) => (

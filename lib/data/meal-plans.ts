@@ -5,15 +5,18 @@ import type { TutorialId } from './tutorials';
 import { SLOTS, altGrams, swapNote, type SlotId } from './produce';
 import { QUANTITIES } from './plan-quantities.generated';
 
-// ─── Four-meal structure (applies to every plan) ─────────────────────────────
-// • Exactly 4 meals a day. No snacks.
-// • Meal 1 is identical Monday–Sunday. ≤ 10 min to make; eaten before leaving.
+// ─── Meal structure (applies to every plan) ──────────────────────────────────
+// Nov 2026 (owner): the gym moved to the morning, every day.
+// • A pre-workout banana before the gym, then 4 meals. No other snacks. On a
+//   rest day the banana is eaten with Meal 1, so every day has the same food.
+// • Meal 1 is identical Monday–Sunday. ≤ 10 min to make; eaten after the gym
+//   (the post-workout meal) and before leaving.
 // • Meal 2 (weekdays) is the office lunch at ~1 PM, eaten COLD: it travels
 //   ~2 h in an insulated bag with a frozen bottle, then waits in the office
 //   fridge. No rice, no cooked dal or gravy, nothing that needs reheating.
-// • Meal 3 is identical Monday–Friday: eaten at the office at 6:15–6:45 PM as
-//   the pre-workout meal. No cooking. Saturday and Sunday have their own.
-// • Meal 4 is dinner at home, 9:30–10:30 PM on training days (post-workout).
+// • Meal 3 is identical Monday–Friday: an evening meal at the office. No
+//   cooking. Saturday and Sunday have their own.
+// • Meal 4 is dinner at home.
 // • "Identical" means the same foods within a phase. Quantities step up from
 //   Phase 1 to Phase 2 (lib/config.ts), so each item has two gram values.
 // The structure is enforced in code by buildWeek() and tested in
@@ -25,7 +28,8 @@ export type WeekdayName = Exclude<DayName, 'Saturday' | 'Sunday'>;
 export const DAYS: DayName[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 export const WEEKDAYS: WeekdayName[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
-export type MealSlot = 1 | 2 | 3 | 4;
+/** 0 is the pre-workout banana. */
+export type MealSlot = 0 | 1 | 2 | 3 | 4;
 
 /** Grams for Phase 1 and 2, or one value for both phases. */
 export type Grams = number | readonly [number, number];
@@ -114,29 +118,35 @@ export interface MealPlanDefinition {
 }
 
 export const MEAL_SLOTS: Record<MealSlot, { name: string; weekday: string; weekend: string; role: string }> = {
+  0: {
+    name: 'Pre-workout',
+    weekday: '30–60 min before the gym',
+    weekend: '30–60 min before the gym',
+    role: 'One banana and a glass of water. On a rest day, eat it with Meal 1.',
+  },
   1: {
     name: 'Meal 1 · Breakfast',
-    weekday: '7:45–8:30 AM, before leaving',
-    weekend: '8:30–9:00 AM',
-    role: 'Same every day. Ready in about 10 minutes.',
+    weekday: 'After the gym, before leaving',
+    weekend: 'After the gym',
+    role: 'Same every day. Ready in about 10 minutes. Your post-workout meal on gym days.',
   },
   2: {
     name: 'Meal 2 · Office lunch',
     weekday: '~1:00 PM (office, eaten cold)',
-    weekend: '~1:30 PM, after training',
+    weekend: '~1:30 PM',
     role: 'Weekdays: packed cold with a frozen bottle, refrigerated on arrival. No rice, dal, gravy or reheating. Varies by day.',
   },
   3: {
-    name: 'Meal 3 · Pre-workout',
-    weekday: '6:15–6:45 PM (office)',
+    name: 'Meal 3 · Evening',
+    weekday: 'Late afternoon (office)',
     weekend: '~5:00 PM',
-    role: 'Same Mon–Fri, no cooking. Your pre-workout meal 2–3 h before the gym. Saturday and Sunday each have their own.',
+    role: 'Same Mon–Fri, no cooking. Saturday and Sunday each have their own.',
   },
   4: {
     name: 'Meal 4 · Dinner',
-    weekday: '9:30–10:30 PM on gym days (~9 PM otherwise)',
-    weekend: '~9:00 PM',
-    role: 'Cooked fresh at home, at most 2 pots. Your post-workout meal on gym days.',
+    weekday: 'At home, in the evening',
+    weekend: 'Evening',
+    role: 'Cooked fresh at home, at most 2 pots.',
   },
 };
 
@@ -170,6 +180,25 @@ const MORNING_PACK = 'Morning (about 3 minutes): pack the box straight from the 
 const PEANUT_CHUTNEY = { food: 'peanuts', g: 15, range: [10, 25], note: 'dry-roasted, ground into a green chutney' } as const;
 const CHUTNEY_STEP = 'Chutney: grind the roasted peanuts with a handful of mint and coriander, 1 green chilli, a small piece of garlic, salt, lemon juice and a little water. Keep it in a small closed box in the fridge and eat it within 2 days.';
 const MORNING_PACK_CHUTNEY = 'Morning (about 3 minutes): pack the box and the chutney straight from the fridge with the frozen bottle.';
+
+// Pre-workout ────────────────────────────────────────────────────────────────
+
+// The same in every plan and phase: one medium banana (fixed, so the solver
+// can't change it). Small, mostly carbohydrate, low in fat and fibre, so it sits
+// well 30–60 min before lifting. Meal 1 straight after the gym carries the protein.
+export const PRE_WORKOUT = meal({
+  id: 'pre-banana',
+  title: 'A banana and a glass of water',
+  items: [{ food: 'banana', g: 110, range: [110, 110], step: 110, note: '1 medium' }],
+  steps: ['30–60 minutes before the gym: eat the banana and drink a glass of water.', 'Rest day: eat it with Meal 1.'],
+  activeMin: 1,
+  totalMin: 1,
+  pots: 0,
+  flavour: 'Nothing needed. A pinch of cinnamon if you slice it.',
+  substitutions: [{ swap: 'Banana', with: '30 g dates (about 4)' }],
+  why: 'A little quick carbohydrate before a morning session, low in fat and fibre so it doesn’t sit heavily. Meal 1 after the gym is the post-workout meal.',
+  requiresReheat: false,
+});
 
 // Meal 1 ─────────────────────────────────────────────────────────────────────
 
@@ -262,7 +291,7 @@ const M3_WEEKDAY = meal({
   steps: [
     'Morning: spoon the curd into a leak-proof box. Pack the {fruit3} whole, and the dates and peanuts in a small dry box.',
     'At the office: curd into the fridge on arrival.',
-    '6:15–6:45 PM: chop the dates into the curd and sprinkle the peanuts and sunflower seeds on top; eat the {fruit3} alongside.',
+    'Late afternoon: chop the dates into the curd and sprinkle the peanuts and sunflower seeds on top; eat the {fruit3} alongside.',
   ],
   activeMin: 3,
   totalMin: 3,
@@ -272,7 +301,7 @@ const M3_WEEKDAY = meal({
     { swap: 'Dates', with: 'Raisins, same weight' },
     { swap: 'Peanuts', with: 'Roasted chana, twice the weight (about 3× the fibre)' },
   ],
-  why: 'Pre-workout 2–3 h before training: mostly carbohydrate with some protein and little fat or fibre. Nothing to cook or heat.',
+  why: 'Bridges the gap between lunch and dinner: mostly carbohydrate with some protein. Nothing to cook or heat.',
   keeps: 'The curd is the perishable part. Keep it in the office fridge; without one, eat it within ~4 h of leaving home.',
   requiresReheat: false,
   madeWhen: 'morning',
@@ -982,7 +1011,8 @@ export interface PlannedMeal {
 export interface PlannedDay {
   day: DayName;
   isWeekend: boolean;
-  meals: [PlannedMeal, PlannedMeal, PlannedMeal, PlannedMeal];
+  /** Pre-workout, then Meals 1–4. */
+  meals: [PlannedMeal, PlannedMeal, PlannedMeal, PlannedMeal, PlannedMeal];
 }
 
 export const gramsFor = (g: Grams, phase: PhaseId): number => (typeof g === 'number' ? g : g[phaseIndex(phase)]);
@@ -1026,12 +1056,12 @@ export function resolveMeal(m: Meal, phase: PhaseId): ResolvedMeal {
   };
 }
 
-/** The four meals of a day in a plan, before quantities are applied. */
-export function mealsForDay(plan: MealPlanDefinition, day: DayName): [Meal, Meal, Meal, Meal] {
-  if (day === 'Saturday') return [plan.meal1, plan.saturday.meal2, plan.saturday.meal3, plan.saturday.meal4];
-  if (day === 'Sunday') return [plan.meal1, plan.sunday.meal2, plan.sunday.meal3, plan.sunday.meal4];
+/** The pre-workout banana and the four meals of a day in a plan, before quantities are applied. */
+export function mealsForDay(plan: MealPlanDefinition, day: DayName): [Meal, Meal, Meal, Meal, Meal] {
+  if (day === 'Saturday') return [PRE_WORKOUT, plan.meal1, plan.saturday.meal2, plan.saturday.meal3, plan.saturday.meal4];
+  if (day === 'Sunday') return [PRE_WORKOUT, plan.meal1, plan.sunday.meal2, plan.sunday.meal3, plan.sunday.meal4];
   const wd = day as WeekdayName;
-  return [plan.meal1, plan.lunches[wd], plan.weekdayMeal3, plan.dinners[wd]];
+  return [PRE_WORKOUT, plan.meal1, plan.lunches[wd], plan.weekdayMeal3, plan.dinners[wd]];
 }
 
 export function buildWeek(plan: MealPlanDefinition, phase: PhaseId): PlannedDay[] {
@@ -1039,13 +1069,14 @@ export function buildWeek(plan: MealPlanDefinition, phase: PhaseId): PlannedDay[
     const isWeekend = day === 'Saturday' || day === 'Sunday';
     const t = (slot: MealSlot) => (isWeekend ? MEAL_SLOTS[slot].weekend : MEAL_SLOTS[slot].weekday);
     const r = (m: Meal) => resolveMeal(m, phase);
+    const pre: PlannedMeal = { slot: 0, meal: r(PRE_WORKOUT), time: t(0), tag: 'fixed-daily' };
     const meal1: PlannedMeal = { slot: 1, meal: r(plan.meal1), time: t(1), tag: 'fixed-daily' };
     if (isWeekend) {
       const w = day === 'Saturday' ? plan.saturday : plan.sunday;
       return {
         day,
         isWeekend,
-        meals: [meal1, { slot: 2, meal: r(w.meal2), time: t(2) }, { slot: 3, meal: r(w.meal3), time: t(3) }, { slot: 4, meal: r(w.meal4), time: t(4) }],
+        meals: [pre, meal1, { slot: 2, meal: r(w.meal2), time: t(2) }, { slot: 3, meal: r(w.meal3), time: t(3) }, { slot: 4, meal: r(w.meal4), time: t(4) }],
       };
     }
     const wd = day as WeekdayName;
@@ -1053,6 +1084,7 @@ export function buildWeek(plan: MealPlanDefinition, phase: PhaseId): PlannedDay[
       day,
       isWeekend,
       meals: [
+        pre,
         meal1,
         { slot: 2, meal: r(plan.lunches[wd]), time: t(2), tag: 'office-lunch' },
         { slot: 3, meal: r(plan.weekdayMeal3), time: t(3), tag: 'fixed-weekday' },

@@ -1,14 +1,13 @@
 import type { RefId } from './references';
 
 export const SLEEP = {
-  target: 'Lights out by 12:30 AM and up at 8:00–8:30 AM: 7.5–8 h in bed so you actually sleep ≥ 7 h (AASM/SRS).',
-  current: 'Your target is a 12:30 AM bedtime, waking at ~7–8:30 AM. Waking at 7 after a 12:30 bedtime gives only ~6.5 h, so on gym nights aim to wake nearer 8:00.',
+  target: '7.5–8 h in bed so you actually sleep ≥ 7 h (AASM/SRS).',
+  current: 'The gym is in the morning now, so the alarm is earlier. Set the bedtime from it: 7.5–8 h before the alarm.',
   plan: [
-    { title: 'Anchor your wake time', body: 'Pick a wake time you can keep 7 days a week (8:00 AM fits a 12:30 AM bedtime and leaving at 8:30–9) and stay within ±45 minutes on weekends. Regular timing is linked to better health outcomes, even independently of duration.' },
-    { title: 'Keep 12:30 AM as the limit', body: 'On gym nights dinner ends ~10:30 PM; leave about 2 hours between dinner and bed. If you are often later than 12:30, move it 15 minutes earlier every 3–4 days rather than in one jump.' },
+    { title: 'Anchor your wake time', body: 'Pick a wake time that fits the morning gym and that you can keep 7 days a week, and stay within ±45 minutes on weekends. Regular timing is linked to better health outcomes, even independently of duration.' },
+    { title: 'Move bedtime earlier in steps', body: 'Leave about 2 hours between dinner and bed. To get to the earlier bedtime, move it 15 minutes earlier every 3–4 days rather than in one jump.' },
     { title: 'Morning light, dim evenings', body: 'Get 10+ minutes of outdoor light soon after waking (the commute counts). Dim the screens and room lights for the last hour before bed.' },
-    { title: 'Caffeine cut-off around 3 PM', body: 'Caffeine lingers for hours. Evening training doesn’t need a pre-workout stimulant; Meal 3 is your fuel.' },
-    { title: 'Late workout, still sleep', body: 'On work days, sessions end by about 10 PM, when the gym closes. Keep the cool-down calm, eat dinner, and shower. Exercise itself doesn’t generally ruin sleep, but very late heavy meals and phone time can.' },
+    { title: 'Caffeine cut-off around 3 PM', body: 'Caffeine lingers for hours. You don’t need a pre-workout stimulant; the banana before the gym is your fuel.' },
   ],
   why: 'In a controlled study, people who slept 5.5 h instead of 8.5 h while dieting lost much more lean mass. That is indirect evidence for gaining, but the direction is clear: sleep is where training adapts.',
   refs: ['aasmSleep', 'windred', 'nedeltcheva'] as RefId[],
@@ -34,7 +33,7 @@ export const RECOVERY_SIGNS = {
   watch: ['Weights feeling heavier than usual for several sessions in a row', 'Sleeping under 6.5 h for several nights', 'Aching joints (not muscles), or soreness lasting more than 3 days', 'Low motivation for over a week, or frequent colds'],
   actions: [
     'One bad session: ignore it.',
-    'A bad week: check sleep and whether you ate all 4 meals. Keep loads, skip the last set of each exercise.',
+    'A bad week: check sleep and whether you ate all 4 meals and the banana. Keep loads, skip the last set of each exercise.',
     'Two bad weeks or several warning signs: take an easy week: half the sets, about 10% lighter (see Training → Program).',
   ],
 };

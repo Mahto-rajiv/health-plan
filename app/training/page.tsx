@@ -9,7 +9,7 @@ export default function TrainingPage() {
     <>
       <PageHeader
         title="Training"
-        description="A beginner split: Chest + Triceps, Back + Biceps, Legs + Shoulders, done in order on any 5 days a week. On work days, go only if you can be at the gym by 9 PM. Every session starts with a warm-up."
+        description="A beginner split: Chest + Triceps, Back + Biceps, Legs + Shoulders, done in order on any 5 days a week. Every session is in the morning. Every session starts with a warm-up."
       />
       <TrainingView />
     </>

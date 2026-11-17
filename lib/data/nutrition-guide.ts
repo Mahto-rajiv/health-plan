@@ -19,7 +19,7 @@ export const TARGETS: Target[] = [
     key: 'protein',
     label: 'Protein',
     value: '~90 → ~105 → 110–125 g',
-    basis: `Rises with the phases from ~1.4 to 1.7–1.9 g/kg. Benefits for muscle gain level off around 1.6 g/kg (upper confidence limit 2.2 g/kg), so Phase 2 sits in the useful range without going beyond it. The plans spread it over 4 meals of about 12–49 g (Meal 3, the pre-workout meal, is the smallest at 12–20 g). Well-planned vegetarian protein builds muscle as well as omnivorous protein at this intake.`,
+    basis: `Rises with the phases from ~1.4 to 1.7–1.9 g/kg. Benefits for muscle gain level off around 1.6 g/kg (upper confidence limit 2.2 g/kg), so Phase 2 sits in the useful range without going beyond it. The plans spread it over 4 meals of about 12–49 g (Meal 3, the evening office meal, is the smallest at 12–20 g; the pre-workout banana adds ~1 g). Well-planned vegetarian protein builds muscle as well as omnivorous protein at this intake.`,
     refs: ['morton', 'schoenfeldAragon', 'heviaLarrain', 'devries'],
   },
   {
@@ -104,20 +104,16 @@ export const SUPPLEMENTS: { name: string; body: string; refs: RefId[] }[] = [
 
 export const TRAINING_DAY = {
   weekday: {
-    title: 'Gym on a work day (at the gym by 9:00 PM)',
+    title: 'Gym in the morning (every day)',
     points: [
-      'Meal 3 at 6:15–6:45 PM is the pre-workout meal: mostly carbohydrate with 12–20 g protein, about 2–2.5 h before training.',
-      'Meal 4 when you get home (9:30–10:30 PM) is the post-workout meal. Within ~1–2 hours of training is fine.',
-      'Drink ~500 ml water between Meal 3 and the gym and sip during the session.',
-      'Dinner at 10:30 PM still leaves ~2 h before a 12:30 AM bedtime.',
+      'Before: one banana and a glass of water, 30–60 min before the session. Small and low in fat and fibre, so it doesn’t sit heavily.',
+      'After: Meal 1 is the post-workout meal (oats in milk, ~20 g protein or more). Eat it soon after the session, before you leave.',
+      'Sip water during the session; drink another ~500 ml with Meal 1.',
     ],
   },
   weekend: {
-    title: 'Gym on Saturday or Sunday',
-    points: [
-      'Late morning works well: train ~2–3 h after Meal 1; Meal 2 at ~1:30 PM is the post-workout meal.',
-      'If you train in the evening instead, use Meal 3 (~5 PM) as the pre-workout meal and Meal 4 after.',
-    ],
+    title: 'Rest days',
+    points: ['Same food: eat the banana with Meal 1.'],
   },
   same: 'Food is the same on training and rest days. Only the timing relative to the session changes; the evidence for calorie cycling at this level is weak and it would complicate the plan.',
 };

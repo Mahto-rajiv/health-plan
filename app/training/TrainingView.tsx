@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Clock, Dumbbell } from 'lucide-react';
-import { GYM_DAYS_PER_WEEK, MAX_DAYS_IN_A_ROW, ROTATION_RULE, SESSIONS, SESSION_ORDER, WORKDAY_GYM_CUTOFF, type SessionId } from '@/lib/data/training';
+import { Dumbbell } from 'lucide-react';
+import { GYM_DAYS_PER_WEEK, MAX_DAYS_IN_A_ROW, ROTATION_RULE, SESSIONS, SESSION_ORDER, type SessionId } from '@/lib/data/training';
 import { useToday } from '@/lib/hooks';
 import { longDate } from '@/lib/dates';
 import { weekLabel, weekOn } from '@/lib/phase';
-import { estimateMinutes, isWorkday, sessionsFor } from '@/lib/training';
+import { estimateMinutes, sessionsFor } from '@/lib/training';
 import { Segmented } from '@/components/ui/Segmented';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { SessionExercises } from '@/components/training/SessionExercises';
@@ -63,8 +63,6 @@ function TodayTab() {
   const options = sessionsFor();
   const sessionId = picked ?? options[0];
   const session = SESSIONS[sessionId];
-  const workday = isWorkday(today);
-
   return (
     <div className="space-y-4">
       <Card className="p-4">
@@ -74,15 +72,13 @@ function TodayTab() {
           <span>{weekLabel(today)}</span>
         </div>
         <div className="mt-2 flex items-start gap-3">
-          {workday ? <Clock className="mt-0.5 shrink-0 text-accent" size={20} aria-hidden /> : <Dumbbell className="mt-0.5 shrink-0 text-accent" size={20} aria-hidden />}
+          <Dumbbell className="mt-0.5 shrink-0 text-accent" size={20} aria-hidden />
           <div className="min-w-0">
             <h2 className="text-base font-semibold text-ink">
               {session.name} · about {estimateMinutes(sessionId, week)} min
             </h2>
             <p className="mt-0.5 text-sm text-ink-2">
-              {workday
-                ? `Work day: be at the gym by ${WORKDAY_GYM_CUTOFF.label} (it closes at 10).`
-                : 'Day off work: any time of day is fine.'}
+              Morning session: a banana 30–60 min before, Meal 1 after.
             </p>
           </div>
         </div>
@@ -110,7 +106,7 @@ function WeekTab() {
       <Card>
         <CardHeader
           title="Your week"
-          description={`${GYM_DAYS_PER_WEEK} gym days a week, on any days. One session a day, at most ${MAX_DAYS_IN_A_ROW} in a row. On work days, be at the gym by ${WORKDAY_GYM_CUTOFF.label}.`}
+          description={`${GYM_DAYS_PER_WEEK} gym days a week, on any days. One session a day, at most ${MAX_DAYS_IN_A_ROW} in a row. Every session is in the morning.`}
         />
         <p className="mb-3 rounded-xl bg-accent-soft/60 p-3 text-sm font-medium text-ink">{ROTATION_RULE}</p>
         <ol className="grid gap-2 sm:grid-cols-3">

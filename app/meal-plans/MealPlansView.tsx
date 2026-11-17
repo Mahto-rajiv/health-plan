@@ -122,10 +122,10 @@ export function MealPlansView() {
             </div>
           </div>
 
-          <Callout tone="info" title="The 4-meal structure">
-            Exactly four meals, no snacks. <strong>Meal 1</strong> is the same every day (about 10 minutes).{' '}
+          <Callout tone="info" title="The day’s meals">
+            A banana 30–60 min before the morning gym, then four meals, no other snacks. <strong>Meal 1</strong> is the same every day (about 10 minutes) and is your post-workout meal.{' '}
             <strong>Meal 2</strong> on weekdays is eaten cold at the office: no rice, dal, gravy or reheating.{' '}
-            <strong>Meal 3</strong> is the same Monday–Friday and is your pre-workout meal at 6:15–6:45 PM. Quantities change
+            <strong>Meal 3</strong> is the same Monday–Friday, eaten at the office in the late afternoon. Quantities change
             with each phase. The foods stay the same all year. If a fruit or vegetable isn’t in the market, use the alternative listed under it, in the amount shown.
           </Callout>
 

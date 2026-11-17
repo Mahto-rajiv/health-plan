@@ -4,13 +4,13 @@ import Link from 'next/link';
 import { ChevronRight, Clock, Dumbbell, Utensils, ListTodo } from 'lucide-react';
 import { useToday } from '@/lib/hooks';
 import { addDays, dayName, longDate } from '@/lib/dates';
-import { SESSIONS, WORKDAY_GYM_CUTOFF } from '@/lib/data/training';
+import { SESSIONS } from '@/lib/data/training';
 import { MEAL_SLOTS } from '@/lib/data/meal-plans';
 import { PHASES } from '@/lib/config';
 import { useActivePlan } from '@/lib/plan-hooks';
 import { weekLabel, weekOn } from '@/lib/phase';
 import { roundKcal } from '@/lib/nutrition';
-import { estimateMinutes, isWorkday, plannedFor, sessionsFor } from '@/lib/training';
+import { estimateMinutes, plannedFor, sessionsFor } from '@/lib/training';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { ButtonLink } from '@/components/ui/Button';
@@ -56,7 +56,7 @@ function Dashboard({ today }: { today: string }) {
       </header>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <TrainingCard today={today} week={week} />
+        <TrainingCard week={week} />
         <TonightCard today={today} />
         <MealsCard today={today} />
       </div>
@@ -64,8 +64,7 @@ function Dashboard({ today }: { today: string }) {
   );
 }
 
-function TrainingCard({ today, week }: { today: string; week: number }) {
-  const workday = isWorkday(today);
+function TrainingCard({ week }: { week: number }) {
   return (
     <Card className="lg:col-span-2">
       <CardHeader
@@ -79,11 +78,9 @@ function TrainingCard({ today, week }: { today: string; week: number }) {
       />
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <h3 className="text-lg font-semibold text-ink">Gym day? Do the next session in the order</h3>
-        {workday && (
-          <Badge tone="caution">
-            <Clock size={12} aria-hidden /> at the gym by {WORKDAY_GYM_CUTOFF.label}
-          </Badge>
-        )}
+        <Badge tone="neutral">
+          <Clock size={12} aria-hidden /> morning: banana before, Meal 1 after
+        </Badge>
       </div>
       <p className="mt-1 text-sm text-ink-2">
         Pick the one after the one you did last.
@@ -152,7 +149,7 @@ function TonightCard({ today }: { today: string }) {
   const tomorrowName = dayName(tomorrow);
   const { plan } = useActivePlan(tomorrow);
   const tomorrowDay = plan.days.find((d) => d.day === tomorrowName)!;
-  const [meal1, lunch, meal3, dinner] = tomorrowDay.meals;
+  const [, meal1, lunch, meal3, dinner] = tomorrowDay.meals;
   const tasks: string[] = [];
   if (meal1.meal.items.some((i) => i.food === 'egg')) tasks.push('Boil tomorrow’s eggs while dinner cooks and refrigerate them.');
   if (!tomorrowDay.isWeekend) {
@@ -164,7 +161,7 @@ function TonightCard({ today }: { today: string }) {
   if (dinner.meal.dayBefore) tasks.push(`For tomorrow’s dinner: ${dinner.meal.dayBefore.charAt(0).toLowerCase()}${dinner.meal.dayBefore.slice(1)}`);
   tasks.push('Set curd from milk for tomorrow.');
   if (todayName === 'Sunday') tasks.push(plan.def.prepStrategy[0]);
-  const tomorrowTraining = plannedFor(tomorrow);
+  const tomorrowTraining = plannedFor();
   return (
     <Card>
       <CardHeader title="Tonight & tomorrow" icon={<ListTodo size={18} />} />
@@ -180,7 +177,7 @@ function TonightCard({ today }: { today: string }) {
         <span className="text-muted">Tomorrow ({tomorrowName}): </span>
         <span className="font-medium text-ink">{tomorrowTraining}</span>
       </div>
-      <p className="mt-3 text-xs text-muted">Lights out by 12:30 AM; an 8:00 AM alarm gives 7.5 h.</p>
+      <p className="mt-3 text-xs text-muted">Morning gym: go to bed early enough for 7+ hours of sleep.</p>
     </Card>
   );
 }

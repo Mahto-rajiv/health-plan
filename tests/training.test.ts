@@ -6,7 +6,7 @@ import { GYM_DAYS_PER_WEEK, MAX_DAYS_IN_A_ROW, SESSIONS, SESSION_ORDER, type Exe
 import * as RECOVERY from '../lib/data/recovery';
 import { EXERCISE_LINKS, EXERCISE_TUTORIALS } from '../lib/data/tutorials';
 import { REFS, type RefId } from '../lib/data/references';
-import { activeExercises, isWorkday, nextSession, plannedFor, sessionsFor, sessionTime, TIME_MODEL, warmupMinutes } from '../lib/training';
+import { activeExercises, nextSession, plannedFor, sessionsFor, sessionTime, TIME_MODEL, warmupMinutes } from '../lib/training';
 import { parsePhase, phaseOn, weekLabel } from '../lib/phase';
 import { startsLabel } from '../lib/dates';
 
@@ -17,7 +17,7 @@ const WEEKS = [1, 2, 3, 8, 12];
 const allExercises = (): Exercise[] => Object.values(SESSIONS).flatMap((s) => s.exercises);
 
 describe('sessions', () => {
-  // Any session can fall on a work evening, so every one keeps the work-evening limit: 60 min including
+  // Any session can fall on a work morning, so every one keeps the work-morning limit: 60 min including
   // the warm-up (owner), planned to ≤ 55 min. The time constants (40 s a set, 1 min setup) are estimates,
   // not timed, so the plan keeps a 5-min (~8%) margin.
   for (const id of SESSION_ORDER) {
@@ -153,11 +153,8 @@ describe('schedule (any day of the week)', () => {
     assert.equal(nextSession('legsShoulders'), 'chestTri');
   });
 
-  it('the 9 PM arrival rule applies on work days (Mon–Fri) only, and the tomorrow line names no fixed session', () => {
-    for (const d of [MON, TUE, WED, THU, FRI]) assert.ok(isWorkday(d), d);
-    for (const d of [SAT, SUN]) assert.ok(!isWorkday(d), d);
-    assert.equal(plannedFor(TUE), 'The next session in the order, or a day off. Gym only if you can be there by 9:00 PM');
-    assert.equal(plannedFor(SAT), 'The next session in the order, or a day off');
+  it('every day is a morning gym day and the tomorrow line names no fixed session', () => {
+    assert.equal(plannedFor(), 'The next session in the order, or a day off. Gym in the morning');
   });
 
   it('5 gym days a week fit the rest rule: at most 3 days in a row needs at least 2 days off in 7', () => {

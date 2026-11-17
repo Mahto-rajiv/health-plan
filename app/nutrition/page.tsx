@@ -6,7 +6,7 @@ import { Callout } from '@/components/ui/Callout';
 import { ButtonLink } from '@/components/ui/Button';
 import { References } from '@/components/References';
 import { ENERGY_MATH, ENERGY_NOTE, GAIN_RULES, GUT, HYDRATION, SUPPLEMENTS, TARGETS, TRAINING_DAY } from '@/lib/data/nutrition-guide';
-import { MEAL_PLAN_DEFINITIONS, MEAL_SLOTS, fillSlots, itemKey, solvedGrams, type Meal, type MealSlot, type PlanItem } from '@/lib/data/meal-plans';
+import { MEAL_PLAN_DEFINITIONS, MEAL_SLOTS, PRE_WORKOUT, fillSlots, itemKey, solvedGrams, type Meal, type MealSlot, type PlanItem } from '@/lib/data/meal-plans';
 import type { PhaseId } from '@/lib/config';
 import { FOODS } from '@/lib/data/foods';
 import { DAILY, PHASES, PHASE_IDS } from '@/lib/config';
@@ -20,7 +20,7 @@ const rampCell = (m: Meal, it: PlanItem, p: PhaseId): string => String(solvedGra
 
 export default function NutritionPage() {
   // Meals 1 and 3 are fixed, so the gut ramp can be shown as exact quantities per phase.
-  const fixedMeals: Meal[] = [...new Map(MEAL_PLAN_DEFINITIONS.flatMap((p) => [p.meal1, p.weekdayMeal3]).map((m) => [m.id, m])).values()];
+  const fixedMeals: Meal[] = [...new Map(MEAL_PLAN_DEFINITIONS.flatMap((p) => [PRE_WORKOUT, p.meal1, p.weekdayMeal3]).map((m) => [m.id, m])).values()];
   return (
     <>
       <PageHeader
@@ -102,9 +102,9 @@ export default function NutritionPage() {
         </div>
 
         <Card>
-          <CardHeader title="Meal timing" icon={<Clock size={18} />} description="Four meals, no snacks, around a 9-hour office day (leave ~8:30–9 AM, home ~8–9 PM)." />
+          <CardHeader title="Meal timing" icon={<Clock size={18} />} description="Gym in the morning: a banana before, Meal 1 after, then the office day. Four meals and the banana, no other snacks." />
           <ul className="divide-y divide-line sm:hidden">
-            {([1, 2, 3, 4] as MealSlot[]).map((s) => (
+            {([0, 1, 2, 3, 4] as MealSlot[]).map((s) => (
               <li key={s} className="py-3 text-sm">
                 <div className="font-medium text-ink">{MEAL_SLOTS[s].name}</div>
                 <div className="tabular mt-0.5 text-xs text-muted">
@@ -125,7 +125,7 @@ export default function NutritionPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
-                {([1, 2, 3, 4] as MealSlot[]).map((s) => (
+                {([0, 1, 2, 3, 4] as MealSlot[]).map((s) => (
                   <tr key={s}>
                     <td className="whitespace-nowrap py-2.5 pr-2 font-medium text-ink">{MEAL_SLOTS[s].name}</td>
                     <td className="px-2 py-2.5 text-ink-2">{MEAL_SLOTS[s].weekday}</td>

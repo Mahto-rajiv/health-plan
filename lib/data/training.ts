@@ -45,7 +45,7 @@ import type { ExerciseLinkId, ExerciseTutorialId } from './tutorials';
 // Work = 40 s per set (80 s for one-side-at-a-time sets). Rest is counted after
 // every set, including the last one. An exercise paired with another (done
 // straight after it, at the same spot) adds only its work time.
-// Limit: any session can fall on a work evening, so every session is ≤ 60 min
+// Limit: any session can fall on a work morning, so every session is ≤ 60 min
 // including the warm-up (planned to ≤ 55 min, a 5-minute margin because the
 // times are estimates), with at most 5 exercises.
 
@@ -485,12 +485,8 @@ export const SESSION_ORDER: SessionId[] = ['chestTri', 'backBi', 'legsShoulders'
 // No fixed days: any session can be done on any day, Monday to Sunday. Each gym
 // day does the next session in the order. Plan: 5 gym days a week, one
 // session a day, and at most 3 days in a row (one full round, then a day off;
-// with at most 2 in a row, 5 days a week can't repeat week after week). On work days the gym session
-// happens only if you can be there by 9:00 PM (it closes at 10 PM); that is a
-// sleep rule, not a day restriction.
-
-/** Latest arrival at the gym on a work day (24 h clock, local time). */
-export const WORKDAY_GYM_CUTOFF = { hour: 21, minute: 0, label: '9:00 PM' } as const;
+// with at most 2 in a row, 5 days a week can't repeat week after week).
+// Nov 2026 (owner): every session is in the morning, before work on work days.
 
 /** Gym days a week the plan is built for (each muscle about 1.7 times a week). */
 export const GYM_DAYS_PER_WEEK = 5;
@@ -587,7 +583,6 @@ export const EASY_WEEK_SIGNS = [
 export const NEVER_DO = [
   'Never do two lifting sessions on the same day.',
   'Never train more than 3 days in a row.',
-  'Never start a session on a work day after 9:00 PM.',
   'Never cut sleep to fit a workout in.',
 ];
 
@@ -597,7 +592,7 @@ export const INJURY_PREVENTION = [
   'Use the safety pins or bars for squat and bench, and clips on the bar.',
   'Add weight in small steps (2.5 kg on a barbell), and only after every set hits the top of the rep range.',
   'Muscle burn is fine. Sharp pain, joint pain or tingling is not: stop that exercise and use the alternative.',
-  'Sleep 7+ hours and eat all four meals. Tiredness and too little food raise the risk of injury.',
+  'Sleep 7+ hours, eat the banana before and Meal 1 after. Tiredness and too little food raise the risk of injury.',
 ];
 
 // ─── Cardio & mobility ────────────────────────────────────────────────────────
@@ -637,7 +632,7 @@ export const MOBILITY: { title: string; when: string; items: MobilityItem[] }[] 
   },
   {
     title: 'Longer mobility routine',
-    when: 'After a session on a day off work, or any evening, about 15 min',
+    when: 'After a session when you have time, or any evening, about 15 min',
     items: [
       { name: "World's greatest stretch", dose: '5 per side', tutorials: ['worldsGreatestStretch'] },
       { name: '90/90 hip switches', dose: '6 per side', tutorials: ['hip9090'] },

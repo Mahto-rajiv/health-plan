@@ -1,5 +1,4 @@
-import { SESSION_ORDER, SESSIONS, WORKDAY_GYM_CUTOFF, type Exercise, type SessionId } from './data/training';
-import { dayName } from './dates';
+import { SESSION_ORDER, SESSIONS, type Exercise, type SessionId } from './data/training';
 
 /**
  * Week-dependent sets and effort. Weeks 1–2 are the learning phase. An easy
@@ -33,12 +32,6 @@ export function sessionsFor(): SessionId[] {
 /** The session after this one in the order (after the last, back to the first). */
 export function nextSession(id: SessionId): SessionId {
   return SESSION_ORDER[(SESSION_ORDER.indexOf(id) + 1) % SESSION_ORDER.length];
-}
-
-/** Monday to Friday: the 9 PM arrival rule applies. */
-export function isWorkday(iso: string): boolean {
-  const day = dayName(iso);
-  return day !== 'Saturday' && day !== 'Sunday';
 }
 
 /**
@@ -97,8 +90,7 @@ export function estimateMinutes(sessionId: SessionId, week: number): number {
   return Math.round(sessionTime(sessionId, week).total);
 }
 
-/** What the schedule says for a date (used by the dashboard's "tomorrow"). */
-export function plannedFor(iso: string): string {
-  const next = 'The next session in the order, or a day off';
-  return isWorkday(iso) ? `${next}. Gym only if you can be there by ${WORKDAY_GYM_CUTOFF.label}` : next;
+/** What the schedule says for tomorrow on the dashboard. */
+export function plannedFor(): string {
+  return 'The next session in the order, or a day off. Gym in the morning';
 }
